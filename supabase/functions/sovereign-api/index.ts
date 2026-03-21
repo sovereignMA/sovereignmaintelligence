@@ -22,7 +22,9 @@ serve(async (req) => {
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
-    const { action, payload, deal_id, contact_id } = await req.json();
+    let body: { action?: string; payload?: Record<string, unknown>; deal_id?: string; contact_id?: string };
+    try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
+    const { action, payload, deal_id, contact_id } = body;
 
     // ── DEALS ──────────────────────────────────────────────────
     if (action === 'deals:list') {
@@ -133,7 +135,7 @@ serve(async (req) => {
     return json({ error: `Unknown action: ${action}` }, 400);
 
   } catch (e) {
-    return json({ error: e.message }, 500);
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
 });
 

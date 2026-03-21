@@ -18,7 +18,9 @@ serve(async (req) => {
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
-    const { action, payload } = await req.json();
+    let body: { action?: string; payload?: Record<string, unknown> };
+    try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
+    const { action, payload } = body;
 
     // ── OVERVIEW ─────────────────────────────────────────────────
     if (action === 'admin:overview') {
@@ -109,7 +111,7 @@ serve(async (req) => {
     return json({ error: `Unknown action: ${action}` }, 400);
 
   } catch (e) {
-    return json({ error: e.message }, 500);
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
 });
 

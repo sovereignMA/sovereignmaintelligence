@@ -223,45 +223,49 @@ Deno.serve(async (req: Request) => {
     };
     const { action, deal_id, company_name, website_url } = body;
 
-    if (!action) return new Response(JSON.stringify({ error: 'action required' }), { status: 400 });
+    if (!action) return scrapeJson({ error: 'action required' }, 400);
 
     switch (action) {
       case 'scrape:full': {
         if (!deal_id || !company_name) {
-          return new Response(JSON.stringify({ error: 'deal_id and company_name required' }), { status: 400 });
+          return scrapeJson({ error: 'deal_id and company_name required' }, 400);
         }
         const intel = await scrapeCompany(company_name, website_url);
         await upsertIntel(deal_id, intel);
-        return new Response(JSON.stringify({ ok: true, intel }), { headers: { 'Content-Type': 'application/json' } });
+        return scrapeJson({ ok: true, intel });
       }
 
       case 'scrape:queue':
-        return new Response(JSON.stringify(await processQueue()), { headers: { 'Content-Type': 'application/json' } });
+        return scrapeJson(await processQueue());
 
       case 'scrape:companies_house': {
-        if (!company_name) return new Response(JSON.stringify({ error: 'company_name required' }), { status: 400 });
+        if (!company_name) return scrapeJson({ error: 'company_name required' }, 400);
         const results = await tavilySearch(`"${company_name}" site:find.companieshouse.gov.uk OR site:beta.companieshouse.gov.uk`, { max: 5 });
-        return new Response(JSON.stringify({ ok: true, results }), { headers: { 'Content-Type': 'application/json' } });
+        return scrapeJson({ ok: true, results });
       }
 
       case 'scrape:web': {
-        if (!website_url) return new Response(JSON.stringify({ error: 'website_url required' }), { status: 400 });
+        if (!website_url) return scrapeJson({ error: 'website_url required' }, 400);
         const content = await jinaRead(website_url);
-        return new Response(JSON.stringify({ ok: true, content }), { headers: { 'Content-Type': 'application/json' } });
+        return scrapeJson({ ok: true, content });
       }
 
       case 'scrape:news': {
-        if (!company_name) return new Response(JSON.stringify({ error: 'company_name required' }), { status: 400 });
+        if (!company_name) return scrapeJson({ error: 'company_name required' }, 400);
         const results = await tavilySearch(`"${company_name}" news funding acquisition`, { max: 8, depth: 'basic' });
-        return new Response(JSON.stringify({ ok: true, results }), { headers: { 'Content-Type': 'application/json' } });
+        return scrapeJson({ ok: true, results });
       }
 
       default:
-        return new Response(JSON.stringify({ error: `Unknown action: ${action}` }), { status: 400 });
+        return scrapeJson({ error: `Unknown action: ${action}` }, 400);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('scraper error:', message);
-    return new Response(JSON.stringify({ error: message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return scrapeJson({ error: message }, 500);
   }
 });
+
+function scrapeJson(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' } });
+}

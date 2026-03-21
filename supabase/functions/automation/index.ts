@@ -42,7 +42,9 @@ serve(async (req) => {
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
-    const { action, payload } = await req.json();
+    let body: { action?: string; payload?: Record<string, unknown> };
+    try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
+    const { action, payload } = body;
 
     // ── WORKFLOWS ─────────────────────────────────────────────────
     if (action === 'workflow:list') {
@@ -71,7 +73,7 @@ serve(async (req) => {
       if (!wf.is_active) return json({ error: 'Workflow is disabled' }, 400);
 
       // Increment run_count, log to audit
-      await Promise.all([
+      await Promise.allSettled([
         sb.from('workflows').update({ run_count: (wf.run_count || 0) + 1, last_run_at: new Date().toISOString() }).eq('id', workflow_id),
         sb.from('audit_trail').insert({ user_id: user.id, event: 'workflow_run', agent: 'S20', details: `workflow=${wf.name}`, status: 'ok' }),
       ]);
@@ -130,7 +132,7 @@ serve(async (req) => {
     return json({ error: `Unknown action: ${action}` }, 400);
 
   } catch (e) {
-    return json({ error: e.message }, 500);
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
 });
 

@@ -146,7 +146,7 @@ const API = {
         }
       }
 
-      const data = await r.json();
+      const data = await r.json().catch(() => ({}));
       if (!r.ok) { Toast.show(data.error || `Error ${r.status}`, 'err'); return null; }
       return data;
     } catch(e) { Toast.show('Network error', 'err'); return null; }
@@ -194,7 +194,7 @@ const API = {
       if(opts.onDone) opts.onDone(acc);
       return acc;
     }
-    const d=await r.json();
+    const d=await r.json().catch(()=>({}));
     const txt=d.content?.[0]?.text||'';
     if(opts.onDone) opts.onDone(txt);
     return txt;

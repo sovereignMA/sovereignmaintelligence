@@ -19,7 +19,9 @@ async function twilioRequest(endpoint: string, params: Record<string, string>) {
     },
     body,
   });
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || `Twilio error ${res.status}`);
+  return data;
 }
 
 serve(async (req) => {
@@ -33,7 +35,9 @@ serve(async (req) => {
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
-    const { action, payload } = await req.json();
+    let body: { action?: string; payload?: Record<string, unknown> };
+    try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
+    const { action, payload } = body;
     const fromNumber  = Deno.env.get('TWILIO_FROM_NUMBER')!;
     const howardPhone = Deno.env.get('HOWARD_PHONE')!;
 
@@ -74,7 +78,7 @@ serve(async (req) => {
     if (action === 'sms:contact') {
       const { to, message, contact_id, deal_id } = payload;
       const result = await twilioRequest('Messages.json', { To: to, From: fromNumber, Body: message });
-      await Promise.all([
+      await Promise.allSettled([
         logCall('sms', to, message, result.sid, result.status),
         sb.from('outreach_log').insert({ user_id: user.id, contact_id, deal_id, channel: 'sms', direction: 'outbound', body: message, status: result.status, consent_given: true }),
       ]);
@@ -91,7 +95,7 @@ serve(async (req) => {
     return json({ error: `Unknown action: ${action}` }, 400);
 
   } catch (e) {
-    return json({ error: e.message }, 500);
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
 });
 

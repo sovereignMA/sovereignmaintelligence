@@ -17,7 +17,8 @@ async function gmailRequest(endpoint: string, gmailToken: string, method = 'GET'
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
-    const err = await res.json();
+    let err: { error?: { message?: string } } = {};
+    try { err = await res.json(); } catch { /* ignore */ }
     throw new Error(err.error?.message || `Gmail error ${res.status}`);
   }
   return res.json();
@@ -52,7 +53,9 @@ serve(async (req) => {
     const gmailToken = session?.provider_token;
     if (!gmailToken) return json({ error: 'Gmail not connected — sign in with Google OAuth' }, 401);
 
-    const { action, payload } = await req.json();
+    let reqBody: { action?: string; payload?: Record<string, unknown> };
+    try { reqBody = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
+    const { action, payload } = reqBody;
 
     // ── LIST THREADS ─────────────────────────────────────────────
     if (action === 'gmail:threads') {
@@ -61,11 +64,12 @@ serve(async (req) => {
       if (!threads.threads?.length) return json({ data: [] });
 
       // Fetch snippet for each thread
-      const detailed = await Promise.all(
+      const settled = await Promise.allSettled(
         threads.threads.slice(0, 20).map((t: { id: string }) =>
           gmailRequest(`threads/${t.id}?format=metadata&metadataHeaders=Subject,From,Date`, gmailToken)
         )
       );
+      const detailed = settled.filter(r => r.status === 'fulfilled').map(r => (r as PromiseFulfilledResult<unknown>).value);
 
       const data = detailed.map((t: { id: string; snippet: string; messages: { payload: { headers: { name: string; value: string }[] } }[] }) => {
         const headers = t.messages?.[0]?.payload?.headers || [];
@@ -116,7 +120,12 @@ serve(async (req) => {
         }),
       });
 
-      const aiData = await anthropicRes.json();
+      if (!anthropicRes.ok) {
+        let err: { error?: { message?: string } } = {};
+        try { err = await anthropicRes.json(); } catch { /* ignore */ }
+        return json({ error: err.error?.message || `AI error ${anthropicRes.status}` }, 500);
+      }
+      const aiData = await anthropicRes.json() as { content?: { text?: string }[] };
       const draft = aiData.content?.[0]?.text || '';
       return json({ draft });
     }
@@ -124,7 +133,7 @@ serve(async (req) => {
     return json({ error: `Unknown action: ${action}` }, 400);
 
   } catch (e) {
-    return json({ error: e.message }, 500);
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
 });
 
