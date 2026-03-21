@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Analytics — Project Sovereign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.pg{padding:28px 24px;max-width:1400px;margin:0 auto}
+.g-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+/* 3D rotating cube viz */
+#cube-wrap{position:relative;height:240px;display:flex;align-items:center;justify-content:center;perspective:600px;overflow:hidden}
+.cube{width:100px;height:100px;position:relative;transform-style:preserve-3d;animation:rotateCube 12s linear infinite}
+@keyframes rotateCube{0%{transform:rotateX(15deg) rotateY(0)}100%{transform:rotateX(15deg) rotateY(360deg)}}
+.face{position:absolute;width:100px;height:100px;border:1px solid rgba(201,168,76,.4);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--gold2);background:rgba(201,168,76,.05);backdrop-filter:blur(4px)}
+.face-f{transform:translateZ(50px)}.face-b{transform:rotateY(180deg) translateZ(50px)}
+.face-l{transform:rotateY(-90deg) translateZ(50px)}.face-r{transform:rotateY(90deg) translateZ(50px)}
+.face-t{transform:rotateX(90deg) translateZ(50px)}.face-u{transform:rotateX(-90deg) translateZ(50px)}
+/* Waterfall chart */
+.wf-bar-wrap{display:flex;align-items:flex-end;gap:3px;height:160px;margin-top:12px}
+.wf-bar{flex:1;border-radius:3px 3px 0 0;position:relative;transition:opacity .2s;cursor:pointer;display:flex;align-items:flex-start;justify-content:center;padding-top:4px}
+.wf-bar:hover{opacity:.85}
+.wf-label{font-size:9px;color:var(--text3);text-align:center;margin-top:4px}
+.wf-labels{display:flex;gap:3px;margin-top:6px}
+.wf-labels div{flex:1;text-align:center;font-size:9px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* KPI ring */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.ring{position:relative;width:100px;height:100px}
+.ring svg{transform:rotate(-90deg)}
+.ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+/* Heatmap */
+.heatmap{margin-top:12px}
+.hm-row{display:flex;gap:3px;margin-bottom:3px;align-items:center}
+.hm-row-l{font-size:9px;color:var(--text3);width:28px;text-align:right;margin-right:4px}
+.hm-cell{width:22px;height:22px;border-radius:3px;cursor:pointer;transition:transform .1s}
+.hm-cell:hover{transform:scale(1.2)}
+.hm-col-labels{display:flex;gap:3px;margin-left:32px;margin-bottom:4px}
+.hm-col-labels span{width:22px;font-size:8px;color:var(--text3);text-align:center}
+/* Score gauge */
+.gauge-outer{background:var(--surface2);border-radius:50%;padding:8px}
+/* Timeline */
+.timeline-line{position:relative}
+.timeline-line::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:1px;background:var(--border2)}
+.tl{display:flex;gap:12px;padding:10px 0;position:relative}
+.tl-dot-wrap{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1}
+.tl-body{flex:1;min-width:0;padding-top:2px}
+.tl-t{font-size:13px;font-weight:500;color:var(--text)}
+.tl-m{font-size:10px;color:var(--text3);margin-top:2px}
+.tl-n{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.55}
+/* Funnel */
+.funnel-bar{margin-bottom:8px}
+.funnel-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.funnel-track{height:28px;background:var(--surface2);border-radius:4px;overflow:hidden;position:relative}
+.funnel-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:10px;font-size:11px;font-weight:600;color:#000;transition:width .8s ease}
+/* Responsive grid rows — CSS only, no JS resize listener */
+.an-row1{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+.an-row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.an-row3{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.an-row4{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.an-row1,.an-row4{grid-template-columns:1fr}.an-row2{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.an-row2,.an-row3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div style="height:56px"></div>
+<div class="pg">
+  <div class="page-hdr">
+    <div class="page-hdr-l">
+      <h1>Analytics</h1>
+      <p>Deal velocity · Value creation · Exit modelling · ROI projections</p>
+    </div>
+    <div class="page-hdr-r">
+      <span class="badge badge-gold">Q1 2025</span>
+      <a href="command.html" class="btn btn-outline btn-sm">Brief Gideon Cross →</a>
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="g4 mb-24" id="kpiRow"></div>
+
+  <!-- ROW 1: main chart + cube -->
+  <div class="an-row1">
+    <div class="chart-card">
+      <div class="chart-card-title">Roll-Up Value Creation Model</div>
+      <div class="chart-card-sub">Entry vs post-AI-enhancement vs projected exit — by deal</div>
+      <canvas id="valueChart" height="220"></canvas>
+    </div>
+    <div class="chart-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="chart-card-title" style="align-self:flex-start">3D Deal Score</div>
+      <div class="chart-card-sub" style="align-self:flex-start">Composite acquisition readiness</div>
+      <div id="cube-wrap">
+        <div class="cube">
+          <div class="face face-f">91</div><div class="face face-b">84</div>
+          <div class="face face-l">78</div><div class="face face-r">88</div>
+          <div class="face face-t">76</div><div class="face face-u">65</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);text-align:center">Score range: 65–91 across 6 targets</div>
+    </div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="an-row2">
+    <div class="chart-card">
+      <div class="chart-card-title">Acquisition Funnel</div>
+      <div class="chart-card-sub">Cold outreach → Closed</div>
+      <div id="funnelChart" style="margin-top:12px"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Cost Reduction — AI Implementation</div>
+      <div class="chart-card-sub">% opex reduction by function</div>
+      <canvas id="aiCostChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Deal Velocity Heatmap</div>
+      <div class="chart-card-sub">Days per stage — last 12 weeks</div>
+      <div id="heatmapDiv"></div>
+    </div>
+  </div>
+
+  <!-- ROW 3 -->
+  <div class="an-row3">
+    <div class="chart-card">
+      <div class="chart-card-title">Exit IRR Model</div>
+      <div class="chart-card-sub">Hold period vs return multiple at 3 exit scenarios</div>
+      <canvas id="irrChart" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">SIC Reclassification Impact</div>
+      <div class="chart-card-sub">Valuation delta pre/post migration to 63110</div>
+      <canvas id="sicImpact" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 4: NMD waterfall + timeline -->
+  <div class="an-row4">
+    <div class="chart-card">
+      <div class="chart-card-title">NMD Cashflow Waterfall</div>
+      <div class="chart-card-sub">Capital structure across all 4 active deals — zero personal cash</div>
+      <div class="wf-bar-wrap" id="waterfall"></div>
+      <div class="wf-labels" id="wfLabels"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Key Milestones</div>
+      <div class="chart-card-sub">Next 60 days</div>
+      <div class="timeline-line mt-8" id="milestones"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="app.js"></script>
+<script>
+Chart.defaults.color='#9490a8';Chart.defaults.borderColor='rgba(255,255,255,0.055)';Chart.defaults.font.family='Inter,system-ui,sans-serif';Chart.defaults.font.size=11;
+var gold='#c9a84c',teal='#2dd4bf',blue='#60a5fa',green='#4ade80',red='#f87171',purple='#a78bfa',amber='#fbbf24';
+
+// KPIs
+var kpis=[
+  {l:'Portfolio Value',v:'£10.5M',s:'4 active deals',c:'var(--gold)',d:'',dt:''},
+  {l:'Projected Exit',v:'£32M+',s:'at 15-20× EBITDA',c:'var(--teal)',d:'↑',dt:'delta-up'},
+  {l:'Avg Deal Score',v:'81.2',s:'across 6 targets',c:'var(--blue)',d:'',dt:''},
+  {l:'Time to Close',v:'94d',s:'avg days sourcing→SPA',c:'var(--amber)',d:'↑8d',dt:'delta-down'},
+];
+document.getElementById('kpiRow').innerHTML=kpis.map(function(k){
+  return '<div class="stat"><div class="stat-l">'+k.l+'</div><div class="stat-v" style="color:'+k.c+'">'+k.v+'</div>'+(k.d?'<div class="'+k.dt+'">'+k.d+'</div>':'')+'<div class="stat-s">'+k.s+'</div></div>';
+}).join('');
+
+// Value creation chart
+new Chart(document.getElementById('valueChart'),{type:'bar',data:{
+  labels:['CloudData.io','NexusSaaS','DataVault UK','OptiFlow Sys'],
+  datasets:[
+    {label:'Entry Value',data:[10.5,9,17,8.4],backgroundColor:'rgba(96,165,250,.35)',borderColor:blue,borderWidth:1},
+    {label:'Post-AI Value',data:[16,14,28,14],backgroundColor:'rgba(45,212,191,.35)',borderColor:teal,borderWidth:1},
+    {label:'Projected Exit',data:[25,21,42,22],backgroundColor:'rgba(201,168,76,.5)',borderColor:gold,borderWidth:1.5},
+  ]
+},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14}}},
+  scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:function(v){return'£'+v+'M'}}},x:{grid:{display:false}}}
+}});
+
+// Funnel
+var funnelData=[
+  {label:'Cold Outreach',val:340,pct:100,c:'#60a5fa'},
+  {label:'Replied',val:109,pct:32,c:'#a78bfa'},
+  {label:'Intro Call',val:44,pct:13,c:'#fbbf24'},
+  {label:'NDA Signed',val:18,pct:5.3,c:'#2dd4bf'},
+  {label:'LOI Issued',val:6,pct:1.8,c:'#4ade80'},
+  {label:'Closed',val:2,pct:0.6,c:'#c9a84c'},
+];
+document.getElementById('funnelChart').innerHTML=funnelData.map(function(f){
+  return '<div class="funnel-bar"><div class="funnel-label"><span style="color:var(--text2)">'+f.label+'</span><span class="mono" style="color:var(--text3)">'+f.val+'</span></div>'
+    +'<div class="funnel-track"><div class="funnel-fill" style="width:'+f.pct+'%;background:'+f.c+'">'+f.pct+'%</div></div></div>';
+}).join('');
+
+// AI cost reduction
+new Chart(document.getElementById('aiCostChart'),{type:'bar',data:{
+  labels:['Customer Support','Sales Dev','Data Entry','Reporting','QA Testing','Finance Ops'],
+  datasets:[{label:'% reduction',data:[72,58,85,64,45,38],backgroundColor:'rgba(167,139,250,.35)',borderColor:purple,borderWidth:1}]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:function(v){return v+'%'}},max:100},y:{grid:{display:false}}}
+}});
+
+// Heatmap
+var hDays=['M','T','W','T','F','S','S'];
+var hWeeks=['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'];
+var div=document.getElementById('heatmapDiv');
+var html='<div class="hm-col-labels">'+hDays.map(function(d){return'<span>'+d+'</span>'}).join('')+'</div>';
+hWeeks.forEach(function(w){
+  html+='<div class="hm-row"><div class="hm-row-l">'+w+'</div>';
+  hDays.forEach(function(){
+    var v=Math.random();
+    var a=v<0.15?0.08:v<0.4?0.22:v<0.65?0.45:v<0.85?0.7:1;
+    var c=v<0.4?'rgba(45,212,191,'+a+')':'rgba(201,168,76,'+a+')';
+    html+='<div class="hm-cell" style="background:'+c+'" title="Activity level: '+(Math.round(v*100))+'%"></div>';
+  });
+  html+='</div>';
+});
+div.innerHTML=html;
+
+// IRR model
+new Chart(document.getElementById('irrChart'),{type:'line',data:{
+  labels:['12m','18m','24m','30m','36m','48m'],
+  datasets:[
+    {label:'Base (15× exit)',data:[82,128,168,214,260,348],borderColor:teal,backgroundColor:'rgba(45,212,191,.07)',borderWidth:2,pointRadius:3,pointBackgroundColor:teal,tension:.4,fill:true},
+    {label:'Mid (20× exit)',data:[112,174,228,290,352,474],borderColor:gold,backgroundColor:'rgba(201,168,76,.07)',borderWidth:2,pointRadius:3,pointBackgroundColor:gold,tension:.4,fill:true},
+    {label:'Bull (28× exit)',data:[156,244,318,404,492,664],borderColor:green,backgroundColor:'rgba(74,222,128,.05)',borderWidth:2,pointRadius:3,pointBackgroundColor:green,tension:.4,fill:true},
+  ]
+},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12}}},
+  scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:function(v){return v+'%'}}},x:{grid:{display:false}}}
+}});
+
+// SIC impact
+new Chart(document.getElementById('sicImpact'),{type:'bar',data:{
+  labels:['CloudData\n(current)','CloudData\n(post-reclass)','NexusSaaS\n(current)','NexusSaaS\n(post-reclass)','DataVault\n(current)','DataVault\n(post-reclass)'],
+  datasets:[{
+    label:'EBITDA Multiple',data:[6.5,22,5.8,19,7.2,24],
+    backgroundColor:function(ctx){return ctx.dataIndex%2===0?'rgba(96,165,250,.35)':'rgba(201,168,76,.55)'},
+    borderColor:function(ctx){return ctx.dataIndex%2===0?blue:gold},
+    borderWidth:1.5
+  }]
+},options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.raw+'× EBITDA'}}}},
+  scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:function(v){return v+'×'}}},x:{grid:{display:false},ticks:{font:{size:9}}}}
+}});
+
+// Waterfall
+var wfData=[
+  {l:'Deal Value',v:10.5,c:'rgba(201,168,76,.7)'},
+  {l:'Deferred Con.',v:-4.2,c:'rgba(45,212,191,.6)'},
+  {l:'Vendor Finance',v:-2.8,c:'rgba(96,165,250,.6)'},
+  {l:'ABL Facility',v:-2.1,c:'rgba(167,139,250,.6)'},
+  {l:'Advisory Fee',v:0.8,c:'rgba(74,222,128,.6)'},
+  {l:'Net Cash',v:2.2,c:'rgba(201,168,76,.9)'},
+];
+var maxV=Math.max.apply(null,wfData.map(function(d){return Math.abs(d.v)}));
+var wfHTML='',labHTML='';
+wfData.forEach(function(d){
+  var h=Math.round(Math.abs(d.v)/maxV*140);
+  var label='<span style="font-size:9px;color:#000;font-weight:700">'+d.v+'M</span>';
+  wfHTML+='<div class="wf-bar" style="height:'+h+'px;background:'+d.c+';border-radius:3px 3px 0 0" title="'+d.l+': £'+d.v+'M">'+label+'</div>';
+  labHTML+='<div style="font-size:9px;color:var(--text3);text-align:center;word-break:break-word">'+d.l+'</div>';
+});
+document.getElementById('waterfall').innerHTML=wfHTML;
+document.getElementById('wfLabels').innerHTML=labHTML;
+
+// Milestones
+var miles=[
+  {title:'OptiFlow SPA Exchange',date:'28 Mar 2025',c:'#4ade80',note:'Sloane Haze finalising final 3 warranty clauses'},
+  {title:'DataVault DD Complete',date:'5 Apr 2025',c:'#fbbf24',note:'Kira Nyx technical report due'},
+  {title:'NexusSaaS HOT Signed',date:'12 Apr 2025',c:'#60a5fa',note:'3-way solicitor call this week'},
+  {title:'CloudData SIC Filing',date:'20 Apr 2025',c:'#c9a84c',note:'Post-completion — Elara Sterling leading'},
+  {title:'AI Implementation Start',date:'1 May 2025',c:'#a78bfa',note:'Dr. Aris Thorne 90-day roadmap commences'},
+];
+document.getElementById('milestones').innerHTML=miles.map(function(m){
+  return '<div class="tl"><div class="tl-dot-wrap" style="background:'+m.c+'22;border:1px solid '+m.c+'44"><div class="dot" style="background:'+m.c+';box-shadow:0 0 6px '+m.c+'"></div></div>'
+    +'<div class="tl-body"><div class="tl-t">'+m.title+'</div><div class="tl-m">'+m.date+'</div><div class="tl-n">'+m.note+'</div></div></div>';
+}).join('');
+
+// ── Auth guard ──
+window.addEventListener('auth:ready', function(e) {
+  if(!e.detail?.user){
+    Toast.show('Sign in to access this page', 'warn', 3000);
+    setTimeout(function(){ window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname.split('/').pop()); }, 1500);
+  }
+});
+
+</script>
+</body>
+</html>

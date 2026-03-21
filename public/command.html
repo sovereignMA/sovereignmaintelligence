@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Command Engine — Project Sovereign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.app-shell { height: calc(100vh - 56px); display: flex; overflow: hidden; }
+
+/* Sidebar */
+.cmd-sidebar {
+  width: 220px; flex-shrink: 0; background: var(--bg2);
+  border-right: 1px solid var(--border); overflow-y: auto;
+  display: flex; flex-direction: column;
+  transition: transform .25s, width .25s;
+}
+.cmd-sidebar.collapsed { width: 0; overflow: hidden; }
+.sb-section { padding: 10px 14px 4px; font-size: 9px; color: var(--text3); letter-spacing: .15em; text-transform: uppercase; }
+.sb-agent {
+  display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+  background: none; border: none; cursor: pointer; width: 100%;
+  text-align: left; transition: background .12s; position: relative;
+}
+.sb-agent:hover { background: var(--surface); }
+.sb-agent.active { background: var(--surface2); }
+.sb-agent.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--gold); }
+.av { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
+.sb-info { flex: 1; min-width: 0; }
+.sb-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-role { font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+/* Chat area */
+.cmd-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.cmd-header {
+  display: flex; align-items: center; gap: 12px; padding: 12px 18px;
+  background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.cmd-header-agent { display: flex; align-items: center; gap: 10px; flex: 1; }
+.cmd-header-name { font-size: 14px; font-weight: 600; }
+.cmd-header-role { font-size: 12px; color: var(--text3); }
+.cmd-header-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border2); color: var(--text2);
+  cursor: pointer; font-size: 14px; transition: all .15s;
+}
+.icon-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border3); }
+
+#chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+#chat::-webkit-scrollbar { width: 4px; }
+#chat::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Welcome */
+.welcome-panel { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius2); padding: 22px; }
+.welcome-panel h2 { font-size: 18px; color: var(--gold2); margin-bottom: 6px; }
+.welcome-panel p { font-size: 13px; color: var(--text2); line-height: 1.65; margin-bottom: 18px; }
+.quick-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.qbtn { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 7px 12px; font-size: 12px; color: var(--text); cursor: pointer; transition: all .15s; font-family: var(--font); }
+.qbtn:hover { background: var(--gold-dim); border-color: rgba(201,168,76,.4); color: var(--gold); }
+
+/* Messages */
+.msg { display: flex; gap: 10px; }
+.msg.user { flex-direction: row-reverse; }
+.msg-av { width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; font-family: var(--mono); }
+.bubble { max-width: 78%; padding: 11px 14px; border-radius: 10px; font-size: 13px; line-height: 1.68; }
+.user .bubble { background: var(--gold-dim); border: 1px solid rgba(201,168,76,.2); border-radius: 10px 3px 10px 10px; color: var(--text); }
+.agent-bubble { background: var(--surface); border: 1px solid var(--border2); border-radius: 3px 10px 10px 10px; color: var(--text); }
+.msg-meta { font-size: 10px; color: var(--text3); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+.meta-seat { font-weight: 700; font-family: var(--mono); }
+.bubble h3 { font-size: 13px; font-weight: 600; color: var(--gold2); margin: 10px 0 4px; }
+.bubble strong { color: var(--teal); }
+.bubble code { font-family: var(--mono); font-size: 11px; background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 3px; }
+.bubble hr { border: none; border-top: 1px solid var(--border2); margin: 10px 0; }
+.bubble ul, .bubble ol { padding-left: 18px; margin: 5px 0; }
+.bubble li { margin: 3px 0; }
+.cursor { display: inline-block; width: 2px; height: 13px; background: var(--teal); margin-left: 1px; animation: blink .7s infinite; vertical-align: text-bottom; }
+@keyframes blink { 0%,50%{opacity:1}51%,100%{opacity:0} }
+.dots { display: flex; gap: 4px; padding: 2px 0; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text3); animation: dp 1.3s ease-in-out infinite; }
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes dp { 0%,80%,100%{opacity:.3;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+
+/* API key banner */
+#api-banner {
+  background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25);
+  border-radius: var(--radius); padding: 12px 16px; margin: 0 20px 12px;
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+#api-banner span { font-size: 12px; color: var(--amber); flex: 1; }
+.banner-save { padding: 7px 14px; font-size: 12px; font-weight: 600; }
+
+/* Input bar */
+.input-bar { padding: 12px 18px; background: var(--bg2); border-top: 1px solid var(--border); display: flex; gap: 9px; align-items: flex-end; flex-shrink: 0; }
+.agent-pill {
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius);
+  cursor: pointer; white-space: nowrap; font-size: 12px; color: var(--text2);
+  min-width: 140px; flex-shrink: 0; transition: border-color .15s; user-select: none;
+}
+.agent-pill:hover { border-color: var(--gold); color: var(--gold); }
+#pill-av { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
+#textarea-wrap { flex: 1; min-width: 0; }
+#inp { max-height: 110px; resize: none; padding: 9px 12px; line-height: 1.5; }
+#send { background: var(--gold); color: #000; border: none; border-radius: var(--radius); padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: all .15s; white-space: nowrap; flex-shrink: 0; }
+#send:hover { background: var(--gold2); }
+#send:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Dropdown */
+#dd { position: fixed; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius2); padding: 5px; min-width: 220px; z-index: 999; max-height: 300px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,.7); display: none; }
+.dd-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: background .1s; }
+.dd-item:hover { background: var(--surface2); }
+.dd-item.sel { background: var(--gold-dim); }
+.dd-name { font-size: 12px; color: var(--text); font-weight: 500; }
+.dd-role { font-size: 10px; color: var(--text3); }
+
+/* Right panel */
+.cmd-right { width: 250px; flex-shrink: 0; background: var(--bg2); border-left: 1px solid var(--border); overflow-y: auto; padding: 14px; }
+@media (max-width: 1100px) { .cmd-right { display: none; } }
+@media (max-width: 768px) { .cmd-sidebar { position: fixed; top: 60px; left: 0; bottom: 0; z-index: 50; } .cmd-sidebar:not(.open) { transform: translateX(-100%); } }
+.rp-title { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .14em; margin-bottom: 9px; margin-top: 16px; }
+.rp-title:first-child { margin-top: 0; }
+.cbadge { display: flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-bottom: 5px; font-family: var(--mono); }
+.cb-g { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,.2); }
+.cb-r { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,.2); }
+.cb-p { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,.2); }
+.dcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; margin-bottom: 10px; }
+.drow { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.drow:last-child { border: none; }
+.dk { color: var(--text2); } .dv { color: var(--gold2); font-family: var(--mono); font-size: 11px; }
+.sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.scard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px; }
+.slabel { font-size: 9px; color: var(--text3); text-transform: uppercase; margin-bottom: 3px; }
+.sval { font-size: 18px; font-weight: 700; font-family: var(--mono); }
+.ssub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.pipe-item { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.pipe-item:last-child { border: none; }
+.pname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pstage { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+#aac { background: var(--surface); border-radius: var(--radius); padding: 10px; border-left: 2px solid var(--gold); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div class="app-shell" style="margin-top:56px">
+  <!-- SIDEBAR -->
+  <div class="cmd-sidebar" id="cmdSidebar">
+    <div id="sidebarContent"></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="cmd-content">
+    <div class="cmd-header">
+      <button class="icon-btn" id="sidebarToggle" title="Toggle sidebar">☰</button>
+      <div class="cmd-header-agent">
+        <div id="hdr-av" class="av" style="width:30px;height:30px;font-size:11px"></div>
+        <div>
+          <div class="cmd-header-name" id="hdr-name">Silas Vane</div>
+          <div class="cmd-header-role" id="hdr-role">CIO — Forensic Sourcing</div>
+        </div>
+      </div>
+      <div class="cmd-header-actions">
+        <a href="pipeline.html" class="icon-btn" title="Pipeline">📊</a>
+        <a href="intelligence.html" class="icon-btn" title="Intelligence">🧠</a>
+        <button class="icon-btn" id="clearBtn" title="Clear chat">🗑</button>
+      </div>
+    </div>
+
+    <!-- SIGN-IN REQUIRED BANNER — hidden once auth is active -->
+    <div id="api-banner">
+      <span>⚠️ Sign in to activate the Command Engine — AI runs server-side via Edge Functions</span>
+      <a href="login.html" class="btn btn-primary banner-save">Sign In</a>
+    </div>
+
+    <div id="chat"></div>
+
+    <div class="input-bar">
+      <div class="agent-pill" id="agentPill">
+        <div id="pill-av"></div>
+        <span id="pill-name" style="flex:1;overflow:hidden;text-overflow:ellipsis">Silas Vane</span>
+        <span style="font-size:10px;color:var(--text3)">▾</span>
+      </div>
+      <div id="textarea-wrap">
+        <textarea id="inp" rows="1" placeholder="Brief your agent…"></textarea>
+      </div>
+      <button id="send">Execute</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="cmd-right">
+    <div class="rp-title">Constraints</div>
+    <div class="cbadge cb-g">✓ NMD Active</div>
+    <div class="cbadge cb-r">✗ 0PG Mode</div>
+    <div class="cbadge cb-p">⟳ SIC→63110</div>
+    <div class="rp-title">Target Criteria</div>
+    <div class="dcard">
+      <div class="drow"><span class="dk">EBITDA</span><span class="dv">£1M–£5M</span></div>
+      <div class="drow"><span class="dk">Rec. Rev</span><span class="dv">&gt;60%</span></div>
+      <div class="drow"><span class="dk">Market</span><span class="dv">UK SaaS</span></div>
+      <div class="drow"><span class="dk">Entry</span><span class="dv">4–8x</span></div>
+      <div class="drow"><span class="dk">Exit</span><span class="dv">15–30x</span></div>
+    </div>
+    <div class="rp-title">Pipeline</div>
+    <div class="pipe-item"><div class="status-dot dot-blue" style="margin-right:2px"></div><span class="pname">CloudData.io</span><span class="pstage">sourcing</span></div>
+    <div class="pipe-item"><div class="status-dot dot-green" style="margin-right:2px"></div><span class="pname">NexusSaaS Ltd</span><span class="pstage">LOI</span></div>
+    <div class="pipe-item"><div class="status-dot dot-gold" style="margin-right:2px"></div><span class="pname">DataVault UK</span><span class="pstage">DD</span></div>
+    <div class="pipe-item"><div class="status-dot dot-red" style="margin-right:2px"></div><span class="pname">OptiFlow Sys</span><span class="pstage">SPA</span></div>
+    <div class="rp-title">Engine Stats</div>
+    <div class="sgrid">
+      <div class="scard"><div class="slabel">Agents</div><div class="sval" style="color:var(--gold)">21</div><div class="ssub">online</div></div>
+      <div class="scard"><div class="slabel">Capital</div><div class="sval" style="color:var(--green)">£0</div><div class="ssub">personal</div></div>
+      <div class="scard"><div class="slabel">PG Risk</div><div class="sval" style="color:var(--red)">£0</div><div class="ssub">exposed</div></div>
+      <div class="scard"><div class="slabel">Deals</div><div class="sval" style="color:var(--teal)">4</div><div class="ssub">active</div></div>
+    </div>
+    <div class="rp-title">Active Agent</div>
+    <div id="aac">
+      <div id="aac-name" style="font-weight:600;font-size:13px;margin-bottom:3px;color:var(--teal)">Silas Vane</div>
+      <div id="aac-role" style="font-size:11px;color:var(--text2);line-height:1.5">CIO — Forensic Sourcing</div>
+      <div id="aac-seat" style="font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono)">S1</div>
+    </div>
+    <div style="margin-top:14px">
+      <a href="intelligence.html" class="btn btn-outline" style="font-size:11px;padding:7px 10px;width:100%;justify-content:center;margin-bottom:6px">Intelligence Dashboard</a>
+      <a href="pipeline.html" class="btn btn-outline" style="font-size:11px;padding:7px 10px;width:100%;justify-content:center">Pipeline Tracker</a>
+    </div>
+  </div>
+</div>
+<div id="dd"></div>
+
+
+
+<script src="app.js"></script>
+<script>
+var AGENTS=[
+  {seat:"S1", name:"Silas Vane",       role:"CIO — Forensic Sourcing",           c:"#2dd4bf",bg:"rgba(45,212,191,.15)"},
+  {seat:"S2", name:"Kira Nyx",         role:"Data Architect — Tech Debt",         c:"#a78bfa",bg:"rgba(167,139,250,.15)"},
+  {seat:"S3", name:"Bastian Cole",     role:"Auditor — Balance Sheet Capital",    c:"#60a5fa",bg:"rgba(96,165,250,.15)"},
+  {seat:"S4", name:"Lyra Belacqua",    role:"Market Sentiment — PE Exits",        c:"#f472b6",bg:"rgba(244,114,182,.15)"},
+  {seat:"S5", name:"Jaxen Reed",       role:"Security — IP Hardening",            c:"#fb923c",bg:"rgba(251,146,60,.15)"},
+  {seat:"S6", name:"Vesper Thorne",    role:"Lead Negotiator — NMD/Deferred",     c:"#4ade80",bg:"rgba(74,222,128,.15)"},
+  {seat:"S7", name:"Caspian Frost",    role:"Lender Liaison — Non-Recourse",      c:"#38bdf8",bg:"rgba(56,189,248,.15)"},
+  {seat:"S8", name:"Sloane Haze",      role:"Attorney — 0% PG Contracts",         c:"#e879f9",bg:"rgba(232,121,249,.15)"},
+  {seat:"S9", name:"Thatcher Grey",    role:"Tax — CGT Optimisation",             c:"#a3e635",bg:"rgba(163,230,53,.15)"},
+  {seat:"S10",name:"Rhea Vance",       role:"Risk — Skepticism Engine",           c:"#f87171",bg:"rgba(248,113,113,.15)"},
+  {seat:"S11",name:"Kaelen Voss",      role:"Chief Closer — Negotiation",         c:"#fbbf24",bg:"rgba(251,191,36,.15)"},
+  {seat:"S12",name:"Mila Quinn",       role:"Empathy Lead — Seller Trust",        c:"#34d399",bg:"rgba(52,211,153,.15)"},
+  {seat:"S13",name:"Orion Pax",        role:"Funnel Architect — Cold to Gold",    c:"#818cf8",bg:"rgba(129,140,248,.15)"},
+  {seat:"S14",name:"Soren Vale",       role:"Behavioural Analyst",                c:"#fb7185",bg:"rgba(251,113,133,.15)"},
+  {seat:"S15",name:"Elara Sterling",   role:"Exit Lead — SIC Migration",          c:"#f0abfc",bg:"rgba(240,171,252,.15)"},
+  {seat:"S16",name:"Dr. Aris Thorne",  role:"AI Scientist — Value Creation",      c:"#67e8f9",bg:"rgba(103,232,249,.15)"},
+  {seat:"S17",name:"Nova Skye",        role:"Ops Lead — Roll-Up Integration",     c:"#86efac",bg:"rgba(134,239,172,.15)"},
+  {seat:"S18",name:"Gideon Cross",     role:"Growth — Post-Acq Revenue",          c:"#fcd34d",bg:"rgba(252,211,77,.15)"},
+  {seat:"S19",name:"Echo",             role:"Interface — Systems Bridge",         c:"#93c5fd",bg:"rgba(147,197,253,.15)"},
+  {seat:"S20",name:"Sentinel",         role:"Gatekeeper — Signal Filter",         c:"#6b7280",bg:"rgba(107,114,128,.15)"},
+  {seat:"S21",name:"The Archivist",    role:"VPM — Vector Pattern Memory",        c:"#c084fc",bg:"rgba(192,132,252,.15)"}
+];
+var PERSONAS={
+  S1:"You are Silas Vane, CIO and forensic off-market sourcing specialist. Find UK SaaS targets before listings using Companies House, aged accounts, sector indices. Spot succession pressure, revenue plateaus, motivated seller signals.",
+  S2:"You are Kira Nyx, Data Architect. Map technical debt and build AI replacement roadmaps — where automation cuts 30-60% operating costs. Think in infrastructure spend, engineering headcount, legacy code risk.",
+  S3:"You are Bastian Cole, Auditor. Find hidden balance-sheet capital — deferred revenue, R&D tax credits, working capital cycles — that fund acquisitions without personal capital.",
+  S4:"You are Lyra Belacqua, Market Sentiment. Track PE exit heatmaps, IRR compression, SIC code multiples. Why 63110 commands 20-30x vs 62010's 6-8x.",
+  S5:"You are Jaxen Reed, IP Security. Harden acquired IP — code licensing, GDPR, trade secrets, patent positioning — for institutional due diligence.",
+  S6:"You are Vesper Thorne, Lead Negotiator and NMD architect. Design Deferred Consideration, Earn-Outs, Vendor Finance. UK SPA conventions, locked-box, W&I insurance.",
+  S7:"You are Caspian Frost, Lender Liaison. Secure non-recourse debt — ABL, invoice finance, CBILS successors, growth debt. UK lenders treating SaaS ARR as collateral.",
+  S8:"You are Sloane Haze, Attorney. Draft UK SPAs, MSAs, consulting fee structures. Minimise PG exposure within UK company law.",
+  S9:"You are Thatcher Grey, Tax. Optimise for BADR, HoldCo structures, inter-group loans, CGT efficiency.",
+  S10:"You are Rhea Vance, Risk Officer. Deeply sceptical. Stress-test every assumption. Model downside. Prevent bad deals. Flag counterparty risk.",
+  S11:"You are Kaelen Voss, Chief Closer. Principled negotiation for motivated sellers. Bridge price gaps with earn-outs. Re-engage stalled deals.",
+  S12:"You are Mila Quinn, Empathy Lead. Seller emotional journey, trust-building, communication cadence from first contact to completion.",
+  S13:"You are Orion Pax, Funnel Architect. Automated outreach — LinkedIn sequences, email cadences, intermediary relationships for consistent UK seller pipeline.",
+  S14:"You are Soren Vale, Behavioural Analyst. Interpret seller communication patterns — hesitation, urgency, trust — advise timing and framing of proposals.",
+  S15:"You are Elara Sterling, Exit Lead. Execute SIC migration to 63110, position for institutional buyers, run competitive exit processes.",
+  S16:"You are Dr. Aris Thorne, AI Scientist. Identify highest-value AI implementations — LLM automation, churn prediction, data pipelines — driving margin expansion.",
+  S17:"You are Nova Skye, Ops Lead. Standardise and integrate acquisitions — 100-day playbook, finance reporting, tech stack rationalisation.",
+  S18:"You are Gideon Cross, Growth. Post-acquisition B2B revenue scaling — AI-powered outbound, channel partnerships, cross-sell into combined customer base.",
+  S19:"You are Echo, Interface Specialist. Design API integrations and toolstacks that keep the command engine operating with real-time intelligence.",
+  S20:"You are Sentinel, Gatekeeper. Filter information, prioritise Commander attention, summarise deal status, protect bandwidth ruthlessly.",
+  S21:"You are The Archivist, VPM. Synthesise success patterns, flag historical failure matches, provide institutional memory making the team smarter over time."
+};
+var SYSTEM="Project Sovereign — UK tech M&A roll-up command engine. Respond as your agent role with deep domain expertise.\n\nDOCTRINE: All acquisitions via Deferred Consideration, Vendor Finance, or ABL. Zero personal capital. Zero personal guarantees (director warranties disclosed honestly, target-company level only). SIC 62010/62020 targets → migrate to 63110. EBITDA £1M-£5M, recurring revenue >60%, motivated seller. Entry 4-8x, exit 15-30x. Every deal includes advisory fee for acquirer entity. Flag risks honestly.\n\nSTYLE: Stay in character. UK-specific. Specific and actionable. 200-400 words. Markdown: **bold**, ### sections, bullet points.";
+var QUICK=[
+  {label:"🎯 Source 5 off-market targets", text:"Identify 5 UK SaaS targets with EBITDA £1M–£3M. Off-market only. SIC 62010/62020. Motivated seller signals?"},
+  {label:"📋 Draft NMD acquisition structure", text:"Design a zero-money-down structure for a £2M EBITDA UK SaaS business. Include deferred consideration and vendor finance terms."},
+  {label:"⚠️ Top 5 structural risks", text:"Top 5 structural risks in a UK SaaS acquisition with no personal guarantee and deferred consideration. Be specific and honest."},
+  {label:"📧 3-touch cold outreach sequence", text:"Write a 3-touch cold outreach sequence for a UK SaaS founder aged 55+ considering retirement. Direct, respectful, no pressure."},
+  {label:"📈 SIC migration thesis", text:"Explain SIC 62010→63110 migration. What multiples does it unlock and what's the realistic timeline?"},
+  {label:"🏗️ HoldCo/OpCo structure", text:"Design HoldCo + OpCo structure for UK SaaS roll-up from scratch. Minimise PG. Optimise for BADR."},
+  {label:"🤖 AI value creation roadmap", text:"Map a 90-day AI implementation roadmap for a £2M EBITDA UK SaaS business to cut costs 40% and build a data moat."},
+  {label:"💰 Lender options for NMD", text:"Which UK lenders will fund a SaaS acquisition against recurring revenue? What are realistic terms in 2025?"}
+];
+
+var activeAgent=AGENTS[0], streaming=false, history=[];
+
+function ini(n){return n.split(' ').map(function(w){return w[0]}).slice(0,2).join('')}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function renderMd(t){
+  return esc(t)
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/^[•\-\*] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]+?<\/li>)/g,function(m){return '<ul>'+m+'</ul>'})
+    .replace(/\n/g,'<br>');
+}
+
+// Show/hide auth banner based on auth state
+function updateBanner(user){
+  var banner = document.getElementById('api-banner');
+  if(banner) banner.style.display = user ? 'none' : 'flex';
+}
+updateBanner(null);
+window.addEventListener('auth:ready', function(e){ updateBanner(e.detail?.user); });
+
+// Build sidebar
+(function(){
+  var sc = document.getElementById('sidebarContent');
+  var html = '<div class="sb-section">Deal Team — 21 Seats</div>';
+  AGENTS.forEach(function(a,i){
+    html += '<button class="sb-agent'+(i===0?' active':'') +'" data-seat="'+a.seat+'">'
+      +'<div class="av" style="background:'+a.bg+';color:'+a.c+';border:1px solid '+a.c+'30">'+ini(a.name)+'</div>'
+      +'<div class="sb-info"><div class="sb-name">'+a.name+'</div><div class="sb-role">'+a.role+'</div></div>'
+      +'<div class="sb-dot" style="background:'+a.c+';opacity:'+(i===0?1:.3)+'"></div>'
+      +'</button>';
+  });
+  sc.innerHTML = html;
+  sc.addEventListener('click', function(e){
+    var btn = e.target.closest('.sb-agent');
+    if(btn){ selectAgent(AGENTS.find(function(a){return a.seat===btn.dataset.seat})); }
+  });
+})();
+
+// Build dropdown
+(function(){
+  var dd = document.getElementById('dd');
+  var html = '';
+  AGENTS.forEach(function(a){
+    html += '<div class="dd-item'+(a.seat===activeAgent.seat?' sel':'')+'" data-seat="'+a.seat+'">'
+      +'<div class="av" style="width:22px;height:22px;font-size:9px;background:'+a.bg+';color:'+a.c+';border:1px solid '+a.c+'30">'+ini(a.name)+'</div>'
+      +'<div><div class="dd-name">'+a.name+'</div><div class="dd-role">'+a.role+'</div></div>'
+      +'</div>';
+  });
+  dd.innerHTML = html;
+  dd.addEventListener('click', function(e){
+    var item = e.target.closest('.dd-item');
+    if(item){ selectAgent(AGENTS.find(function(a){return a.seat===item.dataset.seat})); dd.style.display='none'; }
+  });
+})();
+
+// Build welcome
+(function(){
+  var chat = document.getElementById('chat');
+  var html = '<div class="welcome-panel"><h2>Command Engine Online</h2><p>Select an agent, then brief them below. Each seat is a domain expert in UK tech roll-up M&A. All deal structures: NMD, zero personal capital, zero personal guarantees.</p><div class="quick-grid">';
+  QUICK.forEach(function(q){
+    html += '<button class="qbtn" data-text="'+esc(q.text)+'">'+q.label+'</button>';
+  });
+  html += '</div></div>';
+  chat.innerHTML = html;
+  chat.addEventListener('click', function(e){
+    var qb = e.target.closest('.qbtn');
+    if(qb) doSend(qb.dataset.text);
+  });
+})();
+
+function selectAgent(a){
+  activeAgent = a;
+  document.querySelectorAll('.sb-agent').forEach(function(b){
+    var act = b.dataset.seat===a.seat;
+    b.className = 'sb-agent'+(act?' active':'');
+    b.querySelector('.sb-dot').style.opacity = act?1:.3;
+  });
+  document.querySelectorAll('.dd-item').forEach(function(el){
+    el.className='dd-item'+(el.dataset.seat===a.seat?' sel':'');
+  });
+  var pav = document.getElementById('pill-av');
+  pav.style.cssText='background:'+a.bg+';color:'+a.c+';border:1px solid '+a.c+'30;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700';
+  pav.textContent = ini(a.name);
+  document.getElementById('pill-name').textContent = a.name;
+  document.getElementById('hdr-av').style.cssText='background:'+a.bg+';color:'+a.c+';border:1px solid '+a.c+'30';
+  document.getElementById('hdr-av').textContent = ini(a.name);
+  document.getElementById('hdr-name').textContent = a.name;
+  document.getElementById('hdr-name').style.color = a.c;
+  document.getElementById('hdr-role').textContent = a.role;
+  document.getElementById('aac-name').textContent = a.name;
+  document.getElementById('aac-name').style.color = a.c;
+  document.getElementById('aac-role').textContent = a.role;
+  document.getElementById('aac-seat').textContent = a.seat;
+  document.getElementById('aac').style.borderLeftColor = a.c;
+  document.getElementById('inp').placeholder = 'Brief '+a.name+'…';
+}
+selectAgent(AGENTS[0]);
+
+// Sidebar toggle
+document.getElementById('sidebarToggle').onclick = function(){
+  document.getElementById('cmdSidebar').classList.toggle('collapsed');
+};
+
+// Clear
+document.getElementById('clearBtn').onclick = function(){
+  history=[];
+  document.getElementById('chat').innerHTML='';
+};
+
+// Agent pill
+document.getElementById('agentPill').onclick = function(e){
+  var dd=document.getElementById('dd');
+  var rect=e.currentTarget.getBoundingClientRect();
+  dd.style.cssText='top:'+(rect.top-310)+'px;left:'+rect.left+'px;display:block';
+};
+document.addEventListener('click',function(e){
+  if(!document.getElementById('dd').contains(e.target)&&!document.getElementById('agentPill').contains(e.target))
+    document.getElementById('dd').style.display='none';
+});
+
+// Textarea
+var inp=document.getElementById('inp');
+inp.addEventListener('input',function(){inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,110)+'px';});
+inp.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}});
+document.getElementById('send').onclick=function(){doSend();};
+
+function appendUserMsg(text){
+  var w=document.querySelector('.welcome-panel');if(w)w.remove();
+  var chat=document.getElementById('chat');
+  var div=document.createElement('div'); div.className='msg user';
+  div.innerHTML='<div class="msg-av" style="background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.3)">⌘</div>'
+    +'<div class="bubble"><div style="white-space:pre-wrap">'+esc(text)+'</div></div>';
+  chat.appendChild(div); div.scrollIntoView({behavior:'smooth',block:'end'});
+}
+function appendAgentMsg(a){
+  var chat=document.getElementById('chat');
+  var id='mb'+Date.now();
+  var div=document.createElement('div'); div.className='msg agent';
+  div.innerHTML='<div class="msg-av" style="background:'+a.bg+';color:'+a.c+';border:1px solid '+a.c+'30">'+ini(a.name)+'</div>'
+    +'<div class="bubble agent-bubble">'
+    +'<div class="msg-meta"><span class="meta-seat" style="color:'+a.c+'">'+a.seat+'</span> '+a.name+' <span style="color:var(--text3)">·</span> '+a.role.split('—')[0].trim()+'</div>'
+    +'<div id="'+id+'"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>'
+    +'</div>';
+  chat.appendChild(div); div.scrollIntoView({behavior:'smooth',block:'end'});
+  return id;
+}
+function updateBubble(id,text,done){
+  var el=document.getElementById(id); if(!el)return;
+  el.innerHTML=renderMd(text)+(done?'':'<span class="cursor"></span>');
+  el.parentElement.parentElement.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+async function doSend(override){
+  var text=(override||inp.value).trim();
+  if(!text||streaming)return;
+  if(!Auth.user){
+    Toast.show('Please sign in to use the command engine','warn',5000);
+    setTimeout(function(){window.location.href='login.html';},2000);
+    return;
+  }
+  inp.value=''; inp.style.height='auto';
+  streaming=true; document.getElementById('send').disabled=true;
+  history.push({role:'user',content:text});
+  appendUserMsg(text);
+  var agent=activeAgent;
+  var mbId=appendAgentMsg(agent);
+  var sys=SYSTEM+'\n\n'+(PERSONAS[agent.seat]||'You are '+agent.name+', '+agent.role+'.');
+
+  await API.chat({
+    system: sys,
+    messages: history.slice(-14),
+    max_tokens: 1200,
+    stream: true,
+    agent_name: agent.name,
+    onToken: function(acc){ updateBubble(mbId, acc, false); },
+    onDone: function(acc){
+      history.push({role:'assistant',content:acc});
+      updateBubble(mbId, acc, true);
+      streaming=false;
+      document.getElementById('send').disabled=false;
+      // Save conversation to Supabase
+      if(Auth.user){
+        API.convs.save(
+          {agent_seat:agent.seat,agent_name:agent.name,title:text.slice(0,60)},
+          [{role:'user',content:text,tokens_used:0},{role:'assistant',content:acc,tokens_used:0}]
+        ).catch(function(){});
+      }
+    },
+    onError: function(err){
+      updateBubble(mbId, err, true);
+      streaming=false;
+      document.getElementById('send').disabled=false;
+    }
+  });
+}
+</script>
+
+<script>
+window.addEventListener('auth:ready', function(e){
+  if(!e.detail?.user){
+    Toast.show('Sign in to access this page','warn',2500);
+    setTimeout(function(){
+      location.href='login.html?next='+encodeURIComponent(location.pathname.split('/').pop());
+    },1800);
+  }
+});
+</script>
+</body>
+</html>

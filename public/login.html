@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07080f">
+<title>Sign In — Project Sovereign</title>
+<link rel="stylesheet" href="app.css">
+
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-logo">
+    <div class="auth-logo-icon">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.5" fill="currentColor"/></svg>
+    </div>
+    <span class="auth-logo-text">PROJECT SOVEREIGN</span>
+  </div>
+  <div class="auth-card">
+    <div class="auth-title">Command Access</div>
+    <div class="auth-sub">Sign in to access your 21-agent deal team.</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabIn" onclick="switchTab('in')">Sign In</button>
+      <button class="auth-tab" id="tabUp" onclick="switchTab('up')">Create Account</button>
+    </div>
+    <div id="errBox" class="auth-err"></div>
+    <div id="formIn">
+      <div class="field"><label>Email</label><input type="email" id="inEmail" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input type="password" id="inPass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-primary w-full" id="inBtn" onclick="doSignIn()">Sign In</button>
+      <div class="auth-or"><span>or</span></div>
+      <button class="google-btn" onclick="doGoogle()"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Continue with Google + Gmail</button>
+    </div>
+    <div id="formUp" style="display:none">
+      <div class="field"><label>Full Name</label><input type="text" id="upName" placeholder="Your name" autocomplete="name"></div>
+      <div class="field"><label>Email</label><input type="email" id="upEmail" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="field"><label>Password <span class="text-faint" style="font-weight:400">(min 8 chars)</span></label><input type="password" id="upPass" placeholder="Create strong password" autocomplete="new-password"></div>
+      <button class="btn btn-primary w-full" id="upBtn" onclick="doSignUp()">Create Account</button>
+      <div class="auth-or"><span>or</span></div>
+      <button class="google-btn" onclick="doGoogle()"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Sign up with Google</button>
+    </div>
+    <div class="auth-links">
+      <a href="#" onclick="doReset()">Forgot password?</a>
+      <span>·</span>
+      <a href="index.html">Back to home</a>
+    </div>
+  </div>
+  <div class="auth-features">
+    <div class="auth-feat"><span class="text-green">✓</span> RLS-secured database</div>
+    <div class="auth-feat"><span class="text-green">✓</span> Server-side AI proxy</div>
+    <div class="auth-feat"><span class="text-green">✓</span> Zero data sharing</div>
+  </div>
+</div>
+
+<style>
+body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; background:var(--bg); }
+.auth-wrap { width:100%; max-width:400px; }
+.auth-logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:28px; }
+.auth-logo-icon { width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,var(--gold),#6b4a10); display:flex; align-items:center; justify-content:center; color:#000; }
+.auth-logo-text { font-size:15px; font-weight:700; color:var(--gold); letter-spacing:.08em; }
+.auth-card { background:var(--surface); border:1px solid var(--border2); border-radius:16px; padding:28px; }
+.auth-title { font-size:20px; font-weight:700; margin-bottom:5px; }
+.auth-sub { font-size:13px; color:var(--text2); line-height:1.65; margin-bottom:22px; }
+.auth-tabs { display:flex; background:var(--bg2); border-radius:8px; padding:3px; margin-bottom:20px; gap:2px; }
+.auth-tab { flex:1; padding:8px; border-radius:6px; border:none; background:none; font-family:var(--font); font-size:13px; font-weight:500; cursor:pointer; color:var(--text2); transition:all .15s; }
+.auth-tab.active { background:var(--surface2); color:var(--text); }
+.auth-err { background:var(--red-dim); border:1px solid rgba(248,113,113,.25); border-radius:7px; padding:10px 14px; font-size:13px; color:var(--red); margin-bottom:14px; display:none; line-height:1.5; }
+.auth-or { display:flex; align-items:center; gap:12px; margin:16px 0; }
+.auth-or::before,.auth-or::after { content:''; flex:1; height:1px; background:var(--border); }
+.auth-or span { font-size:11px; color:var(--text3); }
+.google-btn { width:100%; padding:11px; border-radius:8px; border:1px solid var(--border2); background:var(--bg2); color:var(--text); font-family:var(--font); font-size:13px; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:all .15s; }
+.google-btn:hover { border-color:var(--border3); background:var(--surface2); }
+.auth-links { display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; color:var(--text3); margin-top:16px; }
+.auth-features { display:flex; gap:8px; margin-top:20px; justify-content:center; flex-wrap:wrap; }
+.auth-feat { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:5px 10px; font-size:11px; color:var(--text3); display:flex; align-items:center; gap:5px; }
+.btn-spin::after { content:''; width:13px; height:13px; border-radius:50%; border:2px solid rgba(0,0,0,.25); border-top-color:#000; animation:spin .6s linear infinite; margin-left:6px; }
+</style>
+
+<script src="app.js"></script>
+<script>
+var tab = 'in';
+function switchTab(t){
+  tab=t;
+  document.getElementById('formIn').style.display=t==='in'?'':'none';
+  document.getElementById('formUp').style.display=t==='up'?'':'none';
+  document.getElementById('tabIn').classList.toggle('active',t==='in');
+  document.getElementById('tabUp').classList.toggle('active',t==='up');
+  showErr('');
+}
+function showErr(m){ var e=document.getElementById('errBox'); e.textContent=m; e.style.display=m?'block':'none'; }
+function setLoad(id,on){ var b=document.getElementById(id); b.disabled=on; if(on)b.classList.add('btn-spin'); else b.classList.remove('btn-spin'); }
+
+window.addEventListener('auth:ready', function(e){
+  if(e.detail?.user){
+    var raw=new URLSearchParams(location.search).get('next')||'';
+    // Only allow relative paths to prevent open-redirect attacks
+    var ALLOWED=['command.html','pipeline.html','intelligence.html','comms.html','analytics.html','vault.html','security.html','admin.html','resources.html','mediakit.html'];
+    var next=ALLOWED.indexOf(raw)!==-1?raw:'command.html';
+    location.href=next;
+  }
+});
+
+async function waitSB(){ if(!window._sb) await new Promise(r=>window.addEventListener('sb:ready',r,{once:true})); }
+async function doSignIn(){
+  showErr(''); var em=document.getElementById('inEmail').value.trim(), pw=document.getElementById('inPass').value;
+  if(!em||!pw){showErr('Please enter email and password.');return;}
+  setLoad('inBtn',true);
+  await waitSB();
+  var data=await Auth.signInEmail(em,pw);
+  if(!data){showErr('Invalid email or password.');setLoad('inBtn',false);}
+  else {
+    var raw=new URLSearchParams(location.search).get('next')||'';
+    var ALLOWED=['command.html','pipeline.html','intelligence.html','comms.html','analytics.html','vault.html','security.html','admin.html','resources.html','mediakit.html'];
+    location.href=ALLOWED.indexOf(raw)!==-1?raw:'command.html';
+  }
+}
+async function doSignUp(){
+  showErr(''); var nm=document.getElementById('upName').value.trim(), em=document.getElementById('upEmail').value.trim(), pw=document.getElementById('upPass').value;
+  if(!nm||!em||!pw){showErr('Please fill in all fields.');return;}
+  if(pw.length<8){showErr('Password must be at least 8 characters.');return;}
+  setLoad('upBtn',true);
+  await waitSB();
+  var data=await Auth.signUp(em,pw,nm);
+  if(!data){showErr('Sign up failed. This email may already be registered.');setLoad('upBtn',false);}
+  else {
+    document.querySelector('.auth-card').innerHTML='<div style="text-align:center;padding:28px 0"><div style="font-size:42px;margin-bottom:16px">✉️</div><div style="font-size:18px;font-weight:700;margin-bottom:10px">Check your email</div><p style="font-size:13px;color:var(--text2);line-height:1.7">We sent a confirmation link to <strong>'+em+'</strong>.<br>Click it to activate your account, then sign in.</p><a href="login.html" class="btn btn-primary" style="margin-top:20px;display:inline-flex">Back to Sign In</a></div>';
+  }
+}
+async function doGoogle(){ await waitSB(); await Auth.signInGoogle(); }
+async function doReset(){
+  var em=prompt('Enter your email for a password reset link:');
+  if(!em) return;
+  await waitSB(); await Auth.resetPw(em);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter')tab==='in'?doSignIn():doSignUp();});
+</script>
+</body>
+</html>

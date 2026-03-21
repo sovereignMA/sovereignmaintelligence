@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Admin — Project Sovereign</title>
+<link rel="stylesheet" href="app.css">
+<style>
+.admin-shell{display:flex;height:calc(100vh - var(--nav-h));overflow:hidden}
+.admin-sb{width:190px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.admin-main{flex:1;overflow-y:auto;overflow-x:hidden}
+.asec{display:none;padding:22px}
+.asec.active{display:block}
+.ani{display:flex;align-items:center;gap:9px;padding:8px 14px;background:none;border:none;cursor:pointer;width:100%;text-align:left;color:var(--text2);font-family:var(--font);font-size:13px;transition:all .15s;border-left:2px solid transparent}
+.ani:hover{background:var(--surface);color:var(--text)}
+.ani.active{background:var(--surface2);color:var(--gold);border-left-color:var(--gold)}
+.anlabel{font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;padding:12px 14px 3px}
+.mtg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:18px}
+.mt{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden}
+.mt::before{content:'';position:absolute;top:0;right:0;width:3px;height:100%}
+.mt.gold::before{background:var(--gold)}.mt.green::before{background:var(--green)}
+.mt.teal::before{background:var(--teal)}.mt.red::before{background:var(--red)}
+.mt.blue::before{background:var(--blue)}.mt.purple::before{background:var(--purple)}
+.mtl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}
+.mtv{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1}
+.mts{font-size:11px;color:var(--text3);margin-top:4px}
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px}
+.acard{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px;display:flex;gap:9px;align-items:flex-start;transition:all .15s}
+.acard:hover{border-color:var(--border3);transform:translateY(-1px)}
+.aav{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono)}
+.an{font-size:12px;font-weight:600;color:var(--text);line-height:1.3}
+.ar{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4}
+.ast{display:flex;align-items:center;gap:4px;margin-top:5px;font-size:10px;color:var(--text3)}
+.sd{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.s-ok{background:#4ade80;box-shadow:0 0 5px #4ade80}.s-idle{background:#4e4c5e}
+.wfc{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;display:flex;align-items:center;gap:12px}
+.wfc:hover{border-color:var(--border3)}
+.wfi{width:34px;height:34px;border-radius:8px;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.bch{display:flex;flex-direction:column;gap:6px}
+.br{display:flex;align-items:center;gap:10px}
+.bl{font-size:11px;color:var(--text2);width:96px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.bf{height:100%;border-radius:3px;transition:width .6s ease}
+.bv{font-size:10px;color:var(--text3);font-family:var(--mono);width:34px;text-align:right;flex-shrink:0}
+.lr{display:grid;grid-template-columns:65px 1fr 85px 60px;gap:8px;padding:6px 10px;border-radius:6px;font-size:11px;align-items:center}
+.lr:hover{background:var(--surface2)}
+.lt{color:var(--text3);font-family:var(--mono)}
+.le{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.la{color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l-ok{color:var(--green);font-size:10px}.l-err{color:var(--red);font-size:10px}
+.ptr{display:flex;gap:10px;padding:10px;border-radius:8px;border:1px solid var(--border);margin-bottom:8px;align-items:flex-start}
+.pb{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;text-transform:uppercase}
+.pb-c{background:rgba(248,113,113,.15);color:#f87171}.pb-h{background:rgba(251,191,36,.15);color:#fbbf24}
+.pb-m{background:rgba(96,165,250,.15);color:#60a5fa}.pb-l{background:rgba(74,222,128,.15);color:#4ade80}
+.pb-i{background:rgba(201,168,76,.12);color:#c9a84c}
+.pm{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.2);font-size:10px;padding:2px 7px;border-radius:8px}
+.ctr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ctb{padding:10px 8px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:var(--font);font-size:12px;cursor:pointer;text-align:center;transition:all .15s}
+.ctb:hover,.ctb.on{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
+.cli{display:flex;gap:10px;padding:10px;border-radius:8px;background:var(--surface);margin-bottom:6px}
+.ano{background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:9px 12px;font-size:11px;text-align:center;transition:all .15s}
+.ano:hover{border-color:var(--gold);box-shadow:0 0 14px var(--glow)}
+.anl{font-size:9px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.07em}
+.ann{font-weight:600;color:var(--text);font-size:10px}
+.ans{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:3px;font-size:10px;color:var(--text3)}
+@media(max-width:768px){.admin-sb{width:46px}.admin-sb .anlabel,.ani>span:last-child{display:none}.ani{justify-content:center;padding:12px}.mtg{grid-template-columns:repeat(2,1fr)}.agrid{grid-template-columns:repeat(2,1fr)}.lr{grid-template-columns:55px 1fr 55px}}
+@media(max-width:480px){.asec{padding:14px}.mtg{grid-template-columns:1fr 1fr}.ctr{grid-template-columns:1fr}}
+/* ── Knowledge Base ── */
+.ltab{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ltab:hover,.ltab.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.kb-entry{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s}
+.kb-entry:hover{border-color:var(--border3)}
+.kb-entry-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+.kb-tag{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;margin-top:1px}
+.kb-tag-glossary{background:rgba(201,168,76,.15);color:#c9a84c}
+.kb-tag-platform{background:rgba(45,212,191,.12);color:#2dd4bf}
+.kb-tag-features{background:rgba(96,165,250,.12);color:#60a5fa}
+.kb-tag-agents{background:rgba(167,139,250,.12);color:#a78bfa}
+.kb-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.4}
+.kb-body{font-size:12px;color:var(--text2);line-height:1.75;padding-left:28px}
+.kb-body b{color:var(--text);font-weight:600}
+.kb-body code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:11px;color:var(--teal);font-family:var(--mono)}
+.kb-empty{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+<div class="admin-shell">
+<nav class="admin-sb">
+  <div class="anlabel">Monitor</div>
+  <button class="ani active" onclick="S('overview')" id="n-overview"><span>◉</span><span>Overview</span></button>
+  <button class="ani" onclick="S('agents')"    id="n-agents"><span>⚡</span><span>Agents</span></button>
+  <button class="ani" onclick="S('workflows')" id="n-workflows"><span>⟳</span><span>Workflows</span></button>
+  <button class="ani" onclick="S('arch')"      id="n-arch"><span>◈</span><span>Architecture</span></button>
+  <div class="anlabel">Ops</div>
+  <button class="ani" onclick="S('comms')"     id="n-comms"><span>📡</span><span>Comms</span></button>
+  <button class="ani" onclick="S('scraper')"   id="n-scraper"><span>🔍</span><span>Scraper</span></button>
+  <button class="ani" onclick="S('analytics')" id="n-analytics"><span>◈</span><span>Analytics</span></button>
+  <div class="anlabel">Security</div>
+  <button class="ani" onclick="S('pentest')"    id="n-pentest"><span>🛡</span><span>Pentest</span></button>
+  <button class="ani" onclick="S('compliance')" id="n-compliance"><span>⚖</span><span>Comply</span></button>
+  <button class="ani" onclick="S('crypto')"     id="n-crypto"><span>🔐</span><span>AES-256</span></button>
+  <div class="anlabel">System</div>
+  <button class="ani" onclick="S('health')"    id="n-health"><span>♥</span><span>Health</span></button>
+  <button class="ani" onclick="S('stress')"    id="n-stress"><span>⚙</span><span>Stress</span></button>
+  <button class="ani" onclick="S('users')"     id="n-users"><span>👤</span><span>Users</span></button>
+  <button class="ani" onclick="S('audit')"     id="n-audit"><span>📋</span><span>Audit</span></button>
+  <div class="anlabel">Docs</div>
+  <button class="ani" onclick="S('kb')"        id="n-kb"><span>📚</span><span>Knowledge Base</span></button>
+</nav>
+
+<main class="admin-main">
+
+<!-- ═══ OVERVIEW ═══ -->
+<section class="asec active" id="s-overview">
+  <div class="page-hdr">
+    <div><div class="label">Admin Dashboard</div><h1>Project Sovereign <span style="color:var(--text3);font-size:13px;font-weight:400">— Howard Henry, London</span></h1><p>21 agents · 28 tables · 7 edge functions · AES-256 · UK GDPR compliant</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadOverview()">↻ Refresh</button><span id="lastRef" style="font-size:11px;color:var(--text3)"></span></div>
+  </div>
+  <div class="mtg" id="metricsGrid"><div class="skeleton" style="height:80px;border-radius:10px;grid-column:1/-1"></div></div>
+  <div class="g2" style="gap:16px;margin-bottom:16px">
+    <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Pipeline Stages</div><div class="bch" id="stageChart"><div class="skeleton" style="height:80px"></div></div></div>
+    <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Recent Comms</div><div id="recentComms"><div class="skeleton" style="height:80px"></div></div></div>
+  </div>
+  <div class="card"><div class="flex-between" style="margin-bottom:12px"><div style="font-size:13px;font-weight:600">Audit Events</div><button class="btn btn-ghost btn-sm" onclick="S('audit')">All →</button></div><div id="recentAudit"></div></div>
+</section>
+
+<!-- ═══ AGENTS ═══ -->
+<section class="asec" id="s-agents">
+  <div class="page-hdr">
+    <div><div class="label">21 AI Agents</div><h1>Agent Command Centre</h1><p>All seats online. Each can call, SMS, or WhatsApp Howard directly.</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadAgents()">↻</button><button class="btn btn-primary btn-sm" onclick="selfImprove()">⚡ Self-Improve</button></div>
+  </div>
+  <div class="agrid" id="agentGrid"><div class="skeleton" style="height:90px;border-radius:10px;grid-column:1/-1"></div></div>
+  <div class="card" style="margin-top:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Learned Patterns <span style="font-size:11px;color:var(--text3);font-weight:400">— self-improving knowledge base (The Archivist S21)</span></div>
+    <div id="patternsList"></div>
+  </div>
+</section>
+
+<!-- ═══ WORKFLOWS ═══ -->
+<section class="asec" id="s-workflows">
+  <div class="page-hdr">
+    <div><div class="label">Automation Engine</div><h1>Workflows</h1><p>All 21 agents can trigger and execute these automations automatically.</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadWorkflows()">↻</button><button class="btn btn-primary btn-sm" onclick="Modal.open('wf-modal')">+ New</button></div>
+  </div>
+  <div id="wfList" style="display:flex;flex-direction:column;gap:10px"></div>
+</section>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<section class="asec" id="s-arch">
+  <div class="page-hdr"><div><div class="label">System</div><h1>Architecture</h1><p>How Project Sovereign comes together — browser → edge → database → AI → Howard.</p></div></div>
+  <div style="overflow-x:auto;padding-bottom:12px"><div style="min-width:660px">
+    <div style="text-align:center;margin-bottom:5px"><span class="label">Layer 1 — Vercel CDN (Static)</span></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px">
+      <div class="ano"><div class="anl">Landing</div><div class="ann">index.html</div><div class="ans"><span class="sd s-ok"></span>Public</div></div>
+      <div class="ano"><div class="anl">Auth</div><div class="ann">login.html</div><div class="ans"><span class="sd s-ok"></span>PKCE</div></div>
+      <div class="ano" style="border-color:rgba(201,168,76,.4)"><div class="anl">Core</div><div class="ann">app.js + css</div><div class="ans"><span class="sd s-ok"></span>AES-256</div></div>
+      <div class="ano"><div class="anl">9 App Pages</div><div class="ann">All JWT-guarded</div><div class="ans"><span class="sd s-ok"></span>Secured</div></div>
+      <div class="ano" style="border-color:rgba(248,113,113,.3)"><div class="anl">Admin</div><div class="ann">admin.html</div><div class="ans"><span class="sd s-ok"></span>Superadmin</div></div>
+    </div>
+    <div style="text-align:center;color:var(--text3);font-size:14px;margin:4px 0">↕ HTTPS · JWT Bearer · CORS restricted</div>
+    <div style="text-align:center;margin-bottom:5px"><span class="label">Layer 2 — 7 Edge Functions (Deno · eu-west-1)</span></div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:8px">
+      <div class="ano" style="border-color:rgba(45,212,191,.3)"><div class="anl" style="color:var(--teal)">ai-proxy</div><div class="ann" style="font-size:9px">Claude · Rate limit · Audit</div></div>
+      <div class="ano" style="border-color:rgba(96,165,250,.3)"><div class="anl" style="color:var(--blue)">sovereign-api</div><div class="ann" style="font-size:9px">CRUD · Deals · Contacts</div></div>
+      <div class="ano" style="border-color:rgba(167,139,250,.3)"><div class="anl" style="color:var(--purple)">scraper</div><div class="ann" style="font-size:9px">CH · Web · News · AI</div></div>
+      <div class="ano" style="border-color:rgba(251,191,36,.3)"><div class="anl" style="color:var(--amber)">notifier</div><div class="ann" style="font-size:9px">📞 SMS 💬 WA → Howard</div></div>
+      <div class="ano" style="border-color:rgba(201,168,76,.3)"><div class="anl" style="color:var(--gold)">automation</div><div class="ann" style="font-size:9px">21 agents · Workflows</div></div>
+      <div class="ano" style="border-color:rgba(74,222,128,.3)"><div class="anl" style="color:var(--green)">gmail-comms</div><div class="ann" style="font-size:9px">Gmail · AI draft</div></div>
+      <div class="ano" style="border-color:rgba(248,113,113,.3)"><div class="anl" style="color:var(--red)">admin-api</div><div class="ann" style="font-size:9px">Monitor · Pentest</div></div>
+    </div>
+    <div style="text-align:center;color:var(--text3);font-size:14px;margin:4px 0">↕ Service Role Key · RLS enforced · Audit logged</div>
+    <div style="text-align:center;margin-bottom:5px"><span class="label">Layer 3 — PostgreSQL 17 (Supabase · kicdjdxxdqtmetphipnn · eu-west-1)</span></div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:7px">
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">user_profiles</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">deals</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">contacts</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">conversations</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">documents</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">workflows</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">audit_trail</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:10px">
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">company_intel</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">scraping_jobs</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">phone_calls</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">analytics_events</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">ad_tracking</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">ai_patterns</div></div>
+      <div class="ano" style="padding:6px"><div class="anl">RLS ✓</div><div class="ann" style="font-size:9px">compliance_log</div></div>
+    </div>
+    <div style="text-align:center;color:var(--text3);font-size:14px;margin:4px 0">↕ External Services</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+      <div class="ano"><div class="anl">AI</div><div class="ann">Anthropic</div><div class="ans"><span class="sd s-ok"></span>Sonnet+Haiku</div></div>
+      <div class="ano"><div class="anl">Comms</div><div class="ann">Twilio</div><div class="ans"><span style="width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--amber)"></span>Config needed</div></div>
+      <div class="ano"><div class="anl">Email</div><div class="ann">Gmail API</div><div class="ans"><span class="sd s-ok"></span>OAuth scoped</div></div>
+      <div class="ano"><div class="anl">Intel</div><div class="ann">Tavily Search</div><div class="ans"><span style="width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--amber)"></span>API key needed</div></div>
+      <div class="ano"><div class="anl">Auth</div><div class="ann">Supabase Auth</div><div class="ans"><span class="sd s-ok"></span>PKCE+Google</div></div>
+    </div>
+  </div></div>
+  <div class="card" style="margin-top:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px">Data flows & security model</div>
+    <div class="g3" style="gap:14px">
+      <div style="font-size:12px;color:var(--text2);line-height:2"><b style="color:var(--gold)">Auth:</b> Supabase PKCE → JWT → Bearer on every edge call<br><b style="color:var(--gold)">AI:</b> Never direct — proxied via edge fn, 20/min/user rate limit<br><b style="color:var(--gold)">Encryption:</b> AES-256-GCM in browser via Web Crypto API</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2"><b style="color:var(--teal)">Scraping:</b> Agents queue jobs → scraper fn → company_intel<br><b style="color:var(--teal)">Automation:</b> Workflows in DB → automation fn → steps execute<br><b style="color:var(--teal)">Self-learning:</b> Patterns stored in ai_patterns (S21 Archivist)</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2"><b style="color:var(--green)">Comms:</b> Agent → notifier fn → Twilio → Howard's phone<br><b style="color:var(--green)">RLS:</b> Every table enforces user_id = auth.uid()<br><b style="color:var(--green)">Compliance:</b> UK GDPR + FCA + AML + KYC all event-logged</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMMS ═══ -->
+<section class="asec" id="s-comms">
+  <div class="page-hdr">
+    <div><div class="label">Communications</div><h1>Call & Message Howard</h1><p>Any of the 21 agents can reach Howard Henry directly via Call, SMS, or WhatsApp.</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadCommsLog()">↻ Log</button></div>
+  </div>
+  <div class="g2" style="gap:20px">
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Send Now</div>
+      <div class="field"><label>Agent</label>
+        <select id="commsAgent">
+          <option value="S1 Silas Vane">S1 — Silas Vane (CIO / Sourcing)</option>
+          <option value="S6 Vesper Thorne">S6 — Vesper Thorne (Lead Negotiator)</option>
+          <option value="S11 Kaelen Voss">S11 — Kaelen Voss (Chief Closer)</option>
+          <option value="S12 Mila Quinn" selected>S12 — Mila Quinn (Empathy Lead)</option>
+          <option value="S16 Dr Aris Thorne">S16 — Dr. Aris Thorne (AI Scientist)</option>
+          <option value="S20 Sentinel">S20 — Sentinel (Security Gatekeeper)</option>
+        </select>
+      </div>
+      <div class="field"><label>Channel</label>
+        <div class="ctr">
+          <button class="ctb on" onclick="setT('sms',this)">📱 SMS</button>
+          <button class="ctb" onclick="setT('call',this)">📞 Phone Call</button>
+          <button class="ctb" onclick="setT('whatsapp',this)">💬 WhatsApp</button>
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Message / Purpose</label>
+        <textarea id="commsMsg" style="height:80px" placeholder="e.g. Deal alert: OptiFlow Systems score hit 94/100. Immediate founder approach recommended."></textarea>
+      </div>
+      <button class="btn btn-primary" id="commsSendBtn" onclick="sendComms()">Send to Howard</button>
+      <div id="commsResult" style="font-size:12px;margin-top:10px;display:none"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);line-height:2">
+        <b style="color:var(--text2)">Required Edge Function secrets:</b><br>
+        <code style="color:var(--gold)">TWILIO_ACCOUNT_SID · TWILIO_AUTH_TOKEN</code><br>
+        <code style="color:var(--gold)">TWILIO_FROM_NUMBER · HOWARD_PHONE · TWILIO_WHATSAPP_FROM</code>
+      </div>
+    </div>
+    <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Comms Log</div><div id="commsLog"><div class="skeleton" style="height:200px"></div></div></div>
+  </div>
+</section>
+
+<!-- ═══ SCRAPER ═══ -->
+<section class="asec" id="s-scraper">
+  <div class="page-hdr"><div><div class="label">Intelligence</div><h1>Company Scraper</h1><p>S2 Kira Nyx scrapes via Tavily — LinkedIn, Companies House, Trustpilot, Glassdoor, news, GitHub — then AI-summarises with Claude Haiku.</p></div></div>
+  <div class="g2" style="gap:20px">
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Full Intel Scrape</div>
+      <div class="field"><label>Company Name</label><input id="scrapeCompany" type="text" placeholder="e.g. CloudData Ltd"></div>
+      <div class="field"><label>Website URL (optional)</label><input id="scrapeUrl" type="text" placeholder="https://clouddata.io"></div>
+      <div class="field"><label>Deal ID (optional — links intel to deal)</label><input id="scrapeDealId" type="text" placeholder="UUID from pipeline"></div>
+      <button class="btn btn-primary" id="scrapeBtn" onclick="runScrape()">🔍 Scrape Company Intelligence</button>
+      <div id="scrapeResult" style="margin-top:14px;display:none"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">What agents collect</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2.2">
+        <div>🔍 <b>Tavily Search</b> — 8 parallel searches: Companies House, LinkedIn, Twitter/X, news, Trustpilot, Glassdoor, Crunchbase, GitHub</div>
+        <div>🌐 <b>Jina Reader</b> — website full-text via r.jina.ai (free, no key needed)</div>
+        <div>🤖 <b>AI synthesis</b> — acquisition score 0–100, social stats, funding history, risk/opportunity flags (Claude Haiku)</div>
+        <div>💾 <b>Stored in</b> — <code style="color:var(--gold)">company_intel</code> table, linked to deal if ID given</div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text3)">Add <code style="color:var(--gold)">TAVILY_API_KEY</code> to Supabase Edge Function secrets to activate scraping.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+        <button class="btn btn-outline" onclick="chOnly()">🏢 Companies House Only</button>
+        <button class="btn btn-outline" onclick="newsOnly()">📰 News Monitor Only</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ANALYTICS ═══ -->
+<section class="asec" id="s-analytics">
+  <div class="page-hdr">
+    <div><div class="label">Tracking</div><h1>Analytics & Ad Pixels</h1><p>Server-side 1st-party tracking + client-side pixel hooks. UTM attribution. Conversion funnel.</p></div>
+    <div class="page-hdr-r">
+      <select id="analyticsDays" onchange="loadAnalytics()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px 12px;border-radius:8px;font-size:12px">
+        <option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option>
+      </select>
+    </div>
+  </div>
+  <div class="mtg" id="analyticsMetrics"></div>
+  <div class="g2" style="gap:16px">
+    <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Events by Type</div><div class="bch" id="eventChart"></div></div>
+    <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Device Breakdown</div><div class="bch" id="deviceChart"></div></div>
+    <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Top Pages</div><div class="bch" id="pageChart"></div></div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Pixel Status</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2.3">
+        <div><span class="badge badge-ghost">Meta Pixel</span> — add <code style="color:var(--gold)">fbq</code> init snippet to index.html</div>
+        <div><span class="badge badge-ghost">Google GA4</span> — add <code style="color:var(--gold)">gtag.js</code> to all pages</div>
+        <div><span class="badge badge-ghost">LinkedIn Insight</span> — set <code style="color:var(--gold)">_linkedin_partner_id</code></div>
+        <div><span class="badge badge-green">1st Party ✓ ACTIVE</span> — all events → <code style="color:var(--gold)">ad_tracking</code> table</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PENTEST ═══ -->
+<section class="asec" id="s-pentest">
+  <div class="page-hdr">
+    <div><div class="label">Security</div><h1>Penetration Testing</h1><p>Automated audit: XSS, SQLi, CSRF, IDOR, auth bypass, rate limiting, info disclosure.</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadPentest()">↻</button><button class="btn btn-primary btn-sm" id="ptBtn" onclick="runPentest()">🛡 Run Pentest</button></div>
+  </div>
+  <div id="pentestResults"></div>
+</section>
+
+<!-- ═══ COMPLIANCE ═══ -->
+<section class="asec" id="s-compliance">
+  <div class="page-hdr">
+    <div><div class="label">Legal</div><h1>Compliance Framework</h1><p>UK GDPR · FCA · ICO · Companies Act · AML · KYC · PECR — built for Howard Henry's UK M&A ops.</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadCompliance()">↻</button><button class="btn btn-primary btn-sm" onclick="Modal.open('comp-modal')">+ Add</button></div>
+  </div>
+  <div class="g3" style="gap:12px;margin-bottom:18px">
+    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">UK GDPR</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Lawful basis documented. Retention periods set (730 days data, 2555 days AML). DSAR process via admin.</div></div>
+    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">FCA</div><span class="badge badge-amber">Review</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Operating as unregulated M&A introducer. Deal threshold monitoring. No financial advice given.</div></div>
+    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">AML</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">EDD for deals >£1M. PEP screening via Companies House. MLRO function active.</div></div>
+    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">KYC</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Director ID via CH API. Documents AES-256 encrypted. 5-year retention for AML obligations.</div></div>
+    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">ICO</div><span class="badge badge-amber">Action Required</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Register at ico.org.uk (£40/yr). Privacy policy needed on site. Cookie consent banner required.</div></div>
+    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">PECR</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Email consent tracked in outreach_log. Unsubscribe in all comms. Cookie banner — add before launch.</div></div>
+  </div>
+  <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Compliance Event Log</div><div id="compLog"></div></div>
+</section>
+
+<!-- ═══ AES-256 ═══ -->
+<section class="asec" id="s-crypto">
+  <div class="page-hdr"><div><div class="label">AES-256-GCM</div><h1>Encryption Layer</h1><p>Military-grade. Runs entirely in browser via Web Crypto API — key never leaves client.</p></div></div>
+  <div class="g2" style="gap:20px">
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Key Generator & Crypto Tool</div>
+      <button class="btn btn-outline" onclick="genKey()">Generate AES-256-GCM Key</button>
+      <div id="keyResult" style="margin-top:12px;display:none">
+        <label>Key (copy now — shown once):</label>
+        <div id="keyVal" onclick="copyKey()" style="background:var(--bg);border-radius:8px;padding:10px;font-family:var(--mono);font-size:11px;word-break:break-all;color:var(--teal);margin-top:6px;cursor:pointer;border:1px solid var(--border2)"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Click to copy to clipboard</div>
+      </div>
+      <hr style="margin:16px 0">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Encrypt / Decrypt</div>
+      <div class="field"><label>Key (base64)</label><input type="password" id="encKey" placeholder="Paste AES-256 key here"></div>
+      <div class="field"><label>Plaintext</label><textarea id="encPlain" style="height:60px" placeholder="Text to encrypt"></textarea></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-primary" style="flex:1" onclick="doEnc()">Encrypt →</button>
+        <button class="btn btn-outline" style="flex:1" onclick="doDec()">← Decrypt</button>
+      </div>
+      <div class="field"><label>Ciphertext (base64)</label><textarea id="encCipher" style="height:60px" placeholder="Encrypted output or input to decrypt"></textarea></div>
+      <div style="font-size:11px;color:var(--text3)">Hash a password: <button class="btn btn-ghost btn-xs" onclick="hashPw()">SHA-256 Hash</button></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Specification</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2.2">
+        <div><span style="color:var(--gold)">Algorithm:</span> AES-256-GCM (Authenticated Encryption)</div>
+        <div><span style="color:var(--gold)">Key Size:</span> 256 bits / 32 bytes</div>
+        <div><span style="color:var(--gold)">IV:</span> 96-bit random nonce per message</div>
+        <div><span style="color:var(--gold)">Auth Tag:</span> 128-bit GCM tag (tamper detection)</div>
+        <div><span style="color:var(--gold)">Standard:</span> FIPS 197 · NIST SP 800-38D</div>
+        <div><span style="color:var(--gold)">UK GDPR:</span> Article 32 — appropriate technical measures</div>
+        <div><span style="color:var(--gold)">Key storage:</span> Never persisted — export to Bitwarden/vault</div>
+      </div>
+      <div style="margin-top:14px;background:var(--bg);border-radius:8px;padding:12px">
+        <div style="font-size:11px;color:var(--teal);font-weight:600;margin-bottom:6px">JavaScript API (app.js):</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:2">
+          Crypto256.generateKey()<br>
+          Crypto256.exportKey(cryptoKey)<br>
+          Crypto256.importKey(base64)<br>
+          Crypto256.encrypt(plaintext, keyB64)<br>
+          Crypto256.decrypt(cipherB64, keyB64)<br>
+          Crypto256.hashPassword(pw, salt)
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HEALTH ═══ -->
+<section class="asec" id="s-health">
+  <div class="page-hdr">
+    <div><div class="label">Monitoring</div><h1>System Health</h1><p>Live status checks for all edge functions, database latency, and service availability.</p></div>
+    <div class="page-hdr-r"><button class="btn btn-primary btn-sm" id="healthBtn" onclick="runHealth()">↻ Check All Services</button></div>
+  </div>
+  <div id="healthResults" class="g2" style="gap:12px"><div class="empty-state"><div class="empty-icon">♥</div><div class="empty-title">Click "Check All Services"</div></div></div>
+</section>
+
+<!-- ═══ STRESS ═══ -->
+<section class="asec" id="s-stress">
+  <div class="page-hdr"><div><div class="label">Performance</div><h1>Stress Testing</h1><p>Concurrent load test on DB and edge function throughput. Results saved to system_metrics.</p></div></div>
+  <div class="g2" style="gap:20px">
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Configure Test</div>
+      <div class="field"><label>Concurrent requests (1–20)</label><input type="number" id="stressConc" value="5" min="1" max="20"></div>
+      <div class="field"><label>Duration in ms (1000–5000)</label><input type="number" id="stressDur" value="3000" min="1000" max="5000"></div>
+      <button class="btn btn-primary" id="stressBtn" onclick="runStress()">⚙ Run Stress Test</button>
+      <div id="stressResult" style="margin-top:14px;display:none"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Performance Targets</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2.2">
+        <div><span style="color:var(--green)">✓</span> DB read latency &lt;50ms</div>
+        <div><span style="color:var(--green)">✓</span> Edge function cold start &lt;500ms</div>
+        <div><span style="color:var(--green)">✓</span> AI proxy rate limit: 20 req/min/user</div>
+        <div><span style="color:var(--green)">✓</span> Supabase free tier: 50,000 req/day</div>
+        <div><span style="color:var(--amber)">⚠</span> Twilio: pay-per-call (set budget alerts)</div>
+        <div><span style="color:var(--amber)">⚠</span> Anthropic: token billing (monitor usage)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ USERS ═══ -->
+<section class="asec" id="s-users">
+  <div class="page-hdr"><div><div class="label">Access Control</div><h1>Users & Roles</h1><p>Role hierarchy: superadmin → admin → analyst → viewer. Admin-api gate enforced.</p></div><div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadUsers()">↻</button></div></div>
+  <div id="usersPanel"></div>
+</section>
+
+<!-- ═══ AUDIT ═══ -->
+<section class="asec" id="s-audit">
+  <div class="page-hdr"><div><div class="label">Audit Trail</div><h1>Audit Log</h1><p>All agent actions, user events, and system operations. Append-only, RLS-protected.</p></div><div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadAudit()">↻ Refresh</button></div></div>
+  <div class="card"><div id="auditFull"></div></div>
+</section>
+
+<!-- ═══ KNOWLEDGE BASE ═══ -->
+<section class="asec" id="s-kb">
+  <div class="page-hdr">
+    <div>
+      <div class="label">Documentation</div>
+      <h1>Knowledge Base</h1>
+      <p>Glossary · platform reasoning · feature guide · agent directory — everything you need to operate Sovereign.</p>
+    </div>
+    <div class="page-hdr-r">
+      <input id="kbSearch" type="search" placeholder="Search knowledge base…" oninput="kbFilter()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;width:200px">
+    </div>
+  </div>
+
+  <!-- KB TABS -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px" id="kbTabs">
+    <button class="ltab active" onclick="kbTab('all',this)">All</button>
+    <button class="ltab" onclick="kbTab('glossary',this)">M&amp;A Glossary</button>
+    <button class="ltab" onclick="kbTab('platform',this)">Platform Choices</button>
+    <button class="ltab" onclick="kbTab('features',this)">Feature Guide</button>
+    <button class="ltab" onclick="kbTab('agents',this)">Agent Directory</button>
+  </div>
+
+  <div id="kbContent"></div>
+</section>
+
+</main>
+</div>
+
+<!-- WORKFLOW MODAL -->
+<div class="modal-overlay" id="wf-modal" style="display:none">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-head"><h2>New Workflow</h2><button class="btn-icon btn" onclick="Modal.close('wf-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Name</label><input id="wfName" type="text" placeholder="e.g. Daily Deal Sourcing Scrape"></div>
+      <div class="field"><label>Trigger</label>
+        <select id="wfTrigger"><option value="manual">Manual</option><option value="schedule">Scheduled</option><option value="event">Event-based</option><option value="ai_signal">AI Signal</option><option value="webhook">Webhook</option></select>
+      </div>
+      <div class="field"><label>Assigned Agent</label>
+        <select id="wfAgent">
+          <option value="S1">S1 — Silas Vane (Sourcing)</option>
+          <option value="S2">S2 — Kira Nyx (Scraping)</option>
+          <option value="S12">S12 — Mila Quinn (Outreach)</option>
+          <option value="S17">S17 — Nova Skye (Operations)</option>
+          <option value="S21">S21 — The Archivist (Memory)</option>
+        </select>
+      </div>
+      <div class="field"><label>Description</label><textarea id="wfDesc" style="height:60px" placeholder="What does this workflow do?"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="Modal.close('wf-modal')">Cancel</button><button class="btn btn-primary" onclick="createWf()">Create Workflow</button></div>
+  </div>
+</div>
+
+<!-- COMPLIANCE MODAL -->
+<div class="modal-overlay" id="comp-modal" style="display:none">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-head"><h2>Add Compliance Entry</h2><button class="btn-icon btn" onclick="Modal.close('comp-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Framework</label><select id="cFw"><option>UK_GDPR</option><option>GDPR</option><option>FCA</option><option>ICO</option><option>Companies_Act</option><option>AML</option><option>KYC</option><option>PECR</option></select></div>
+      <div class="field"><label>Event Type</label><input id="cEv" type="text" placeholder="e.g. data_subject_request"></div>
+      <div class="field"><label>Description</label><textarea id="cDesc" style="height:60px"></textarea></div>
+      <div class="field"><label>Lawful Basis</label><input id="cBasis" type="text" placeholder="e.g. Legitimate Interest"></div>
+      <div class="field"><label>Status</label><select id="cSt"><option value="compliant">Compliant</option><option value="review">Under Review</option><option value="breach">Breach</option></select></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="Modal.close('comp-modal')">Cancel</button><button class="btn btn-primary" onclick="addComp()">Save Entry</button></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+'use strict';
+const COLORS=['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#f87171','#4ade80','#fbbf24','#e879f9','#34d399','#fb923c','#38bdf8','#c084fc','#f472b6','#4ade80','#22d3ee','#a3e635','#facc15','#f87171','#818cf8','#2dd4bf','#c9a84c'];
+let cType='sms', _loaded={};
+
+async function sb(){if(!window._sb)await new Promise(r=>window.addEventListener('sb:ready',r,{once:true}));}
+
+function S(id){
+  document.querySelectorAll('.asec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ani').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+id)?.classList.add('active');
+  document.getElementById('n-'+id)?.classList.add('active');
+  if(!_loaded[id]){_loaded[id]=true;({
+    overview:loadOverview,agents:loadAgents,workflows:loadWorkflows,
+    comms:loadCommsLog,analytics:loadAnalytics,pentest:loadPentest,
+    compliance:loadCompliance,users:loadUsers,audit:loadAudit,kb:loadKb
+  })[id]?.();}
+}
+
+function ts(d){if(!d)return'—';const s=Math.floor((Date.now()-new Date(d))/1000);return s<60?s+'s ago':s<3600?Math.floor(s/60)+'m ago':s<86400?Math.floor(s/3600)+'h ago':Math.floor(s/86400)+'d ago';}
+
+function rows(arr){
+  if(!arr.length)return'<div style="font-size:12px;color:var(--text3);padding:12px;text-align:center">No events</div>';
+  return arr.map(r=>`<div class="lr"><div class="lt">${new Date(r.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div><div class="le">${r.event||'—'}</div><div class="la">${r.agent||'—'}</div><div class="${r.status==='ok'?'l-ok':'l-err'}">${r.status||'—'}</div></div>`).join('');
+}
+
+function barChart(obj,id,color='var(--gold)'){
+  const d=Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]).slice(0,8),max=Math.max(...d.map(e=>e[1]),1);
+  document.getElementById(id).innerHTML=d.map(([k,v])=>`<div class="br"><div class="bl">${k}</div><div class="bt"><div class="bf" style="width:${(v/max*100).toFixed(0)}%;background:${color}"></div></div><div class="bv">${v}</div></div>`).join('')||'<div style="font-size:12px;color:var(--text3);padding:12px;text-align:center">No data</div>';
+}
+
+async function loadOverview(){
+  await sb();
+  const data=await API.admin.overview();
+  if(!data?.data)return;
+  const d=data.data;
+  document.getElementById('metricsGrid').innerHTML=`
+    <div class="mt gold"><div class="mtl">Deals</div><div class="mtv">${d.deals.total}</div><div class="mts">£${((d.deals.pipeline_value||0)/1e6).toFixed(1)}M pipeline</div></div>
+    <div class="mt green"><div class="mtl">Contacts</div><div class="mtv">${d.contacts.total}</div><div class="mts">In CRM</div></div>
+    <div class="mt teal"><div class="mtl">AI Conversations</div><div class="mtv">${d.conversations.total}</div><div class="mts">With 21 agents</div></div>
+    <div class="mt blue"><div class="mtl">Workflows</div><div class="mtv">${d.workflows.active}/${d.workflows.total}</div><div class="mts">Active automations</div></div>
+    <div class="mt purple"><div class="mtl">Page Views</div><div class="mtv">${d.analytics.page_views}</div><div class="mts">Tracked sessions</div></div>
+    <div class="mt red"><div class="mtl">Calls / SMS</div><div class="mtv">${d.comms.calls}/${d.comms.sms}</div><div class="mts">Howard reached</div></div>`;
+  const st=d.deals.stage_breakdown||{},sc={'sourcing':'#9490aa','approach':'#c9a84c','loi':'#fbbf24','due_diligence':'#60a5fa','spa':'#a78bfa','exchanged':'#2dd4bf','completed':'#4ade80','dead':'#f87171'},mx=Math.max(...Object.values(st).map(Number),1);
+  document.getElementById('stageChart').innerHTML=Object.entries(st).map(([s,v])=>`<div class="br"><div class="bl">${s.replace('_',' ')}</div><div class="bt"><div class="bf" style="width:${(v/mx*100).toFixed(0)}%;background:${sc[s]||'var(--gold)'}"></div></div><div class="bv">${v}</div></div>`).join('')||'<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px">No deals yet</div>';
+  const ca=d.comms.recent_calls||[],sm=d.comms.recent_sms||[];
+  document.getElementById('recentComms').innerHTML=[...ca.slice(0,3).map(c=>`<div class="cli"><div style="font-size:18px">📞</div><div><div style="font-size:12px;font-weight:600">${c.agent_name||'Agent'} → Howard</div><div style="font-size:11px;color:var(--text3)">${c.purpose||'—'} · ${ts(c.created_at)}</div></div></div>`),
+    ...sm.slice(0,3).map(s=>`<div class="cli"><div style="font-size:18px">💬</div><div><div style="font-size:12px;font-weight:600">SMS → Howard</div><div style="font-size:11px;color:var(--text3)">${String(s.body||'').slice(0,60)} · ${ts(s.created_at)}</div></div></div>`)].join('')||'<div class="empty-state" style="padding:20px"><div class="empty-icon">📡</div><div class="empty-sub">No comms yet — add Twilio secrets</div></div>';
+  document.getElementById('recentAudit').innerHTML=rows(d.audit.recent||[]);
+  document.getElementById('lastRef').textContent='Updated '+new Date().toLocaleTimeString('en-GB');
+}
+
+async function loadAgents(){
+  await sb();
+  const data=await API.automation.agentsStatus();
+  const ag=data?.data||{};
+  document.getElementById('agentGrid').innerHTML=Object.values(ag).map((a,i)=>`<div class="acard"><div class="aav" style="background:${COLORS[i]}22;color:${COLORS[i]}">${a.seat}</div><div style="flex:1;min-width:0"><div class="an">${a.name}</div><div class="ar">${a.specialty}</div><div class="ast"><span class="sd ${a.status==='active'?'s-ok':'s-idle'}"></span>${a.status==='active'?'Active · '+ts(a.last_active):'Idle'}</div></div></div>`).join('')||'<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚡</div><div class="empty-sub">No agent data — run a workflow first</div></div>';
+  const pts=await API.automation.listPatterns();
+  document.getElementById('patternsList').innerHTML=(pts?.data||[]).slice(0,6).map(p=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)"><span class="badge badge-gold">${p.pattern_type}</span><div style="flex:1"><div style="font-size:12px;font-weight:600">${p.title}</div><div style="font-size:11px;color:var(--text3)">${(p.description||'').slice(0,80)} · ${((p.success_rate||0)*100).toFixed(0)}% success</div></div></div>`).join('')||'<div style="font-size:12px;color:var(--text3);padding:12px">No patterns yet. Run automations to start self-improvement.</div>';
+}
+
+async function selfImprove(){Toast.show('Self-improvement scan…','info');const r=await API.automation.selfImprove();Toast.show(`Learned ${r?.patterns||0} new patterns`,'ok');loadAgents();}
+
+async function loadWorkflows(){
+  await sb();
+  const d=await API.automation.listWorkflows();
+  const wfs=d?.data||[];
+  document.getElementById('wfList').innerHTML=wfs.length?wfs.map(w=>`<div class="wfc"><div class="wfi">${w.trigger_type==='schedule'?'⏱':w.trigger_type==='ai_signal'?'⚡':w.trigger_type==='event'?'◉':'▷'}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.name}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${w.description||''} · ${w.assigned_agent||'No agent'}</div><div style="display:flex;gap:7px;margin-top:5px;flex-wrap:wrap"><span style="font-size:10px;padding:2px 7px;border-radius:10px;background:var(--surface2);color:var(--text2);font-family:var(--mono)">Runs:${w.run_count||0}</span><span style="font-size:10px;padding:2px 7px;border-radius:10px;background:var(--green-dim);color:var(--green);font-family:var(--mono)">✓${w.success_count||0}</span><span style="font-size:10px;padding:2px 7px;border-radius:10px;background:var(--red-dim);color:var(--red);font-family:var(--mono)">✗${w.fail_count||0}</span>${w.last_run_at?`<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:var(--surface2);color:var(--text2)">${ts(w.last_run_at)}</span>`:''}</div></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span class="badge ${w.is_active?'badge-green':'badge-ghost'}">${w.is_active?'Active':'Paused'}</span><div style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="togWf('${w.id}',${!w.is_active})">${w.is_active?'Pause':'Resume'}</button><button class="btn btn-sm btn-primary" onclick="runWf('${w.id}')">▷ Run</button></div></div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">⟳</div><div class="empty-title">No Workflows</div><div class="empty-sub">Create your first automation workflow.</div></div>';
+}
+
+async function runWf(id){Toast.show('Running workflow…','info');const r=await API.automation.runWorkflow(id);Toast.show(r?.status==='success'?'Completed ✓':'Failed','ok');loadWorkflows();}
+async function togWf(id,a){await API.automation.toggleWorkflow(id,a);Toast.show(a?'Activated':'Paused','ok',2000);loadWorkflows();}
+async function createWf(){
+  const nm=document.getElementById('wfName').value.trim();
+  if(!nm){Toast.show('Enter a name','warn');return;}
+  await API.automation.createWorkflow({name:nm,description:document.getElementById('wfDesc').value,trigger_type:document.getElementById('wfTrigger').value,assigned_agent:document.getElementById('wfAgent').value,steps:[],is_active:true});
+  Toast.show('Workflow created','ok');Modal.close('wf-modal');loadWorkflows();
+}
+
+function setT(t,btn){cType=t;document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+
+async function loadCommsLog(){
+  await sb();
+  const d=(await API.admin.overview())?.data?.comms;
+  const ca=d?.recent_calls||[],sm=d?.recent_sms||[];
+  document.getElementById('commsLog').innerHTML=[...ca.map(c=>`<div class="cli"><div style="font-size:20px">📞</div><div><div style="font-size:12px;font-weight:600">${c.agent_name||'Agent'} called Howard</div><div style="font-size:11px;color:var(--text3)">${c.purpose||'—'} · ${ts(c.created_at)} · ${c.status}</div></div></div>`),
+    ...sm.map(s=>`<div class="cli"><div style="font-size:20px">💬</div><div><div style="font-size:12px;font-weight:600">SMS to Howard</div><div style="font-size:11px;color:var(--text3)">${String(s.body||'').slice(0,80)} · ${ts(s.created_at)}</div></div></div>`)].join('')||'<div class="empty-state" style="padding:30px"><div class="empty-icon">📡</div><div class="empty-sub">No comms yet. Add Twilio secrets to activate.</div></div>';
+}
+
+async function sendComms(){
+  const ag=document.getElementById('commsAgent').value,msg=document.getElementById('commsMsg').value.trim();
+  if(!msg){Toast.show('Enter a message','warn');return;}
+  const btn=document.getElementById('commsSendBtn');btn.disabled=true;btn.textContent='Sending…';
+  let r;
+  if(cType==='call')r=await API.notifier.callHoward(ag,msg,msg);
+  else if(cType==='whatsapp')r=await API.notifier.whatsappHoward(ag,msg);
+  else r=await API.notifier.smsHoward(ag,msg);
+  const res=document.getElementById('commsResult');res.style.display='block';
+  if(r?.ok){Toast.show(cType.toUpperCase()+' sent ✓','ok');res.style.color='var(--green)';res.textContent='✓ '+cType.toUpperCase()+' sent via Twilio';document.getElementById('commsMsg').value='';}
+  else{res.style.color='var(--red)';res.textContent='⚠ '+(r?.error||'Twilio not configured — add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, HOWARD_PHONE to Edge Function secrets');}
+  btn.disabled=false;btn.textContent='Send to Howard';loadCommsLog();
+}
+
+async function runScrape(){
+  const co=document.getElementById('scrapeCompany').value.trim();
+  if(!co){Toast.show('Enter company name','warn');return;}
+  const btn=document.getElementById('scrapeBtn');btn.disabled=true;btn.textContent='Scraping…';
+  const r=await API.scraper.full({company_name:co,website_url:document.getElementById('scrapeUrl').value.trim()||undefined,deal_id:document.getElementById('scrapeDealId').value.trim()||undefined});
+  const el=document.getElementById('scrapeResult');el.style.display='block';
+  if(r?.intel){Toast.show('Intelligence gathered ✓','ok');const d=r.intel;el.innerHTML=`<div style="background:var(--surface);border-radius:8px;padding:12px;line-height:1.9;font-size:12px"><div><b style="color:var(--gold)">Acquisition Score:</b> ${d.acquisition_score??'—'}/100</div><div><b style="color:var(--gold)">Rationale:</b> ${d.acquisition_rationale||'—'}</div><div><b>Industry:</b> ${d.industry||'—'} · <b>Employees:</b> ${d.employee_count||'—'} · <b>Founded:</b> ${d.founded_year||'—'}</div><div><b>Revenue Est:</b> ${d.revenue_estimate||'—'} · <b>EBITDA:</b> ${d.ebitda_estimate||'—'} · <b>ARR:</b> ${d.arr_estimate||'—'}</div><div><b>Trustpilot:</b> ${d.trustpilot_score??'—'} · <b>Glassdoor:</b> ${d.glassdoor_score??'—'} · <b>GitHub ★:</b> ${d.github_stars??'—'}</div><div><b>News Sentiment:</b> ${d.news_sentiment||'—'}</div>${d.risk_flags?.length?`<div><b style="color:var(--red)">Risks:</b> ${d.risk_flags.join(', ')}</div>`:''} ${d.opportunity_flags?.length?`<div><b style="color:var(--green)">Opportunities:</b> ${d.opportunity_flags.join(', ')}</div>`:''}</div>`;}
+  else{el.style.color='var(--red)';el.textContent='Scrape failed — check TAVILY_API_KEY and ANTHROPIC_API_KEY in Supabase Edge Function secrets.';}
+  btn.disabled=false;btn.textContent='🔍 Scrape Company Intelligence';
+}
+
+async function chOnly(){const c=prompt('Company name:');if(!c)return;Toast.show('Querying via Tavily…','info');const r=await API.scraper.companiesHouse(c);Toast.show(r?.results?.length?`${r.results.length} results found ✓`:'No results — check TAVILY_API_KEY','ok');}
+async function newsOnly(){const c=prompt('Company name to monitor:');if(!c)return;Toast.show('Scanning news…','info');const r=await API.scraper.news(c);Toast.show(`${r?.results?.length||0} news items found`,'ok');}
+
+async function loadAnalytics(){
+  await sb();
+  const days=parseInt(document.getElementById('analyticsDays')?.value||7);
+  const d=(await API.admin.analytics(days))?.data||{};
+  document.getElementById('analyticsMetrics').innerHTML=`<div class="mt gold"><div class="mtl">Total Events</div><div class="mtv">${d.total_events||0}</div></div><div class="mt green"><div class="mtl">Conversions</div><div class="mtv">${d.conversions||0}</div></div><div class="mt teal"><div class="mtl">Ad Events</div><div class="mtv">${d.ad_events||0}</div></div>`;
+  barChart(d.events||{},'eventChart','var(--gold)');
+  barChart(d.devices||{},'deviceChart','var(--teal)');
+  barChart(d.pages||{},'pageChart','var(--blue)');
+}
+
+async function runPentest(){const btn=document.getElementById('ptBtn');btn.disabled=true;btn.textContent='Running…';Toast.show('Running pentest suite…','info',4000);await API.admin.pentestRun();await loadPentest();btn.disabled=false;btn.textContent='🛡 Run Pentest';Toast.show('Pentest complete — results stored','ok');}
+async function loadPentest(){
+  await sb();
+  const ord={critical:0,high:1,medium:2,low:3,info:4};
+  const res=((await API.admin.pentestList())?.data||[]).sort((a,b)=>(ord[a.severity]||4)-(ord[b.severity]||4));
+  document.getElementById('pentestResults').innerHTML=res.length?res.map(r=>`<div class="ptr"><span class="pb pb-${(r.severity||'i')[0]}">${r.severity||'info'}</span><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div style="font-size:12px;font-weight:600;text-transform:uppercase">${(r.test_type||'').replace('_',' ')}</div><span class="pm">${r.status||'open'}</span></div><div style="font-size:12px;color:var(--text2);line-height:1.6">${r.description||''}</div>${r.vector?`<div style="font-size:11px;color:var(--text3);margin-top:3px">Vector: ${r.vector}</div>`:''}</div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">🛡</div><div class="empty-title">Click "Run Pentest"</div><div class="empty-sub">Automated audit of all security vectors.</div></div>';
+}
+
+async function loadCompliance(){
+  await sb();
+  const logs=(await API.admin.compliance())?.data||[];
+  document.getElementById('compLog').innerHTML=logs.length?logs.map(l=>`<div style="display:grid;grid-template-columns:90px 1fr 90px 90px;gap:10px;padding:9px 10px;border-radius:6px;font-size:12px;align-items:center;border-bottom:1px solid var(--border)"><span class="badge badge-gold" style="font-size:9px">${l.framework}</span><div><div style="color:var(--text)">${l.event_type}</div><div style="font-size:11px;color:var(--text3)">${(l.description||'').slice(0,60)}</div></div><span class="badge badge-${l.status==='compliant'?'green':l.status==='review'?'amber':'red'}" style="font-size:9px">${l.status}</span><div style="color:var(--text3)">${new Date(l.created_at).toLocaleDateString('en-GB')}</div></div>`).join(''):'<div style="font-size:12px;color:var(--text3);padding:16px;text-align:center">No events logged</div>';
+}
+
+async function addComp(){
+  await API.admin.addCompliance({framework:document.getElementById('cFw').value,event_type:document.getElementById('cEv').value,description:document.getElementById('cDesc').value,lawful_basis:document.getElementById('cBasis').value,status:document.getElementById('cSt').value});
+  Toast.show('Entry added','ok');Modal.close('comp-modal');loadCompliance();
+}
+
+async function genKey(){const k=await Crypto256.generateKey(),b=await Crypto256.exportKey(k);document.getElementById('keyResult').style.display='block';document.getElementById('keyVal').textContent=b;}
+function copyKey(){navigator.clipboard.writeText(document.getElementById('keyVal').textContent).then(()=>Toast.show('Key copied to clipboard','ok'));}
+async function doEnc(){const k=document.getElementById('encKey').value.trim(),t=document.getElementById('encPlain').value;if(!k||!t){Toast.show('Enter key and text','warn');return;}try{document.getElementById('encCipher').value=await Crypto256.encrypt(t,k);Toast.show('Encrypted with AES-256-GCM ✓','ok');}catch(e){Toast.show('Encryption failed: '+e.message,'err');}}
+async function doDec(){const k=document.getElementById('encKey').value.trim(),c=document.getElementById('encCipher').value.trim();if(!k||!c){Toast.show('Enter key and ciphertext','warn');return;}try{document.getElementById('encPlain').value=await Crypto256.decrypt(c,k);Toast.show('Decrypted ✓','ok');}catch(e){Toast.show('Failed — wrong key or corrupted ciphertext','err');}}
+async function hashPw(){const p=prompt('Password to hash:');if(!p)return;const h=await Crypto256.hashPassword(p);prompt('SHA-256 hash:',h);}
+
+async function runHealth(){
+  const btn=document.getElementById('healthBtn');btn.disabled=true;btn.textContent='Checking…';
+  Toast.show('Checking all services…','info',3000);
+  const d=(await API.admin.health())?.data||[];
+  document.getElementById('healthResults').innerHTML=d.map(c=>`<div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:14px;font-weight:600">${c.service}</div><span class="badge badge-${c.status==='ok'?'green':c.status==='degraded'?'amber':'red'}">${c.status}</span></div>${c.latency_ms?`<div style="font-size:12px;color:var(--text3)">Latency: ${c.latency_ms}ms</div>`:''}${c.note?`<div style="font-size:11px;color:var(--text2);margin-top:4px">${c.note}</div>`:''}</div>`).join('');
+  btn.disabled=false;btn.textContent='↻ Check All Services';
+}
+
+async function runStress(){
+  const conc=parseInt(document.getElementById('stressConc').value)||5,dur=parseInt(document.getElementById('stressDur').value)||3000;
+  const btn=document.getElementById('stressBtn');btn.disabled=true;btn.textContent='Running…';
+  Toast.show(`Stress test: ${conc} concurrent for ${dur}ms…`,'info',5000);
+  const r=(await API.admin.stressTest(conc,dur))?.data||{};
+  const el=document.getElementById('stressResult');el.style.display='block';
+  el.innerHTML=`<div class="mtg" style="grid-template-columns:repeat(3,1fr)"><div class="mt green"><div class="mtl">Success</div><div class="mtv">${r.success||0}</div></div><div class="mt red"><div class="mtl">Failed</div><div class="mtv">${r.fail||0}</div></div><div class="mt teal"><div class="mtl">Req/sec</div><div class="mtv">${r.rps||0}</div></div></div>`;
+  Toast.show(`${r.rps||0} req/sec — ${r.success||0} success`,'ok');
+  btn.disabled=false;btn.textContent='⚙ Run Stress Test';
+}
+
+async function loadUsers(){
+  await sb();
+  const d=(await API.admin.users())?.data||{};
+  const profiles=d.profiles||[],admins=d.admins||[];
+  document.getElementById('usersPanel').innerHTML=`
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Admin Users (${admins.length})</div>
+      ${admins.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)"><div style="width:30px;height:30px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--gold)">${(a.full_name||a.email||'A')[0].toUpperCase()}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${a.full_name||'—'}</div><div style="font-size:11px;color:var(--text3)">${a.email}</div></div><span class="badge badge-${a.role==='superadmin'?'gold':'ghost'}">${a.role}</span><span class="badge badge-${a.is_active?'green':'red'}">${a.is_active?'Active':'Disabled'}</span><div style="font-size:11px;color:var(--text3)">Last: ${ts(a.last_seen_at)}</div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">User Profiles (${profiles.length})</div>
+      ${profiles.slice(0,10).map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="flex:1;color:var(--text)">${p.full_name||'—'}</div><span class="badge badge-ghost">${p.role}</span><span class="badge badge-${p.onboarded?'green':'ghost'}">${p.onboarded?'Onboarded':'Pending'}</span><div style="color:var(--text3)">${new Date(p.created_at).toLocaleDateString('en-GB')}</div></div>`).join('')}
+    </div>`;
+}
+
+async function loadAudit(){
+  await sb();
+  document.getElementById('auditFull').innerHTML=rows((await API.admin.overview())?.data?.audit?.recent||[]);
+}
+
+// ── KNOWLEDGE BASE ──────────────────────────────────────────────────────────
+const KB_DATA = [
+  // ── M&A GLOSSARY ──────────────────────────────────────────────────────────
+  {cat:'glossary',title:'EBITDA',body:'<b>Earnings Before Interest, Taxes, Depreciation, and Amortisation.</b> The primary profitability metric used to value UK SaaS businesses. Sovereign targets companies with £500K–£5M EBITDA. A multiple of 4–8× EBITDA is typical for UK SaaS roll-up acquisitions.'},
+  {cat:'glossary',title:'ARR — Annual Recurring Revenue',body:'<b>Total contracted annual subscription revenue.</b> The most important health metric for SaaS targets. Sovereign looks for ARR of £500K–£10M with net revenue retention (NRR) >100%, indicating growth within the existing customer base.'},
+  {cat:'glossary',title:'NMD — No Material Deterioration',body:'<b>Warranty condition in an SPA</b> that the business has not materially worsened between exchange and completion. Sovereign\'s agents score every target on NMD suitability — checking for customer concentration risk, ARR churn, key-person dependency, and pipeline health.'},
+  {cat:'glossary',title:'LOI — Letter of Intent',body:'<b>Non-binding heads of agreement</b> that outlines the proposed deal structure, price, and exclusivity period before due diligence begins. Sovereign\'s S6 Vesper Thorne drafts LOIs automatically based on the deal profile and valuation model.'},
+  {cat:'glossary',title:'SPA — Share Purchase Agreement',body:'<b>The binding legal contract</b> that transfers ownership of a company. Typically drafted after due diligence. Sovereign stages the pipeline through: Sourcing → Approach → LOI → Due Diligence → <b>SPA</b> → Exchanged → Completed.'},
+  {cat:'glossary',title:'Due Diligence (DD)',body:'<b>Formal verification of all material facts</b> about a target company — financial, legal, technical, commercial, and HR. Sovereign\'s S3 Bastian Cole (Financial Auditor), S5 Jaxen Reed (IP/Cybersecurity), and S9 Thatcher Grey (Tax) each run specialised DD streams in parallel.'},
+  {cat:'glossary',title:'Roll-Up Strategy',body:'<b>Acquiring multiple companies in a fragmented sector</b> to create a larger, more valuable platform. Sovereign executes vertical SaaS roll-ups in UK markets — targeting 4–8 acquisitions per vertical, then combining customer bases, cross-selling, and achieving platform multiples (10–15×) at exit.'},
+  {cat:'glossary',title:'PEP — Politically Exposed Person',body:'<b>Individuals with prominent public functions</b> (politicians, senior officials) who carry higher AML risk. UK AML Regulations 2017 require Enhanced Due Diligence (EDD) for PEPs. Sovereign\'s AML policy screens all directors via Companies House and news scraping before any deal progresses beyond LOI.'},
+  {cat:'glossary',title:'WACC — Weighted Average Cost of Capital',body:'<b>The blended cost of debt and equity</b> used to discount future cash flows in DCF valuations. Sovereign uses WACC in valuation models to determine maximum offer price. Typical UK SaaS acquisition WACC: 12–18% depending on leverage structure.'},
+  {cat:'glossary',title:'Seller Signal',body:'<b>Behavioural indicators that a founder is open to exit.</b> S1 Silas Vane scores each target 0–100 for seller signals: long tenure with no succession plan, stagnant growth, LinkedIn profile updates, Companies House filing delays, or publicly stated "lifestyle business" intent.'},
+  {cat:'glossary',title:'Acquisition Score (0–100)',body:'<b>Sovereign\'s proprietary AI-generated composite score</b> assessing a target\'s suitability for acquisition. Combines: ARR quality (25%), EBITDA margin (20%), NMD risk (20%), seller signal (15%), market position (10%), tech stack modernity (10%). Score ≥70 triggers an automated approach workflow.'},
+  {cat:'glossary',title:'EDD — Enhanced Due Diligence',body:'<b>Additional scrutiny applied to high-risk counterparties</b> under AML regulations — specifically for deals >£1M, PEPs, or companies with complex ownership structures. Sovereign\'s AML policy mandates EDD with source-of-funds documentation and director ID verification.'},
+  {cat:'glossary',title:'MLRO — Money Laundering Reporting Officer',body:'<b>The designated person responsible for AML compliance.</b> Howard Henry acts as MLRO for Sovereign operations. All suspicious activity reports (SARs) route through the MLRO function. Sovereign logs all MLRO decisions in the compliance_log table.'},
+  {cat:'glossary',title:'PECR — Privacy and Electronic Communications Regulations',body:'<b>UK law governing electronic marketing</b> (email, SMS, calls). Sovereign tracks opt-in consent for all outreach in the <code>outreach_log</code> table. Unsubscribe requests are honoured within 24 hours. All marketing emails include mandatory opt-out links.'},
+  {cat:'glossary',title:'PKCE — Proof Key for Code Exchange',body:'<b>OAuth 2.0 security extension</b> that prevents authorisation code interception attacks. Sovereign uses Supabase\'s PKCE flow for all user authentication — critical for a browser-based app where a client secret cannot be safely stored.'},
+
+  // ── PLATFORM CHOICES ──────────────────────────────────────────────────────
+  {cat:'platform',title:'Why Vercel — Static Hosting & Cron',body:'<b>Chosen for:</b> zero-config global CDN, sub-100ms TTFB, serverless cron handlers (<code>api/cron/*.js</code>), and free tier adequate for the initial user base. <br><br><b>Architecture fit:</b> Sovereign is a static HTML/CSS/JS frontend — no build step, no framework overhead. Vercel serves all 13 pages from edge nodes globally with automatic HTTPS.<br><br><b>Cron handlers:</b> 8 scheduled jobs (deal scoring, intel refresh, health check, compliance, self-improvement, pipeline health, weekly briefing, data retention) run as Vercel Edge Functions calling Supabase Edge Functions.'},
+  {cat:'platform',title:'Why Supabase — Database & Auth',body:'<b>Chosen for:</b> PostgreSQL 17 with Row Level Security (RLS), built-in auth (PKCE + Google OAuth), real-time subscriptions, and Deno-based Edge Functions — all in one platform.<br><br><b>Security model:</b> Every table has <code>auth.uid()</code> RLS policies. No client ever touches data they don\'t own. The service role key stays server-side only.<br><br><b>Edge Functions:</b> 7 Deno functions (ai-proxy, sovereign-api, scraper, notifier, automation, gmail-comms, admin-api) run in eu-west-1, close to the UK user base. Cold start ~200ms, warm ~10ms.'},
+  {cat:'platform',title:'Why Anthropic — Claude AI',body:'<b>Chosen for:</b> best-in-class reasoning for complex M&A analysis, structured output reliability, and the Haiku model\'s speed/cost balance for high-volume tasks.<br><br><b>Two-model strategy:</b> <b>Claude Sonnet 4.6</b> powers the 21 agents in the Command Engine — used for nuanced analysis, negotiation scripts, and strategic decisions. <b>Claude Haiku</b> handles high-volume tasks (acquisition scoring, email drafting, news sentiment) at ~10× lower cost.<br><br><b>Security:</b> API key never reaches the browser. All Claude calls are proxied via the <code>ai-proxy</code> Edge Function with 20 req/min/user rate limiting and full audit logging.'},
+  {cat:'platform',title:'Why Tavily — Unified Search & Scraping',body:'<b>Chosen for:</b> single API key replacing 3 separate integrations (Companies House API, News API, custom web scraper).<br><br><b>What it replaces:</b> Previously required: CH API key + News API key + custom scraper maintenance. Tavily handles all of this with one <code>TAVILY_API_KEY</code> and higher quality results.<br><br><b>What it covers:</b> LinkedIn company pages, Companies House filings, Trustpilot reviews, Glassdoor ratings, Crunchbase funding data, GitHub activity, news mentions, and general web.<br><br><b>Augmented by Jina Reader</b> (<code>r.jina.ai</code>) for clean URL-to-markdown conversion — free, no key required.'},
+  {cat:'platform',title:'Why Twilio — Communications',body:'<b>Chosen for:</b> programmatic voice calls, SMS, and WhatsApp with UK phone number support and sub-second delivery.<br><br><b>Use case:</b> Any of the 21 agents can alert Howard Henry directly via phone call (with AI-generated TTS message), SMS, or WhatsApp when a deal signal crosses the threshold score, a negotiation milestone is reached, or urgent action is required.<br><br><b>Configuration:</b> Requires <code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, <code>TWILIO_FROM_NUMBER</code>, and <code>HOWARD_PHONE</code> set as Supabase Edge Function secrets.'},
+  {cat:'platform',title:'Why AES-256-GCM Encryption',body:'<b>Chosen for:</b> FIPS 197 / NIST SP 800-38D compliance and authenticated encryption (tamper detection via GCM auth tag).<br><br><b>UK GDPR Article 32</b> requires "appropriate technical measures" — AES-256-GCM exceeds this standard and is accepted by the ICO as sufficient encryption for personal data at rest.<br><br><b>Implementation:</b> Runs entirely in the browser via the Web Crypto API. The encryption key never leaves the client — not stored in localStorage, not sent to any server. Used in the Vault for sensitive document storage.'},
+  {cat:'platform',title:'Why Supabase RLS over Application-level Auth',body:'<b>Chosen for:</b> defence-in-depth — even if application code has a bug, the database refuses to return data belonging to another user.<br><br><b>Every table</b> in Sovereign\'s 28-table schema has RLS enabled with <code>auth.uid()</code> policies. This means a compromised frontend cannot exfiltrate another user\'s deals, contacts, or documents — the Postgres query itself is rejected.<br><br><b>Service role key</b> (bypasses RLS) is used only server-side in Edge Functions and is never exposed to client code.'},
+
+  // ── FEATURE GUIDE ─────────────────────────────────────────────────────────
+  {cat:'features',title:'Command Engine — /command',body:'<b>The primary AI interface.</b> Chat with any of the 21 specialised agents using natural language. Each agent has a distinct personality, expertise, and set of tools.<br><br><b>How it works:</b> Messages are sent to the <code>ai-proxy</code> Edge Function with the selected agent\'s system prompt injected. Conversations are saved to Supabase for memory continuity. The agent can trigger real-world actions (run scrapes, update deals, send alerts to Howard).<br><br><b>Rate limit:</b> 20 AI requests per minute per user to manage Anthropic costs.'},
+  {cat:'features',title:'Pipeline — /pipeline',body:'<b>Kanban board for M&A deal management.</b> Stages: Sourcing → Approach → LOI → Due Diligence → SPA → Exchanged → Completed → Dead.<br><br>Each deal card shows: company name, acquisition score, pipeline value (£), assigned agent, and last activity. Drag cards to progress deals through stages.<br><br><b>Automation:</b> Moving a deal to "Approach" triggers S12 Mila Quinn to draft the initial outreach email. Moving to "Due Diligence" triggers S2 Kira Nyx to queue a full company intelligence scrape.'},
+  {cat:'features',title:'Intelligence — /intelligence',body:'<b>Company research hub powered by S2 Kira Nyx.</b> Search any UK company to retrieve: Companies House data, LinkedIn presence, Trustpilot/Glassdoor scores, news mentions, GitHub activity, Crunchbase funding history, and social media stats.<br><br>Results are AI-synthesised by Claude Haiku into a structured profile with acquisition score 0–100, risk flags, and opportunity flags. All data is stored in <code>company_intel</code> linked to the deal.'},
+  {cat:'features',title:'Analytics — /analytics',body:'<b>First-party analytics dashboard.</b> All page views, user interactions, and conversion events are tracked server-side via the <code>analytics_events</code> table — no third-party cookies or scripts needed.<br><br>Tracks: page views, button clicks, deal interactions, agent conversations, outreach events. UTM attribution for paid campaigns stored in <code>ad_tracking</code>.<br><br><b>Pixel integrations available:</b> Meta Pixel, Google GA4, LinkedIn Insight — add scripts to index.html to supplement first-party data.'},
+  {cat:'features',title:'Vault — /vault',body:'<b>Encrypted document storage.</b> Store sensitive M&A documents (NDAs, term sheets, financial models, KYC documents) with AES-256-GCM encryption. Files are encrypted client-side before upload — Supabase storage contains only ciphertext.<br><br>S3 Bastian Cole can analyse financial documents uploaded to the Vault and generate due diligence summaries. Documents are linked to deals and contacts with full audit trail.'},
+  {cat:'features',title:'Comms — /comms',body:'<b>AI-assisted outreach CRM.</b> Manage all communication threads with target company founders, advisors, and intermediaries. S12 Mila Quinn drafts initial approaches; S6 Vesper Thorne handles negotiation correspondence.<br><br>Tracks: email threads, call notes, meeting outcomes, follow-up reminders. All outreach is logged in <code>outreach_log</code> for PECR compliance with consent tracking.'},
+  {cat:'features',title:'Security — /security',body:'<b>Security overview and controls.</b> Shows: auth status (PKCE), encryption status (AES-256-GCM), RLS status, GDPR compliance checklist, active sessions, and security event log.<br><br>S20 Sentinel monitors for: suspicious login patterns, unusual data access, failed auth attempts, and rate limit breaches. Security events are escalated to Howard via Twilio if anomalies are detected.'},
+  {cat:'features',title:'Admin — /admin',body:'<b>Full operations dashboard.</b> Accessible only to authenticated users with admin/superadmin role. Sections: Overview (KPIs), Agents, Workflows, Architecture, Comms, Scraper, Analytics, Pentest, Compliance, AES-256, Health, Stress Test, Users, Audit, <b>Knowledge Base</b>.<br><br>The admin panel is the nerve centre for monitoring all Sovereign systems and triggering manual operations.'},
+  {cat:'features',title:'Resources — /resources',body:'<b>Curated knowledge library for UK M&A.</b> Contains: deal sourcing playbooks, valuation frameworks, UK regulatory guides (FCA, HMRC, Companies House), due diligence checklists, and integration playbooks.<br><br>Content is editable via the admin panel and stored in Supabase. S21 The Archivist automatically adds relevant resources based on active deal learnings.'},
+  {cat:'features',title:'Vercel Cron Jobs',body:'<b>8 scheduled automated tasks</b> running in the background without user interaction:<br><br>• <code>deal-score-refresh</code> — Re-scores all active deals nightly<br>• <code>intel-refresh</code> — Refreshes company intelligence for hot targets<br>• <code>pipeline-health</code> — Alerts Howard to stalled deals<br>• <code>weekly-briefing</code> — Monday morning deal summary via Twilio<br>• <code>compliance-check</code> — Flags upcoming compliance deadlines<br>• <code>self-improve</code> — S21 Archivist extracts patterns from recent AI sessions<br>• <code>health-check</code> — Pings all edge functions and DB<br>• <code>data-retention</code> — Enforces UK GDPR data retention schedules'},
+
+  // ── AGENT DIRECTORY ───────────────────────────────────────────────────────
+  {cat:'agents',title:'S1 · Silas Vane — CIO / Sourcing',body:'<b>The deal origination engine.</b> Scans UK SaaS markets continuously via Tavily to surface acquisition targets. Scores each company 0–100 on NMD suitability, EBITDA quality, ARR stability, and seller signal strength. Triggers automated approach sequences when score ≥70.'},
+  {cat:'agents',title:'S2 · Kira Nyx — Data Architect',body:'<b>Company intelligence specialist.</b> Runs the Tavily scraper pipeline — 8 parallel searches (LinkedIn, Companies House, Trustpilot, Glassdoor, Crunchbase, GitHub, news, general web) + Jina Reader for website content. Feeds structured data to Claude Haiku for AI scoring. Upserts results to <code>company_intel</code>.'},
+  {cat:'agents',title:'S3 · Bastian Cole — Financial Auditor',body:'<b>Numbers and financial due diligence.</b> Analyses P&L, balance sheets, management accounts, and financial models uploaded to the Vault. Identifies revenue quality issues, EBITDA normalisation items, working capital requirements, and debt/pension liabilities. Produces formal DD findings reports.'},
+  {cat:'agents',title:'S4 · Lyra Belacqua — Market Sentiment',body:'<b>Macro and sector intelligence.</b> Monitors market conditions, sector multiples, competitor activity, and investor sentiment relevant to Sovereign\'s target verticals. Provides context on why a deal is attractive now versus waiting. Feeds into acquisition scoring and deal timing recommendations.'},
+  {cat:'agents',title:'S5 · Jaxen Reed — IP & Cybersecurity',body:'<b>Technical and IP due diligence.</b> Assesses target company\'s: codebase quality (GitHub analysis), IP ownership, open-source licence compliance, cybersecurity posture (public vulnerability scanning), GDPR technical compliance, and infrastructure risks. Produces tech DD reports for the SPA process.'},
+  {cat:'agents',title:'S6 · Vesper Thorne — Lead Negotiator',body:'<b>Deal structuring and negotiation.</b> Drafts LOIs, term sheets, and negotiation strategies. Analyses deal terms against market comparables. Suggests earn-out structures, deferred consideration, and price adjustment mechanisms. Manages the negotiation thread in the Comms module. Escalates to Howard when human judgment is required.'},
+  {cat:'agents',title:'S7 · Caspian Frost — Lender Liaison',body:'<b>Debt financing and banking relationships.</b> Models LBO structures, senior debt capacity, and acquisition facility requirements. Prepares information memoranda for bank presentations. Tracks lender appetite across Sovereign\'s banking relationships. Ensures debt covenants are achievable post-acquisition.'},
+  {cat:'agents',title:'S8 · Sloane Haze — M&A Attorney',body:'<b>Legal process coordination.</b> Drafts NDAs, reviews SPA red-lines, manages condition precedent checklists, and coordinates with external solicitors. Flags legal risks identified during due diligence. Ensures all regulatory notifications (CMA, FCA) are filed on time. Not a qualified solicitor — works alongside external counsel.'},
+  {cat:'agents',title:'S9 · Thatcher Grey — Tax Strategy',body:'<b>Tax structuring and optimisation.</b> Structures acquisitions to maximise BADR (Business Asset Disposal Relief) for sellers and minimise stamp duty / tax leakage for Sovereign. Reviews targets for hidden tax liabilities (PAYE, VAT, R&D claims). Models post-acquisition tax efficiency.'},
+  {cat:'agents',title:'S10 · Rhea Vance — Risk Management',body:'<b>Enterprise risk assessment.</b> Builds risk matrices for each acquisition covering: key-person risk, customer concentration, regulatory risk, technology obsolescence, integration risk, and market risk. Produces risk-adjusted valuation models and recommends deal protections (warranties, indemnities, escrow).'},
+  {cat:'agents',title:'S11 · Kaelen Voss — Chief Closer',body:'<b>Deal completion specialist.</b> Manages the critical path from SPA signing to completion — CP satisfaction, funding drawdown, regulatory clearances, and management retention arrangements. Ensures deals don\'t stall post-exchange. Escalates blockers to Howard within 2 hours of identification.'},
+  {cat:'agents',title:'S12 · Mila Quinn — Empathy Lead',body:'<b>Founder relationship management.</b> The "human face" of Sovereign. Drafts warm, personalised initial outreach to founders. Manages the emotional dynamics of seller anxiety, deal fatigue, and post-completion transition. Uses sentiment analysis to gauge founder engagement and flags when a deal is at risk of emotional collapse.'},
+  {cat:'agents',title:'S13 · Orion Pax — Funnel Architect',body:'<b>Deal sourcing funnel optimisation.</b> Analyses the conversion rate from target identification → approach → LOI → close. Identifies where deals are being lost and proposes adjustments to sourcing criteria, outreach messaging, and deal structure. Reports weekly funnel metrics to Howard.'},
+  {cat:'agents',title:'S14 · Soren Vale — Behavioural Analyst',body:'<b>Counterparty psychology.</b> Analyses founder and advisor behaviour patterns in communications to identify: reluctance signals, competing-bid indicators, bluffing in negotiations, and optimal timing for price moves. Feeds insights directly to S6 Vesper Thorne\'s negotiation strategy.'},
+  {cat:'agents',title:'S15 · Elara Sterling — Exit Lead',body:'<b>Platform exit and value realisation.</b> Models the roll-up\'s eventual exit — trade sale, PE secondary, or IPO. Identifies value creation levers (cross-sell ARR, cost synergies, margin expansion) that will command premium multiples. Maintains the investor deck and exit preparation timeline.'},
+  {cat:'agents',title:'S16 · Dr. Aris Thorne — AI Scientist',body:'<b>Platform intelligence architect.</b> Oversees Sovereign\'s AI infrastructure — model selection, prompt engineering, token cost optimisation, and accuracy benchmarking. Designs new agent capabilities. Monitors the ai-proxy Edge Function for performance degradation and rate limit issues.'},
+  {cat:'agents',title:'S17 · Nova Skye — Operations Lead',body:'<b>Post-acquisition integration.</b> Plans 100-day integration playbooks for completed acquisitions. Manages operational consolidation: HR, finance systems, customer success, and product roadmap alignment. Tracks integration KPIs and flags divergence from the value creation plan.'},
+  {cat:'agents',title:'S18 · Gideon Cross — Growth & Revenue',body:'<b>Revenue acceleration post-acquisition.</b> Identifies cross-sell opportunities between acquired companies\' customer bases. Designs unified pricing strategies. Plans product-led growth motions and expansion revenue programmes. Models ARR growth trajectories for the combined platform.'},
+  {cat:'agents',title:'S19 · Echo — Interface',body:'<b>The user-facing conversational layer.</b> Default agent on the Command Engine — friendly, contextual, and routes queries to the appropriate specialist agent. Remembers conversation history and user preferences. Provides onboarding guidance for new users of the Sovereign platform.'},
+  {cat:'agents',title:'S20 · Sentinel — Security Gatekeeper',body:'<b>Security monitoring and incident response.</b> Monitors auth events, rate limit breaches, unusual data access patterns, and potential security incidents. Runs automated penetration tests. Alerts Howard via Twilio on critical security events. Enforces GDPR data subject request (DSAR) workflows.'},
+  {cat:'agents',title:'S21 · The Archivist — Memory & Learning',body:'<b>Sovereign\'s institutional memory.</b> Extracts patterns from every AI session, deal outcome, and workflow execution. Stores learnings in <code>ai_patterns</code> for use by all other agents. Runs the weekly self-improvement cron — reviewing what worked, what failed, and updating agent system prompts accordingly. The longer Sovereign runs, the smarter it gets.'},
+];
+
+let _kbCat = 'all';
+
+function kbTab(cat, btn) {
+  _kbCat = cat;
+  document.querySelectorAll('#kbTabs .ltab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  kbRender();
+}
+
+function kbFilter() {
+  kbRender();
+}
+
+function kbRender() {
+  const q = (document.getElementById('kbSearch')?.value || '').toLowerCase();
+  const filtered = KB_DATA.filter(e => {
+    const catMatch = _kbCat === 'all' || e.cat === _kbCat;
+    const qMatch = !q || e.title.toLowerCase().includes(q) || e.body.toLowerCase().includes(q);
+    return catMatch && qMatch;
+  });
+  const tagLabels = {glossary:'M&A Glossary', platform:'Platform', features:'Feature', agents:'Agent'};
+  const tagCls = {glossary:'kb-tag-glossary', platform:'kb-tag-platform', features:'kb-tag-features', agents:'kb-tag-agents'};
+  document.getElementById('kbContent').innerHTML = filtered.length
+    ? filtered.map(e => `<div class="kb-entry">
+        <div class="kb-entry-head">
+          <span class="kb-tag ${tagCls[e.cat]}">${tagLabels[e.cat]}</span>
+          <div class="kb-title">${e.title}</div>
+        </div>
+        <div class="kb-body">${e.body}</div>
+      </div>`).join('')
+    : `<div class="kb-empty">No entries match "<b>${q}</b>"</div>`;
+}
+
+function loadKb() { kbRender(); }
+
+// ── INIT ──
+window.addEventListener('auth:ready',async e=>{
+  if(!e.detail?.user){
+    Toast.show('Admin requires authentication','warn',3000);
+    setTimeout(()=>location.href='login.html?next=admin.html',2000);
+    return;
+  }
+  await loadOverview();
+});
+</script>
+</body>
+</html>

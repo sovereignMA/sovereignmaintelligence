@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Legal — Project Sovereign</title>
+<link rel="stylesheet" href="app.css">
+<style>
+.legal-wrap{max-width:860px;margin:0 auto;padding:40px 20px}
+.legal-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.ltab{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
+.ltab:hover,.ltab.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.legal-doc{display:none}.legal-doc.active{display:block}
+.legal-doc h1{font-size:clamp(18px,3vw,24px);font-weight:700;margin-bottom:8px;color:var(--gold)}
+.legal-doc .meta{font-size:12px;color:var(--text3);margin-bottom:24px}
+.legal-body{font-size:14px;color:var(--text2);line-height:1.9;white-space:pre-wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+/* ── Document logo header ── */
+.doc-logo-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 18px;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;margin-bottom:0}
+.doc-logo-header+.legal-body{border-top:none;border-radius:0 0 12px 12px}
+.doc-logo-brand{display:flex;align-items:center;gap:10px}
+.doc-logo-icon{width:32px;height:32px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.35);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.doc-logo-name{font-size:15px;font-weight:700;letter-spacing:.12em;color:var(--gold);font-family:var(--mono)}
+.doc-logo-tagline{font-size:10px;color:var(--text3);letter-spacing:.06em;margin-top:1px}
+.doc-logo-meta{text-align:right}
+.doc-logo-meta .doc-title{font-size:13px;font-weight:600;color:var(--text)}
+.doc-logo-meta .doc-ver{font-size:11px;color:var(--text3);margin-top:2px}
+.doc-logo-divider{height:1px;background:linear-gradient(90deg,var(--gold) 0%,transparent 100%);opacity:.25;margin:0}
+@media(max-width:480px){.legal-wrap{padding:16px}.legal-body{padding:14px;font-size:13px}.doc-logo-header{flex-direction:column;align-items:flex-start;gap:10px}.doc-logo-meta{text-align:left}}
+@media print{body{background:#fff!important;color:#000!important}.doc-logo-header{background:#fff!important;border-color:#ccc!important}.legal-body{background:#fff!important;border-color:#ccc!important;color:#000!important}.legal-tabs{display:none}.legal-doc{display:block!important}}
+</style>
+</head>
+<body>
+<div class="legal-wrap">
+  <div class="label" style="margin-bottom:8px">Legal</div>
+  <h1 style="font-size:clamp(20px,4vw,28px);font-weight:700;margin-bottom:6px">Policies & Agreements</h1>
+  <p style="font-size:13px;color:var(--text3);margin-bottom:24px">Project Sovereign · Howard Henry, London · mercecomventures@gmail.com</p>
+
+  <div class="legal-tabs">
+    <a class="ltab active" href="#privacy"    onclick="showDoc('privacy',this)">Privacy Policy</a>
+    <a class="ltab" href="#terms"         onclick="showDoc('terms',this)">Terms of Service</a>
+    <a class="ltab" href="#cookies"       onclick="showDoc('cookies',this)">Cookie Policy</a>
+    <a class="ltab" href="#acceptable"    onclick="showDoc('acceptable',this)">Acceptable Use</a>
+    <a class="ltab" href="#disclaimer"    onclick="showDoc('disclaimer',this)">Disclaimer</a>
+    <a class="ltab" href="#nda"           onclick="showDoc('nda',this)">NDA Template</a>
+    <a class="ltab" href="#aml"           onclick="showDoc('aml',this)">AML Policy</a>
+    <a class="ltab" href="#kyc"           onclick="showDoc('kyc',this)">KYC Policy</a>
+    <a class="ltab" href="#dpa"           onclick="showDoc('dpa',this)">Data Processing Agreement</a>
+  </div>
+
+  <div id="loading" style="text-align:center;padding:40px;color:var(--text3)">
+    <div class="loader" style="margin:0 auto 12px"></div>
+    Loading legal documents…
+  </div>
+
+  <!-- shared logo SVG used in each header -->
+  <template id="sv-logo-svg">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="#c9a84c" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="8" cy="8" r="2.5" fill="#c9a84c"/>
+    </svg>
+  </template>
+
+  <div id="docPrivacy" class="legal-doc active" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-privacy"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Privacy Policy</div><div class="doc-ver">v1.0 · Effective 20 March 2026</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyPrivacy"></pre>
+  </div>
+
+  <div id="docTerms" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-terms"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Terms of Service</div><div class="doc-ver">v1.0 · Effective 20 March 2026</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyTerms"></pre>
+  </div>
+
+  <div id="docCookies" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-cookies"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Cookie Policy</div><div class="doc-ver">v1.0 · Effective 20 March 2026</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyCookies"></pre>
+  </div>
+
+  <div id="docAcceptable" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-acceptable"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Acceptable Use Policy</div><div class="doc-ver">v1.0 · Effective 20 March 2026</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyAcceptable"></pre>
+  </div>
+
+  <div id="docDisclaimer" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-disclaimer"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Disclaimer</div><div class="doc-ver">v1.0 · Effective 20 March 2026</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyDisclaimer"></pre>
+  </div>
+
+  <div id="docNda" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-nda"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Non-Disclosure Agreement</div><div class="doc-ver">v1.0 · Standard M&amp;A NDA Template</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyNda"></pre>
+  </div>
+
+  <div id="docAml" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-aml"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Anti-Money Laundering Policy</div><div class="doc-ver">v1.0 · POCA 2002 Compliant</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyAml"></pre>
+  </div>
+
+  <div id="docKyc" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-kyc"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">KYC Policy</div><div class="doc-ver">v1.0 · UK AML Regulations 2017</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyKyc"></pre>
+  </div>
+
+  <div id="docDpa" class="legal-doc" style="display:none">
+    <div class="doc-logo-header">
+      <div class="doc-logo-brand"><div class="doc-logo-icon" id="li-dpa"></div><div><div class="doc-logo-name">SOVEREIGN</div><div class="doc-logo-tagline">Project Sovereign · Howard Henry, London</div></div></div>
+      <div class="doc-logo-meta"><div class="doc-title">Data Processing Agreement</div><div class="doc-ver">v1.0 · UK GDPR Article 28</div></div>
+    </div>
+    <div class="doc-logo-divider"></div>
+    <pre class="legal-body" id="bodyDpa"></pre>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+'use strict';
+
+const DOCS = {
+  privacy:'privacy_policy', terms:'terms_of_service', cookies:'cookie_policy',
+  acceptable:'acceptable_use', disclaimer:'disclaimer', nda:'nda',
+  aml:'aml_policy', kyc:'kyc_policy', dpa:'data_processing_agreement'
+};
+
+let loaded = false;
+let activeDoc = 'privacy';
+
+function showDoc(key, el) {
+  activeDoc = key;
+  document.querySelectorAll('.legal-doc').forEach(d=>d.style.display='none');
+  document.querySelectorAll('.ltab').forEach(t=>t.classList.remove('active'));
+  const doc = document.getElementById('doc'+key[0].toUpperCase()+key.slice(1));
+  if (doc) doc.style.display = 'block';
+  if (el) el.classList.add('active');
+  return false;
+}
+
+async function loadDocs() {
+  // Wait for Supabase client from app.js
+  if (!window._sb) await new Promise(r => window.addEventListener('sb:ready', r, {once:true}));
+  try {
+    const {data: docs, error} = await window._sb
+      .from('legal_documents')
+      .select('doc_type, content')
+      .eq('is_current', true);
+    if (error) throw error;
+    document.getElementById('loading').style.display = 'none';
+    const map = {};
+    (docs||[]).forEach(d => map[d.doc_type] = d.content);
+    // Populate each doc
+    const bodyMap = {
+      privacy_policy:'bodyPrivacy', terms_of_service:'bodyTerms', cookie_policy:'bodyCookies',
+      acceptable_use:'bodyAcceptable', disclaimer:'bodyDisclaimer', nda:'bodyNda',
+      aml_policy:'bodyAml', kyc_policy:'bodyKyc', data_processing_agreement:'bodyDpa'
+    };
+    for (const [type, elId] of Object.entries(bodyMap)) {
+      const el = document.getElementById(elId);
+      if (el && map[type]) el.textContent = map[type];
+      else if (el) el.textContent = 'Document loading... Please check back shortly.';
+    }
+    // Show first doc
+    showDoc('privacy', document.querySelector('.ltab.active'));
+    document.querySelectorAll('.legal-doc').forEach(d => {
+      if (d.id !== 'docPrivacy') d.style.display = 'none';
+    });
+    document.getElementById('docPrivacy').style.display = 'block';
+    loaded = true;
+  } catch(e) {
+    document.getElementById('loading').innerHTML = '<div style="color:var(--red)">Failed to load documents. Please refresh.</div>';
+  }
+}
+
+// Handle hash routing
+function routeFromHash() {
+  const hash = location.hash.slice(1);
+  if (hash && DOCS[hash]) {
+    const tab = document.querySelector(`[href="#${hash}"]`);
+    showDoc(hash, tab);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Stamp logo SVG into every doc header icon
+  const tpl = document.getElementById('sv-logo-svg');
+  if (tpl) {
+    document.querySelectorAll('.doc-logo-icon').forEach(el => {
+      el.appendChild(tpl.content.cloneNode(true));
+    });
+  }
+  loadDocs();
+  routeFromHash();
+});
+window.addEventListener('hashchange', routeFromHash);
+</script>
+</body>
+</html>

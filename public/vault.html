@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Vault — Project Sovereign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.pg{padding:28px 24px;max-width:1300px;margin:0 auto}
+/* 3D animated vault door */
+#vault-hero{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:28px;margin-bottom:20px;display:flex;align-items:center;gap:32px;flex-wrap:wrap}
+.vault-3d{width:160px;height:160px;flex-shrink:0;perspective:400px;display:flex;align-items:center;justify-content:center}
+.vault-door{width:100px;height:120px;position:relative;transform-style:preserve-3d;animation:vaultSpin 8s ease-in-out infinite alternate;border-radius:4px}
+@keyframes vaultSpin{0%{transform:rotateY(-25deg) rotateX(8deg)}100%{transform:rotateY(25deg) rotateX(-8deg)}}
+.vd-face{position:absolute;border-radius:4px;background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.4);display:flex;align-items:center;justify-content:center}
+.vd-front{width:100px;height:120px;transform:translateZ(10px)}
+.vd-back {width:100px;height:120px;transform:translateZ(-10px) rotateY(180deg)}
+.vd-left {width:20px; height:120px;transform:translateX(-10px) rotateY(-90deg)}
+.vd-right{width:20px; height:120px;transform:translateX(110px) rotateY(90deg)}
+.vault-spinner{width:50px;height:50px;border-radius:50%;border:2px solid rgba(201,168,76,.3);border-top-color:var(--gold);animation:spin 3s linear infinite;position:absolute}
+.vault-inner-ring{width:34px;height:34px;border-radius:50%;border:1px solid rgba(201,168,76,.2);border-bottom-color:var(--gold);animation:spin 2s linear infinite reverse;position:absolute}
+.vault-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);position:absolute}
+
+/* Document grid */
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px}
+.doc-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.doc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .2s}
+.doc-card:hover{border-color:var(--border3);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.doc-card:hover::before{opacity:1}
+.doc-icon{font-size:28px;margin-bottom:10px;display:block}
+.doc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.doc-meta{font-size:10px;color:var(--text3)}
+.doc-size{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:6px}
+.doc-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:2px 6px;border-radius:3px;margin-top:6px;font-weight:600}
+
+/* Category tabs */
+.cat-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.cat-tab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:none;font-family:var(--font);transition:all .15s}
+.cat-tab.active{background:var(--gold-dim);border-color:rgba(201,168,76,.3);color:var(--gold)}
+.cat-tab:hover:not(.active){background:var(--surface);color:var(--text)}
+
+/* Template builder */
+.tmpl-section{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:20px;margin-top:20px}
+.tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media(max-width:700px){.tmpl-grid{grid-template-columns:1fr}}
+.tmpl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s}
+.tmpl-card:hover{border-color:var(--gold);background:var(--gold-dim)}
+.tmpl-icon{font-size:18px;margin-bottom:7px}
+.tmpl-name{font-size:13px;font-weight:600;margin-bottom:3px}
+.tmpl-desc{font-size:11px;color:var(--text3);line-height:1.5}
+
+/* Modal doc viewer */
+.doc-preview{background:var(--bg2);border-radius:var(--r2);padding:24px;font-size:13px;line-height:1.8;color:var(--text2);white-space:pre-wrap;font-family:var(--font);max-height:400px;overflow-y:auto;border:1px solid var(--border)}
+.doc-preview h2{color:var(--gold2);font-size:16px;margin-bottom:12px}
+.doc-preview h3{color:var(--text);font-size:14px;margin:16px 0 6px}
+.doc-preview strong{color:var(--teal)}
+</style>
+</head>
+<body>
+<div style="height:56px"></div>
+<div class="pg">
+  <div class="page-hdr">
+    <div class="page-hdr-l">
+      <h1>Document Vault</h1>
+      <p>Templates · NDAs · SPAs · Playbooks · Deal structures · IP registers</p>
+    </div>
+    <div class="page-hdr-r">
+      <span class="badge badge-gold">🔒 Encrypted</span>
+      <button class="btn btn-primary btn-sm" onclick="showUpload()">+ Upload</button>
+    </div>
+  </div>
+
+  <!-- VAULT HERO -->
+  <div id="vault-hero">
+    <div class="vault-3d">
+      <div class="vault-door">
+        <div class="vd-face vd-front">
+          <div class="vault-spinner"></div>
+          <div class="vault-inner-ring"></div>
+          <div class="vault-dot"></div>
+        </div>
+        <div class="vd-face vd-back"></div>
+        <div class="vd-face vd-left"></div>
+        <div class="vd-face vd-right"></div>
+      </div>
+    </div>
+    <div style="flex:1">
+      <div class="label mb-8">Secure Document Vault</div>
+      <div style="font-size:17px;font-weight:600;margin-bottom:8px">All documents stored client-side only</div>
+      <p style="font-size:13px;margin-bottom:16px">Templates, signed documents, and deal structures stored in your browser's localStorage. Nothing is transmitted to any server. For production use, connect to your preferred encrypted storage (Notion, Google Drive, or self-hosted).</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div class="stat" style="padding:12px 16px;flex:1;min-width:100px">
+          <div class="stat-l">Documents</div>
+          <div class="stat-v" style="color:var(--gold);font-size:20px" id="docCount">24</div>
+        </div>
+        <div class="stat" style="padding:12px 16px;flex:1;min-width:100px">
+          <div class="stat-l">Templates</div>
+          <div class="stat-v" style="color:var(--teal);font-size:20px">12</div>
+        </div>
+        <div class="stat" style="padding:12px 16px;flex:1;min-width:100px">
+          <div class="stat-l">Signed NDAs</div>
+          <div class="stat-v" style="color:var(--green);font-size:20px">4</div>
+        </div>
+        <div class="stat" style="padding:12px 16px;flex:1;min-width:100px">
+          <div class="stat-l">In Review</div>
+          <div class="stat-v" style="color:var(--amber);font-size:20px">3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORY TABS -->
+  <div class="cat-tabs" id="catTabs"></div>
+
+  <!-- SEARCH -->
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <input type="search" id="docSearch" placeholder="Search documents…" style="max-width:320px">
+    <select id="sortBy" style="max-width:160px">
+      <option value="name">Sort: Name</option>
+      <option value="date">Sort: Date</option>
+      <option value="type">Sort: Type</option>
+    </select>
+  </div>
+
+  <!-- DOC GRID -->
+  <div class="doc-grid" id="docGrid"></div>
+
+  <!-- TEMPLATES -->
+  <div class="tmpl-section">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="label mb-4">Quick Templates</div>
+        <div style="font-size:14px;font-weight:600">AI-generate a document from your deal data</div>
+      </div>
+      <span class="badge badge-purple">AI-Powered</span>
+    </div>
+    <div class="tmpl-grid" id="tmplGrid"></div>
+  </div>
+</div>
+
+<!-- DOC MODAL -->
+<div class="modal-backdrop" id="docModal" style="display:none" onclick="closeDoc(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+        <div style="font-size:17px;font-weight:600" id="modalDocTitle"></div>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px" id="modalDocMeta"></div>
+      </div>
+      <button class="icon-btn" onclick="document.getElementById('docModal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="doc-preview" id="docContent"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('docModal').style.display='none'">Close</button>
+      <button class="btn btn-outline btn-sm" onclick="copyDoc()">Copy</button>
+      <a href="command.html" class="btn btn-primary btn-sm">Brief Sloane Haze →</a>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="app.js"></script>
+<script>
+var CATS=['All','Templates','NDAs','SPAs / HOTs','IP Register','Financial Models','Playbooks','Correspondence'];
+var DOCS=[
+  {id:1,cat:'Templates',icon:'📄',name:'Short-Form NDA',meta:'Standard UK mutual NDA',size:'2.1 KB',tag:'template',tagC:'badge-blue',color:'#60a5fa',
+    content:`SHORT-FORM MUTUAL NON-DISCLOSURE AGREEMENT
+
+This Agreement is entered into between:
+[PARTY A] ("Discloser") and [PARTY B] ("Recipient")
+
+1. CONFIDENTIAL INFORMATION
+Both parties may disclose certain confidential information to each other for the purpose of exploring a potential business transaction (the "Purpose").
+
+2. OBLIGATIONS
+Each party agrees to:
+(a) Hold all Confidential Information in strict confidence
+(b) Not disclose to any third party without prior written consent
+(c) Use Confidential Information solely for the Purpose
+(d) Return or destroy all materials upon request
+
+3. EXCLUSIONS
+This Agreement does not apply to information that:
+• Was already known to the Recipient
+• Is or becomes publicly available without breach
+• Is independently developed
+
+4. TERM
+This Agreement shall remain in force for 24 months from the date of execution.
+
+5. GOVERNING LAW
+This Agreement is governed by the laws of England and Wales.
+
+Signed: _________________________ Date: _____________
+[PARTY A]
+
+Signed: _________________________ Date: _____________
+[PARTY B]`},
+  {id:2,cat:'Templates',icon:'📋',name:'Letter of Intent (LOI)',meta:'Non-binding acquisition LOI',size:'4.3 KB',tag:'template',tagC:'badge-gold',color:'#c9a84c',
+    content:`LETTER OF INTENT — ACQUISITION OF [TARGET COMPANY]
+
+[DATE]
+
+Dear [SELLER NAME],
+
+This Letter of Intent ("LOI") is submitted by [ACQUIRER] ("Buyer") in connection with the proposed acquisition of [TARGET COMPANY LIMITED] ("Target").
+
+1. TRANSACTION STRUCTURE
+Buyer proposes to acquire 100% of the issued share capital of Target on the following basis:
+• Total Consideration: £[X] based on [X]× trailing 12-month EBITDA of £[X]
+• Structure: [X]% Completion Payment / [X]% Deferred Consideration
+• Deferred Consideration payable over [X] months post-completion
+
+2. NMD COMMITMENT
+No personal guarantees are required from Buyer in connection with this transaction. All obligations remain at company level.
+
+3. CONDITIONS
+This LOI is subject to:
+• Satisfactory completion of due diligence
+• Agreement of final legal documentation
+• No material adverse change
+
+4. EXCLUSIVITY
+The Seller agrees to a [30]-day exclusivity period from signing.
+
+5. NON-BINDING
+This LOI is non-binding except for clauses 4 (Exclusivity) and 6 (Confidentiality).
+
+Yours sincerely,
+[BUYER NAME]
+[DATE]`},
+  {id:3,cat:'NDAs',icon:'🔒',name:'CloudData.io NDA',meta:'Signed · 28 Jan 2025',size:'2.1 KB',tag:'signed',tagC:'badge-green',color:'#4ade80',
+    content:`[EXECUTED COPY]
+
+SHORT-FORM MUTUAL NON-DISCLOSURE AGREEMENT
+
+Parties: Project Sovereign Acquisitions Ltd and CloudData.io Limited
+
+Date: 28 January 2025
+
+[Full NDA terms as per template — both parties executed]
+
+Signed by: David Chen (CloudData.io) — 28 Jan 2025
+Signed by: [Acquirer] — 28 Jan 2025
+
+STATUS: Fully Executed ✓`},
+  {id:4,cat:'NDAs',icon:'🔒',name:'NexusSaaS NDA',meta:'Signed · 2 Feb 2025',size:'2.1 KB',tag:'signed',tagC:'badge-green',color:'#4ade80',content:'[Executed NDA — NexusSaaS Ltd — 2 Feb 2025]'},
+  {id:5,cat:'NDAs',icon:'🔒',name:'DataVault UK NDA',meta:'Signed · 15 Dec 2024',size:'2.1 KB',tag:'signed',tagC:'badge-green',color:'#4ade80',content:'[Executed NDA — DataVault UK Limited — 15 Dec 2024]'},
+  {id:6,cat:'NDAs',icon:'🔒',name:'OptiFlow Systems NDA',meta:'Signed · 8 Nov 2024',size:'2.1 KB',tag:'signed',tagC:'badge-green',color:'#4ade80',content:'[Executed NDA — OptiFlow Systems Limited — 8 Nov 2024]'},
+  {id:7,cat:'SPAs / HOTs',icon:'📑',name:'OptiFlow — Heads of Terms',meta:'Draft · Under review',size:'6.8 KB',tag:'in review',tagC:'badge-amber',color:'#fbbf24',
+    content:`HEADS OF TERMS — ACQUISITION OF OPTIFLOW SYSTEMS LIMITED
+
+NON-BINDING (save for Exclusivity and Confidentiality)
+
+Buyer: [Acquirer Entity]
+Seller: [Founder Name]
+Target: OptiFlow Systems Limited
+
+PROPOSED TERMS:
+• Purchase Price: £8.4M (7× trailing EBITDA of £1.2M)
+• 100% Deferred Consideration over 36 months
+• Monthly deferred payments of £233,333
+• No personal guarantee from Buyer
+• No earn-out — fixed price on completion accounts
+
+DUE DILIGENCE:
+• 4-week exclusivity from signing
+• Access to: management accounts (3 years), customer contracts, IP register, staff contracts
+
+TARGET COMPLETION: [DATE + 8 weeks]
+
+ADVISORY FEE: £5,000/month management consultancy fee to commence on exchange
+
+LEGAL: English law — solicitors to be appointed within 5 working days`},
+  {id:8,cat:'Financial Models',icon:'📊',name:'NMD Deal Model — OptiFlow',meta:'Excel model · Updated 14 Feb',size:'18 KB',tag:'model',tagC:'badge-purple',color:'#a78bfa',content:'[Financial model: OptiFlow Systems — NMD structure, cashflow projections, deferred payment schedule, AI value creation uplift scenario]'},
+  {id:9,cat:'Financial Models',icon:'📊',name:'Exit IRR Model — Roll-Up',meta:'Scenario analysis 15–28×',size:'24 KB',tag:'model',tagC:'badge-purple',color:'#a78bfa',content:'[IRR model: 3 exit scenarios at 15×, 20×, 28× EBITDA — hold period 12–48 months — sensitivity analysis on AI cost reduction]'},
+  {id:10,cat:'Playbooks',icon:'📘',name:'100-Day Post-Acquisition Playbook',meta:'Nova Skye · Operations',size:'12 KB',tag:'playbook',tagC:'badge-teal',color:'#2dd4bf',
+    content:`100-DAY POST-ACQUISITION PLAYBOOK
+Nova Skye — Ops Lead
+
+DAYS 1–30: STABILISE
+□ Introduce acquirer to key staff (retain critical people)
+□ Freeze hiring and major spending
+□ Establish weekly management call cadence
+□ Review all customer contracts — flag renewal dates
+□ Set up consolidated financial reporting
+□ Audit tech stack — identify redundancy and cost savings
+
+DAYS 31–60: OPTIMISE
+□ Implement AI customer support tool (target: 40% ticket deflection)
+□ Renegotiate top 3 supplier contracts
+□ Standardise onboarding/offboarding processes
+□ Launch NPS measurement for customer base
+□ Begin SIC reclassification filing with Elara Sterling
+
+DAYS 61–100: SCALE
+□ AI implementation phase 2 — predictive churn model live
+□ Gideon Cross: launch outbound revenue programme
+□ Board-level reporting in place for exit readiness
+□ Management accounts audited and clean
+□ Commence exit preparation: IM draft, data room build`},
+  {id:11,cat:'Playbooks',icon:'📘',name:'Cold-to-Closed Outreach Playbook',meta:'Orion Pax · Funnel',size:'8 KB',tag:'playbook',tagC:'badge-teal',color:'#2dd4bf',content:'[Cold outreach playbook: 5-touch sequence, LinkedIn + email, timing, objection handling, qualification framework for UK SaaS founders]'},
+  {id:12,cat:'IP Register',icon:'🔐',name:'IP Hardening Checklist v2',meta:'Jaxen Reed · 10 Feb 2025',size:'5 KB',tag:'security',tagC:'badge-red',color:'#f87171',content:'[IP register and hardening checklist: code ownership, employee IP assignment, GDPR mapping, trademark search, open source audit, data licensing review]'},
+];
+
+var TEMPLATES=[
+  {icon:'⚖️',name:'Generate NDA',desc:'AI-drafts a UK mutual NDA pre-filled with deal party details'},
+  {icon:'📋',name:'Generate LOI',desc:'Non-binding letter of intent with NMD structure terms'},
+  {icon:'📧',name:'Cold Outreach Email',desc:'Personalised founder approach based on Companies House data'},
+  {icon:'📑',name:'Heads of Terms',desc:'HOT document with deferred consideration structure'},
+  {icon:'🤖',name:'AI Roadmap',desc:'90-day AI implementation plan for acquired target'},
+  {icon:'📊',name:'Exit Information Memo',desc:'IM draft for PE/strategic buyer outreach process'},
+];
+
+var activecat='All';
+function renderDocs(){
+  var q=document.getElementById('docSearch').value.toLowerCase();
+  var docs=DOCS.filter(function(d){
+    var catOk=activecat==='All'||d.cat===activecat;
+    var qOk=!q||d.name.toLowerCase().includes(q)||d.meta.toLowerCase().includes(q);
+    return catOk&&qOk;
+  });
+  document.getElementById('docGrid').innerHTML=docs.map(function(d){
+    return '<div class="doc-card" onclick="openDoc('+d.id+')" style="border-left:2px solid '+d.color+'20">'
+      +'<div class="doc-card" style="border:none;padding:0">'
+      +'<span class="doc-icon">'+d.icon+'</span>'
+      +'<div class="doc-name">'+d.name+'</div>'
+      +'<div class="doc-meta">'+d.meta+'</div>'
+      +'<div class="doc-size">'+d.size+'</div>'
+      +'<span class="doc-tag badge '+d.tagC+'">'+d.tag+'</span>'
+      +'</div></div>';
+  }).join('');
+  if(!docs.length)document.getElementById('docGrid').innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0">No documents match.</div>';
+}
+
+// Tabs
+document.getElementById('catTabs').innerHTML=CATS.map(function(c){
+  return '<button class="cat-tab'+(c==='All'?' active':'')+'" data-cat="'+c+'">'+c+'</button>';
+}).join('');
+document.getElementById('catTabs').addEventListener('click',function(e){
+  var b=e.target.closest('.cat-tab');if(!b)return;
+  document.querySelectorAll('.cat-tab').forEach(function(x){x.classList.remove('active')});
+  b.classList.add('active');activecat=b.dataset.cat;renderDocs();
+});
+document.getElementById('docSearch').addEventListener('input',renderDocs);
+renderDocs();
+
+// Templates
+document.getElementById('tmplGrid').innerHTML=TEMPLATES.map(function(t){
+  return '<div class="tmpl-card" onclick="genTemplate(\''+t.name+'\')">'
+    +'<div class="tmpl-icon">'+t.icon+'</div>'
+    +'<div class="tmpl-name">'+t.name+'</div>'
+    +'<div class="tmpl-desc">'+t.desc+'</div>'
+    +'</div>';
+}).join('');
+
+var currentDoc=null;
+function openDoc(id){
+  var d=DOCS.find(function(x){return x.id===id});if(!d)return;currentDoc=d;
+  document.getElementById('modalDocTitle').textContent=d.name;
+  document.getElementById('modalDocMeta').textContent=d.meta+' · '+d.size;
+  document.getElementById('docContent').textContent=d.content;
+  document.getElementById('docModal').style.display='flex';
+}
+function closeDoc(e){if(e.target===document.getElementById('docModal'))document.getElementById('docModal').style.display='none';}
+function copyDoc(){if(currentDoc){navigator.clipboard.writeText(currentDoc.content);alert('Copied to clipboard');}}
+async function genTemplate(name){
+  if(!window.Auth || !Auth.user){
+    Toast.show('Sign in to generate AI templates','warn');
+    return;
+  }
+  // Open a blank doc preview
+  document.getElementById('modalDocTitle').textContent = 'Generating: ' + name;
+  document.getElementById('modalDocMeta').textContent = 'AI-generated by Sloane Haze · Powered by Edge Function';
+  document.getElementById('docContent').textContent = 'Sloane Haze is drafting your ' + name + '…';
+  document.getElementById('docModal').style.display = 'flex';
+
+  var result = await API.chat({
+    system: 'You are Sloane Haze, attorney for Project Sovereign UK M&A. Generate a professional UK M&A document template. Format as plain text with clear section headings. Include [PLACEHOLDER] fields for deal-specific details. UK English. UK law.',
+    messages: [{role:'user', content:'Generate a complete ' + name + ' template for a UK SaaS acquisition. Deferred consideration structure. NMD compliant. Zero personal guarantee exposure for the buyer. Include all standard UK clauses.'}],
+    max_tokens: 1000,
+    agent_name: 'Sloane Haze'
+  });
+
+  if(result){
+    document.getElementById('docContent').textContent = result;
+    currentDoc = {name: name, content: result};
+    // Auto-save to Supabase
+    API.docs.save({name: name, category: 'Templates', content: result, status: 'draft'}).catch(function(){});
+    Toast.show('Template generated and saved to vault', 'ok');
+  } else {
+    document.getElementById('docContent').textContent = 'Generation failed. Check your connection and try again.';
+  }
+}
+function showUpload(){alert('In production, connect to your preferred storage: Google Drive, Notion, or self-hosted S3.\n\nFor now, documents are managed via the templates system.');}
+
+// ── Load docs from Supabase on auth ──
+window.addEventListener('auth:ready', async function(e) {
+  if(!e.detail?.user) return;
+  var result = await API.docs.list();
+  if(result && result.data && result.data.length > 0){
+    // Merge Supabase docs with local DOCS array
+    var sbDocs = result.data.map(function(d, i){
+      return {
+        id: d.id, cat: d.category || 'Templates',
+        icon: '📄', name: d.name,
+        meta: d.status + ' · ' + new Date(d.created_at).toLocaleDateString('en-GB'),
+        size: d.file_size ? Math.round(d.file_size/1024) + ' KB' : '–',
+        tag: d.status, tagC: d.status==='signed'?'badge-green':d.status==='draft'?'badge-ghost':'badge-amber',
+        color: '#c9a84c', content: d.content || '[No preview available]'
+      };
+    });
+    DOCS = sbDocs.concat(DOCS);
+    document.getElementById('docCount').textContent = DOCS.length;
+    renderDocs();
+    Toast.show('Vault loaded ' + sbDocs.length + ' saved documents', 'ok', 2000);
+  }
+});
+
+</script>
+</body>
+</html>

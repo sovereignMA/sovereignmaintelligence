@@ -1,0 +1,11 @@
+{
+  "name": "sovereign",
+  "version": "3.1.0",
+  "description": "Project Sovereign — AI-native M&A command engine for UK SaaS roll-ups.",
+  "private": true,
+  "scripts": {
+    "dev":   "npx serve public -p 3000",
+    "start": "npx serve public -p 3000"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,4 @@
+deploy.js
+.env
+.env.local
+node_modules

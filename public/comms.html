@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Comms — Project Sovereign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.comms-shell { display: flex; height: calc(100vh - 56px); }
+/* Left: thread list */
+.thread-panel { width: 280px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+.thread-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.thread-search { padding: 10px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.thread-search input { font-size: 13px; padding: 8px 12px; }
+.thread-section { padding: 8px 12px 4px; font-size: 9px; color: var(--text3); letter-spacing: .14em; text-transform: uppercase; }
+.thread-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .12s; }
+.thread-item:hover { background: var(--surface); }
+.thread-item.active { background: var(--surface2); border-left: 2px solid var(--gold); }
+.thread-av { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.thread-body { flex: 1; min-width: 0; }
+.thread-name { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; justify-content: space-between; }
+.thread-preview { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.thread-time { font-size: 10px; color: var(--text3); white-space: nowrap; }
+.thread-unread { background: var(--gold); color: #000; font-size: 9px; font-weight: 700; border-radius: 8px; padding: 1px 6px; min-width: 16px; text-align: center; }
+
+/* Middle: conversation */
+.conv-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.conv-header { padding: 12px 18px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.conv-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.cm { display: flex; gap: 10px; }
+.cm.outbound { flex-direction: row-reverse; }
+.cm-av { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.cm-bubble { max-width: 72%; padding: 11px 14px; border-radius: 10px; font-size: 13px; line-height: 1.65; }
+.inbound .cm-bubble { background: var(--surface); border: 1px solid var(--border2); border-radius: 3px 10px 10px 10px; }
+.outbound .cm-bubble { background: var(--gold-dim); border: 1px solid rgba(201,168,76,.2); border-radius: 10px 3px 10px 10px; }
+.cm-meta { font-size: 10px; color: var(--text3); margin-bottom: 4px; }
+.conv-compose { padding: 14px 18px; background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0; }
+.compose-bar { display: flex; gap: 10px; align-items: flex-end; }
+.compose-bar textarea { font-size: 13px; padding: 9px 12px; resize: none; max-height: 90px; flex: 1; line-height: 1.5; }
+.compose-tools { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.compose-tool { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 5px 10px; font-size: 11px; color: var(--text2); cursor: pointer; transition: all .15s; }
+.compose-tool:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+/* Right: outreach panel */
+.outreach-panel { width: 300px; flex-shrink: 0; background: var(--bg2); border-left: 1px solid var(--border); overflow-y: auto; padding: 14px; }
+@media(max-width:1200px){.outreach-panel{display:none}}
+@media(max-width:768px){.thread-panel{width:220px}}
+@media(max-width:600px){.thread-panel{position:fixed;top:60px;left:0;bottom:0;z-index:50;transform:translateX(-100%);transition:transform .25s}.thread-panel.open{transform:none}}
+
+.sequence-card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; }
+.seq-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.seq-meta { font-size: 10px; color: var(--text3); margin-bottom: 8px; }
+.seq-steps { display: flex; gap: 4px; margin-bottom: 8px; }
+.seq-step { flex: 1; height: 4px; border-radius: 2px; }
+.seq-step.done { background: var(--green); }
+.seq-step.active { background: var(--gold); animation: pulse 1.5s infinite; }
+.seq-step.pending { background: var(--surface2); }
+.rp-section { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .14em; margin-bottom: 10px; margin-top: 16px; }
+.rp-section:first-child { margin-top: 0; }
+.template-item { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 10px; margin-bottom: 7px; cursor: pointer; transition: all .15s; }
+.template-item:hover { border-color: var(--gold); background: var(--gold-dim); }
+.tmpl-title { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.tmpl-meta { font-size: 10px; color: var(--text3); }
+</style>
+</head>
+<body>
+<div style="height:var(--nav-h,56px)"></div>
+
+<div style="height:56px"></div>
+<div class="comms-shell">
+  <!-- THREADS -->
+  <div class="thread-panel" id="threadPanel">
+    <div class="thread-header">
+      <span style="font-size:13px;font-weight:600">Communications</span>
+      <button class="btn btn-primary" style="font-size:11px;padding:5px 10px">+ New</button>
+    </div>
+    <div class="thread-search">
+      <input type="search" placeholder="Search threads…">
+    </div>
+    <div id="threadList"></div>
+  </div>
+
+  <!-- CONVERSATION -->
+  <div class="conv-panel">
+    <div class="conv-header" id="convHeader">
+      <button class="icon-btn" id="threadToggle" style="display:none">☰</button>
+      <div id="convTitle" style="font-size:14px;font-weight:600;flex:1"></div>
+      <div style="display:flex;gap:6px">
+        <button class="icon-btn" title="AI Draft" onclick="generateDraft()">✨</button>
+        <a href="command.html" class="icon-btn" title="Brief Agent">⌘</a>
+      </div>
+    </div>
+    <div class="conv-messages" id="convMessages"></div>
+    <div class="conv-compose">
+      <div class="compose-tools">
+        <button class="compose-tool" onclick="insertTemplate('opener')">Cold Opener</button>
+        <button class="compose-tool" onclick="insertTemplate('followup')">Follow-up</button>
+        <button class="compose-tool" onclick="insertTemplate('nda')">NDA Request</button>
+        <button class="compose-tool" onclick="insertTemplate('hots')">HOT Request</button>
+        <button class="compose-tool" onclick="insertTemplate('thanks')">Thanks + Next</button>
+      </div>
+      <div class="compose-bar">
+        <textarea id="composeArea" rows="2" placeholder="Write message or use AI Draft…"></textarea>
+        <button class="btn btn-primary" onclick="sendMessage()" style="padding:9px 16px;font-size:13px">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTREACH PANEL -->
+  <div class="outreach-panel">
+    <div class="rp-section">Active Sequences</div>
+    <div id="sequences"></div>
+    <div class="rp-section">Quick Templates</div>
+    <div id="templates"></div>
+    <div class="rp-section">Comms Stats</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--gold)">84%</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Open Rate</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--teal)">32%</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Reply Rate</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--green)">18</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Warm Leads</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px;text-align:center">
+        <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--purple)">6.4d</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Avg Response</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="app.js"></script>
+<script>
+var THREADS=[
+  {id:1,type:'seller',name:'David Chen — CloudData.io',preview:'That timeline works for me. Let\'s schedule the call for next...',time:'2h ago',unread:2,color:'#2dd4bf',bg:'rgba(45,212,191,.15)',initial:'DC',
+    messages:[
+      {dir:'inbound',text:'Hi, thanks for reaching out. I\'ve been thinking about a transition for the last year or so. Happy to have an initial chat.',time:'14 Jan, 2:14pm'},
+      {dir:'outbound',text:'David, great to connect. I\'ve been following CloudData\'s growth — the ARR trajectory is impressive. I\'d love to understand your thinking around the business long-term. Are you free for a 20-minute call this week?',time:'14 Jan, 3:30pm'},
+      {dir:'inbound',text:'Yes, Thursday afternoon works. 3pm?',time:'15 Jan, 9:10am'},
+      {dir:'outbound',text:'Perfect. Sending a calendar invite now. One thing I wanted to flag — we specialise in structures that work around your timeline and don\'t require you to take a haircut on valuation to close quickly.',time:'15 Jan, 9:45am'},
+      {dir:'inbound',text:'That\'s actually exactly my concern. My accountant has been pushing me toward a trade sale which feels rushed. Happy to explore alternatives.',time:'15 Jan, 11:20am'},
+      {dir:'outbound',text:'Completely understand. We\'ve done 4 deals in the last 18 months using a deferred consideration structure — the seller gets full value, just paid over 18-36 months. Removes urgency entirely on your side.',time:'15 Jan, 12:05pm'},
+      {dir:'inbound',text:'That timeline works for me. Let\'s schedule the call for next week so I can get my accountant on the line too.',time:'16 Jan, 8:55am'},
+    ]},
+  {id:2,type:'seller',name:'Sarah & James Morris — NexusSaaS',preview:'We spoke to our solicitor and he has a few questions about the HOT structure...',time:'Yesterday',unread:1,color:'#4ade80',bg:'rgba(74,222,128,.15)',initial:'SM',
+    messages:[
+      {dir:'outbound',text:'Sarah, James — following up on our Manchester meeting last week. Really enjoyed the conversation. I\'ve drafted a one-page Heads of Terms outlining the structure we discussed. Would you be happy to share this with your solicitor?',time:'22 Jan, 10:00am'},
+      {dir:'inbound',text:'We\'ve shared it with him. He has a few questions about the deferred consideration mechanics — specifically what happens if the business underperforms vs projections during the deferred period.',time:'22 Jan, 4:30pm'},
+      {dir:'outbound',text:'Great question — and it\'s the right one to ask. The short answer: the deferred amount is fixed based on completion accounts, not future performance. There\'s no earn-out element. So you receive the agreed amount regardless. Happy to get on a call with your solicitor to walk through the clause.',time:'23 Jan, 9:15am'},
+      {dir:'inbound',text:'We spoke to our solicitor and he has a few questions about the HOT structure — specifically around the ABL component. Can we schedule a three-way call?',time:'23 Jan, 2:45pm'},
+    ]},
+  {id:3,type:'agent',name:'Mila Quinn — Empathy Briefing',preview:'Recommend slowing the cadence on DataVault. James seems hesitant...',time:'3h ago',unread:0,color:'#34d399',bg:'rgba(52,211,153,.15)',initial:'MQ',
+    messages:[
+      {dir:'inbound',text:'Commander. Update on DataVault. Peter (senior founder) is engaged and moving fast. Marcus (minority, 40%) is the hesitant one. He\'s been slower to respond and twice referenced "making sure the team is protected" — this is a retention anxiety signal.',time:'Today, 9:30am'},
+      {dir:'outbound',text:'Mila — noted. What do you recommend?',time:'Today, 9:45am'},
+      {dir:'inbound',text:'Two things. First, include an explicit retention package for the top 3 employees in the term sheet — even a modest one signals care for the team. Second, suggest a management Q&A session where Marcus can ask questions directly. His hesitation is about process and control, not valuation.',time:'Today, 9:50am'},
+      {dir:'outbound',text:'Good. Draft me a message to Marcus that opens with team continuity and invites him to the Q&A.',time:'Today, 10:05am'},
+      {dir:'inbound',text:'Recommend slowing the cadence on DataVault. James seems hesitant and pushing too fast will kill this deal. Give him 5 days before next contact.',time:'Today, 11:40am'},
+    ]},
+  {id:4,type:'prospect',name:'Helen Ward — ProspectData Ltd',preview:'Not sure this is the right time — maybe next year?',time:'2d ago',unread:0,color:'#818cf8',bg:'rgba(129,140,248,.15)',initial:'HW',
+    messages:[
+      {dir:'outbound',text:'Helen — I came across ProspectData through your Companies House filing and was impressed by the growth in your accounts. I specialise in helping UK SaaS founders explore strategic options at their own pace. Would a 15-minute chat be of interest?',time:'18 Jan, 11:00am'},
+      {dir:'inbound',text:'Thanks for the message. Not sure this is the right time — maybe next year? Things are a bit up in the air.',time:'20 Jan, 5:15pm'},
+    ]},
+];
+
+var SEQUENCES=[
+  {title:'Retirement Founders',meta:'Cold → Warm · 4 step · 12 prospects',steps:['done','done','active','pending']},
+  {title:'Plateau SaaS Owners',meta:'LinkedIn + Email · 3 step · 8 prospects',steps:['done','active','pending']},
+  {title:'Minority Exit Approach',meta:'Referral-led · 2 step · 3 prospects',steps:['active','pending']},
+];
+
+var TEMPLATES=[
+  {title:'Cold LinkedIn — Retirement',meta:'55+ founder · retirement angle'},
+  {title:'Cold Email — Revenue Plateau',meta:'ARR-flat businesses · growth angle'},
+  {title:'Follow-up 7-day',meta:'No response to initial contact'},
+  {title:'NDA Request',meta:'After first positive call'},
+  {title:'HOT Introductory',meta:'Early structure conversation'},
+];
+
+var TEMPLATE_CONTENT={
+  opener:'Hi [Name],\n\nI came across [Company] and was really impressed by the ARR profile — specifically the recurring revenue base you\'ve built.\n\nI work with UK SaaS founders exploring strategic options on their own timeline. No pressure, no rushing — just a conversation.\n\nWould a 15-minute call this week be of interest?\n\nBest,\n[Your name]',
+  followup:'Hi [Name],\n\nFollowing up on my note last week. I completely understand if the timing isn\'t right — we work with founders at all stages, including those just beginning to think about options.\n\nHappy to share a short framework we use to assess exit readiness if that would be useful.\n\nBest,\n[Your name]',
+  nda:'[Name],\n\nThank you for the conversation — really enjoyed learning more about [Company].\n\nAs a next step, I\'d suggest a mutual NDA so we can share more detailed information on both sides. I\'ll send over a short-form version — typically a 1-pager that won\'t require solicitor review.\n\nDoes that work for you?',
+  hots:'[Name],\n\nBased on our conversations, I\'d like to put forward a draft Heads of Terms outlining the structure we\'ve discussed. This is non-binding and for discussion purposes only.\n\nKey points:\n• Acquisition price: [£X] based on [X]x trailing EBITDA\n• Structure: [Y]% deferred consideration over [Z] months\n• No personal guarantees required from the seller\n• Completion target: [date]\n\nHappy to walk through this on a call.',
+  thanks:'[Name],\n\nThank you for your time today — really helpful conversation.\n\nTo confirm next steps:\n1. I\'ll prepare the revised term sheet by [date]\n2. Call with your solicitor scheduled for [date]\n3. Management accounts requested for the last 3 years\n\nLooking forward to progressing this.',
+};
+
+var activeThread=THREADS[0];
+
+function renderThreadList(){
+  var html='';
+  var sellers=THREADS.filter(function(t){return t.type!=='agent'&&t.type!=='prospect'});
+  var agents=THREADS.filter(function(t){return t.type==='agent'});
+  var prospects=THREADS.filter(function(t){return t.type==='prospect'});
+  if(sellers.length){html+='<div class="thread-section">Active Deals</div>'+sellers.map(renderThread).join('');}
+  if(agents.length){html+='<div class="thread-section">Agent Briefings</div>'+agents.map(renderThread).join('');}
+  if(prospects.length){html+='<div class="thread-section">Prospects</div>'+prospects.map(renderThread).join('');}
+  document.getElementById('threadList').innerHTML=html;
+  document.querySelectorAll('.thread-item').forEach(function(el){
+    el.addEventListener('click',function(){
+      var t=THREADS.find(function(x){return x.id===parseInt(el.dataset.id)});
+      if(t){activeThread=t;renderConversation();document.querySelectorAll('.thread-item').forEach(function(x){x.classList.remove('active')});el.classList.add('active');}
+    });
+  });
+}
+function renderThread(t){
+  return '<div class="thread-item'+(t.id===activeThread.id?' active':'')+'" data-id="'+t.id+'">'
+    +'<div class="thread-av" style="background:'+t.bg+';color:'+t.color+'">'+t.initial+'</div>'
+    +'<div class="thread-body">'
+    +'<div class="thread-name">'+t.name.split(' — ')[0]+(t.unread?'<span class="thread-unread">'+t.unread+'</span>':'<span class="thread-time">'+t.time+'</span>')+'</div>'
+    +'<div class="thread-preview">'+t.preview+'</div>'
+    +'</div></div>';
+}
+function renderConversation(){
+  var t=activeThread;
+  document.getElementById('convTitle').textContent=t.name;
+  var html='';
+  t.messages.forEach(function(m){
+    html+='<div class="cm '+m.dir+'">'
+      +(m.dir==='inbound'?'<div class="cm-av" style="background:'+t.bg+';color:'+t.color+'">'+t.initial+'</div>':'')
+      +'<div class="cm-bubble"><div class="cm-meta">'+m.time+'</div>'+m.text.replace(/\n/g,'<br>')+'</div>'
+      +(m.dir==='outbound'?'<div class="cm-av" style="background:var(--gold-dim);color:var(--gold)">⌘</div>':'')
+      +'</div>';
+  });
+  var msgs=document.getElementById('convMessages');
+  msgs.innerHTML=html;
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+// Sequences
+var seqHTML='';
+SEQUENCES.forEach(function(s){
+  seqHTML+='<div class="sequence-card">'
+    +'<div class="seq-title">'+s.title+'</div>'
+    +'<div class="seq-meta">'+s.meta+'</div>'
+    +'<div class="seq-steps">'+s.steps.map(function(st){return'<div class="seq-step '+st+'"></div>'}).join('')+'</div>'
+    +'</div>';
+});
+document.getElementById('sequences').innerHTML=seqHTML;
+
+// Templates
+var tmplHTML='';
+TEMPLATES.forEach(function(t){
+  tmplHTML+='<div class="template-item" onclick="insertTemplateByName(\''+t.title+'\',\''+t.meta+'\')"><div class="tmpl-title">'+t.title+'</div><div class="tmpl-meta">'+t.meta+'</div></div>';
+});
+document.getElementById('templates').innerHTML=tmplHTML;
+
+function insertTemplate(key){
+  document.getElementById('composeArea').value=TEMPLATE_CONTENT[key]||'';
+  document.getElementById('composeArea').focus();
+}
+function insertTemplateByName(title){ insertTemplate('opener'); }
+
+function sendMessage(){ sendMessageWithLog(); }
+
+async function generateDraft(){
+  if(!Auth.user){Toast.show('Sign in to use AI Draft','warn');return;}
+  var ta=document.getElementById('composeArea');
+  ta.value='Mila Quinn is drafting…';
+  var ctx=activeThread.messages.slice(-4).map(function(m){
+    return(m.dir==='inbound'?activeThread.name.split(' — ')[0]+': ':'Commander: ')+m.text;
+  }).join('\n\n');
+  var result = await API.gmail.aiDraft({
+    to_name: activeThread.name.split(' — ')[0],
+    purpose: 'follow-up based on recent conversation',
+    tone: 'warm professional UK business',
+    deal_context: ctx
+  });
+  ta.value = result && result.draft ? result.draft : 'Could not generate draft — check your connection.';
+}
+
+async function sendMessageWithLog(){
+  var text=document.getElementById('composeArea').value.trim();
+  if(!text)return;
+  activeThread.messages.push({dir:'outbound',text:text,time:'Now'});
+  activeThread.preview=text.slice(0,60)+'…';
+  document.getElementById('composeArea').value='';
+  renderConversation();
+  renderThreadList();
+  // Log to Supabase outreach if authenticated
+  if(Auth.user && activeThread.type !== 'agent'){
+    API.contacts.logOutreach(activeThread.contact_id || null, {
+      channel: 'email', direction: 'outbound',
+      subject: 'Re: ' + activeThread.name,
+      body: text,
+    }).catch(function(){});
+    Toast.show('Message logged to outreach record','ok',2000);
+  }
+}
+
+renderThreadList();
+renderConversation();
+
+// Mobile
+if(window.innerWidth<=600){
+  document.getElementById('threadToggle').style.display='flex';
+  document.getElementById('threadToggle').onclick=function(){
+    document.getElementById('threadPanel').classList.toggle('open');
+  };
+}
+</script>
+
+<script>
+window.addEventListener('auth:ready', function(e){
+  if(!e.detail?.user){
+    Toast.show('Sign in to access this page','warn',2500);
+    setTimeout(function(){
+      location.href='login.html?next='+encodeURIComponent(location.pathname.split('/').pop());
+    },1800);
+  }
+});
+</script>
+</body>
+</html>

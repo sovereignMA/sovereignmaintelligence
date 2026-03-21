@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Project Sovereign Media Kit — Brand assets, UI screenshots, press materials for PR use.">
+<title>Media Kit — Project Sovereign</title>
+<link rel="stylesheet" href="app.css">
+<style>
+.mk-wrap{max-width:1200px;margin:0 auto;padding:40px 20px}
+.mk-hero{text-align:center;padding:60px 20px 48px;border-bottom:1px solid var(--border)}
+.mk-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+.mk-section{padding:48px 0;border-bottom:1px solid var(--border)}
+.mk-section:last-child{border-bottom:none}
+.mk-h2{font-size:22px;font-weight:700;margin-bottom:6px}
+.mk-sub{font-size:13px;color:var(--text3);margin-bottom:28px}
+/* Screenshot frames */
+.screens-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.screen-frame{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;transition:all .2s}
+.screen-frame:hover{border-color:var(--gold);box-shadow:0 8px 40px rgba(201,168,76,.15);transform:translateY(-2px)}
+.screen-bar{background:var(--bg3);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.sb-dots{display:flex;gap:5px}
+.sb-dot{width:10px;height:10px;border-radius:50%}
+.sb-url{flex:1;background:rgba(255,255,255,.04);border-radius:5px;padding:3px 10px;font-family:var(--mono);font-size:10px;color:var(--text3);text-align:center}
+.screen-inner{padding:0;overflow:hidden}
+.screen-label{padding:10px 14px;font-size:11px;font-weight:600;color:var(--text2);text-align:center;background:var(--bg3);border-top:1px solid var(--border)}
+/* Brand colors grid */
+.colors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.color-swatch{border-radius:10px;overflow:hidden;border:1px solid var(--border2)}
+.color-block{height:80px}
+.color-info{padding:10px;background:var(--surface)}
+.color-name{font-size:12px;font-weight:600;color:var(--text)}
+.color-hex{font-size:11px;color:var(--text3);font-family:var(--mono)}
+/* Logo variants */
+.logos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.logo-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.logo-card.dark-bg{background:var(--bg)}
+.logo-card.light-bg{background:#fff}
+.logo-card.gold-bg{background:linear-gradient(135deg,#c9a84c,#8b6914)}
+.logo-name{font-size:11px;color:var(--text3);text-align:center}
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:28px}
+.stat-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.stat-num{font-size:28px;font-weight:800;font-family:var(--mono);color:var(--gold);line-height:1}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:5px;text-transform:uppercase;letter-spacing:.08em}
+/* Download btns */
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.dl-btn{background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:14px;display:flex;align-items:center;gap:10px;transition:all .15s;text-decoration:none}
+.dl-btn:hover{border-color:var(--gold);background:var(--gold-dim)}
+.dl-icon{font-size:22px}
+.dl-info{flex:1}
+.dl-name{font-size:13px;font-weight:600;color:var(--text)}
+.dl-type{font-size:11px;color:var(--text3)}
+/* Responsive */
+@media(max-width:640px){.screens-grid{grid-template-columns:1fr}.mk-section{padding:32px 0}.mk-hero{padding:40px 16px 36px}}
+</style>
+</head>
+<body>
+<div class="mk-wrap">
+
+  <!-- HERO -->
+  <div class="mk-hero">
+    <div class="mk-badge">● Press & Media</div>
+    <h1 style="font-size:clamp(28px,5vw,44px);font-weight:800;margin-bottom:12px;background:linear-gradient(140deg,#fff 0%,var(--gold2) 60%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Project Sovereign<br>Media Kit</h1>
+    <p style="font-size:16px;color:var(--text2);max-width:540px;margin:0 auto 24px;line-height:1.7">Brand assets, UI screenshots, and press materials for journalists, analysts, and partners covering the future of AI-assisted M&A.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <span class="badge badge-gold">Built in London</span>
+      <span class="badge badge-teal">Solo Founder</span>
+      <span class="badge badge-green">AI-Native M&A</span>
+      <span class="badge badge-blue">UK SaaS Focus</span>
+    </div>
+    <div style="margin-top:20px;font-size:12px;color:var(--text3)">Press enquiries: <a href="mailto:mercecomventures@gmail.com" style="color:var(--gold)">mercecomventures@gmail.com</a></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="mk-section">
+    <div class="mk-h2">Platform at a Glance</div>
+    <div class="mk-sub">Key metrics and facts for editorial use</div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-num">21</div><div class="stat-lbl">AI Agents</div></div>
+      <div class="stat-item"><div class="stat-num">33</div><div class="stat-lbl">DB Tables</div></div>
+      <div class="stat-item"><div class="stat-num">8</div><div class="stat-lbl">Edge Functions</div></div>
+      <div class="stat-item"><div class="stat-num">11</div><div class="stat-lbl">App Pages</div></div>
+      <div class="stat-item"><div class="stat-num">8</div><div class="stat-lbl">Cron Jobs</div></div>
+      <div class="stat-item"><div class="stat-num">£0</div><div class="stat-lbl">Capital Required</div></div>
+      <div class="stat-item"><div class="stat-num">0PG</div><div class="stat-lbl">Personal Guarantees</div></div>
+      <div class="stat-item"><div class="stat-num">48h</div><div class="stat-lbl">Time to Build</div></div>
+    </div>
+    <div class="card" style="font-size:13px;color:var(--text2);line-height:1.9;max-width:760px">
+      <strong style="color:var(--text)">About:</strong> Project Sovereign is an AI-native M&A command engine purpose-built to identify, approach, acquire, and exit UK SaaS businesses with zero personal capital and zero personal guarantees. Built by Howard Henry (solo founder, London) in a single weekend using Claude. The platform deploys 21 specialist AI agents across the full deal lifecycle — from sourcing to exit — backed by a 33-table PostgreSQL database, 8 Supabase Edge Functions, 8 automated cron jobs, and AES-256 encryption throughout.
+    </div>
+  </div>
+
+  <!-- UI SCREENSHOTS -->
+  <div class="mk-section">
+    <div class="mk-h2">UI Screenshots</div>
+    <div class="mk-sub">Rendered from the live platform with representative dummy data. High-resolution SVG illustrations.</div>
+    <div class="screens-grid" id="screensGrid"></div>
+  </div>
+
+  <!-- BRAND COLORS -->
+  <div class="mk-section">
+    <div class="mk-h2">Brand Colors</div>
+    <div class="mk-sub">Official color palette. Use these values in editorial graphics.</div>
+    <div class="colors-grid">
+      <div class="color-swatch"><div class="color-block" style="background:#c9a84c"></div><div class="color-info"><div class="color-name">Sovereign Gold</div><div class="color-hex">#C9A84C</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#07080f"></div><div class="color-info"><div class="color-name">Command Black</div><div class="color-hex">#07080F</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#141828"></div><div class="color-info"><div class="color-name">Surface Dark</div><div class="color-hex">#141828</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#2dd4bf"></div><div class="color-info"><div class="color-name">Data Teal</div><div class="color-hex">#2DD4BF</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#4ade80"></div><div class="color-info"><div class="color-name">Signal Green</div><div class="color-hex">#4ADE80</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#60a5fa"></div><div class="color-info"><div class="color-name">Intel Blue</div><div class="color-hex">#60A5FA</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#a78bfa"></div><div class="color-info"><div class="color-name">Agent Purple</div><div class="color-hex">#A78BFA</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#f87171"></div><div class="color-info"><div class="color-name">Alert Red</div><div class="color-hex">#F87171</div></div></div>
+      <div class="color-swatch"><div class="color-block" style="background:#eae8f4"></div><div class="color-info"><div class="color-name">Text Primary</div><div class="color-hex">#EAE8F4</div></div></div>
+    </div>
+  </div>
+
+  <!-- LOGO VARIANTS -->
+  <div class="mk-section">
+    <div class="mk-h2">Logo & Wordmark</div>
+    <div class="mk-sub">Available in dark, light, and gold variants. Use the appropriate version for your background.</div>
+    <div class="logos-grid">
+      <div class="logo-card dark-bg">
+        <div id="logoDark"></div>
+        <div class="logo-name">Dark Background (Primary)</div>
+      </div>
+      <div class="logo-card light-bg">
+        <div id="logoLight"></div>
+        <div class="logo-name" style="color:#333">Light Background</div>
+      </div>
+      <div class="logo-card gold-bg">
+        <div id="logoGold"></div>
+        <div class="logo-name" style="color:rgba(0,0,0,.7)">Gold Gradient</div>
+      </div>
+      <div class="logo-card" style="background:var(--surface2)">
+        <div id="logoIcon"></div>
+        <div class="logo-name">Icon Only (32×32 min)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPOGRAPHY -->
+  <div class="mk-section">
+    <div class="mk-h2">Typography</div>
+    <div class="mk-sub">Two typefaces. One purpose.</div>
+    <div class="g2" style="gap:16px">
+      <div class="card">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px">Display & UI — Inter</div>
+        <div style="font-size:40px;font-weight:800;color:var(--text);line-height:1.1;margin-bottom:8px">Sovereign</div>
+        <div style="font-size:24px;font-weight:600;color:var(--text2);margin-bottom:8px">ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
+        <div style="font-size:14px;color:var(--text2)">abcdefghijklmnopqrstuvwxyz 0123456789</div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text3)">Weights used: 300 · 400 · 500 · 600 · 700 · 800</div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px">Data & Code — JetBrains Mono</div>
+        <div style="font-family:var(--mono);font-size:32px;font-weight:600;color:var(--gold);line-height:1.2;margin-bottom:8px">£4.2M</div>
+        <div style="font-family:var(--mono);font-size:16px;color:var(--teal);margin-bottom:8px">EBITDA · ARR · SIC · NMD · 0PG</div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text3)">6× → 24× — Sovereign multiplier</div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text3)">Weights used: 400 · 600</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY MESSAGING -->
+  <div class="mk-section">
+    <div class="mk-h2">Key Messages</div>
+    <div class="mk-sub">Approved quotes and descriptions for editorial use.</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card" style="border-left:3px solid var(--gold)">
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px">"Acquire great businesses. Pay nothing upfront. Build an empire."</div>
+        <div style="font-size:12px;color:var(--text3)">Platform tagline — Howard Henry, Founder</div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--teal)">
+        <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:6px">"Project Sovereign is the first AI-native M&A command engine purpose-built for the UK SaaS market. It deploys 21 specialist agents across the full deal lifecycle — from Companies House intelligence gathering to NDA execution, from LOI drafting to founder relationship management — all operating autonomously on a Supabase backend with zero human bottlenecks."</div>
+        <div style="font-size:12px;color:var(--text3)">Long description — approved for editorial use</div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--blue)">
+        <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:6px">"Built in 48 hours by a solo London founder using Claude. AES-256 encrypted. UK GDPR compliant. FCA monitored. Zero personal capital deployed. This is what happens when AI meets M&A doctrine."</div>
+        <div style="font-size:12px;color:var(--text3)">Short description — approved for editorial use</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOWNLOADS -->
+  <div class="mk-section">
+    <div class="mk-h2">Downloads</div>
+    <div class="mk-sub">All assets are free for editorial, press, and partner use with attribution.</div>
+    <div class="dl-grid">
+      <a href="#" class="dl-btn" onclick="downloadSVG('logo-full');return false"><div class="dl-icon">⌘</div><div class="dl-info"><div class="dl-name">Full Logo SVG</div><div class="dl-type">Vector · All backgrounds</div></div></a>
+      <a href="#" class="dl-btn" onclick="downloadSVG('logo-icon');return false"><div class="dl-icon">◆</div><div class="dl-info"><div class="dl-name">Icon Only SVG</div><div class="dl-type">Vector · Favicon use</div></div></a>
+      <a href="#" class="dl-btn" onclick="downloadScreenshots();return false"><div class="dl-icon">📸</div><div class="dl-info"><div class="dl-name">UI Screenshots</div><div class="dl-type">SVG · All pages</div></div></a>
+      <a href="#" class="dl-btn" onclick="copyColors();return false"><div class="dl-icon">🎨</div><div class="dl-info"><div class="dl-name">Color Palette</div><div class="dl-type">Copy HEX values</div></div></a>
+      <a href="legal.html#privacy" class="dl-btn"><div class="dl-icon">📄</div><div class="dl-info"><div class="dl-name">Privacy Policy</div><div class="dl-type">UK GDPR compliant</div></div></a>
+      <a href="mailto:mercecomventures@gmail.com" class="dl-btn"><div class="dl-icon">✉</div><div class="dl-info"><div class="dl-name">Press Enquiries</div><div class="dl-type">mercecomventures@gmail.com</div></div></a>
+    </div>
+    <div style="margin-top:16px;font-size:12px;color:var(--text3);line-height:1.7">
+      <strong style="color:var(--text2)">Attribution:</strong> When using these assets please credit: "Project Sovereign by Howard Henry, London" · 
+      <strong style="color:var(--text2)">Restrictions:</strong> Do not alter brand colours or typefaces. Do not imply endorsement without written permission. Do not use assets in competitive or misleading contexts.
+    </div>
+  </div>
+
+</div><!-- /mk-wrap -->
+
+<script src="app.js"></script>
+<script>
+'use strict';
+
+/* ─── LOGO SVG GENERATOR ─── */
+function makeLogo(bg, textColor, goldColor) {
+  return `<svg width="200" height="48" viewBox="0 0 200 48" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="48" rx="8" fill="${bg}" opacity="0"/>
+    <rect x="0" y="8" width="32" height="32" rx="7" fill="url(#lg1)"/>
+    <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${goldColor}"/><stop offset="100%" stop-color="#8b6914"/></linearGradient></defs>
+    <path d="M16 12L22 15.5V22.5L16 26L10 22.5V15.5L16 12Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+    <circle cx="16" cy="19" r="2.5" fill="#000"/>
+    <text x="40" y="22" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="${textColor}" letter-spacing="0.06em">SOVEREIGN</text>
+    <text x="40" y="36" font-family="Inter,system-ui,sans-serif" font-weight="400" font-size="10" fill="${textColor}" opacity="0.5" letter-spacing="0.08em">M&amp;A INTELLIGENCE</text>
+  </svg>`;
+}
+
+function makeIcon(size=48) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="48" rx="11" fill="url(#iclg)"/>
+    <defs><linearGradient id="iclg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#6b4a10"/></linearGradient></defs>
+    <path d="M24 10L34 15.5V27.5L24 33L14 27.5V15.5L24 10Z" stroke="#000" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
+    <circle cx="24" cy="22" r="4" fill="#000"/>
+  </svg>`;
+}
+
+document.getElementById('logoDark').innerHTML  = makeLogo('transparent','#eae8f4','#c9a84c');
+document.getElementById('logoLight').innerHTML = makeLogo('transparent','#141828','#c9a84c');
+document.getElementById('logoGold').innerHTML  = makeLogo('transparent','#000','#000000');
+document.getElementById('logoIcon').innerHTML  = makeIcon(64);
+
+/* ─── UI SCREENSHOT GENERATOR ─── */
+const PAGES = [
+  {
+    url:'sovereign.app/command',
+    label:'Command Centre — 21 AI Agents',
+    color:'#c9a84c',
+    render: (w,h) => `
+      <!-- Nav -->
+      <rect width="${w}" height="44" fill="#0b0d1a"/>
+      <rect x="12" y="14" width="22" height="16" rx="5" fill="url(#ng)"/>
+      <text x="44" y="26" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#c9a84c" letter-spacing=".06">SOVEREIGN</text>
+      <defs><linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#6b4a10"/></linearGradient></defs>
+      ${[100,150,200,250,295,340].map((x,i)=>`<rect x="${x}" y="18" width="${[50,65,60,55,55,45][i]}" height="8" rx="4" fill="rgba(255,255,255,${i===1?'.18':'.06'})"/>`).join('')}
+      <!-- Sidebar agents -->
+      <rect y="44" width="150" height="${h-44}" fill="#0f1120"/>
+      <rect y="44" x="150" width="1" height="${h-44}" fill="rgba(255,255,255,.06)"/>
+      ${[0,1,2,3,4,5,6,7].map(i=>`
+        <rect x="10" y="${54+i*36}" width="24" height="24" rx="6" fill="${['rgba(201,168,76,.15)','rgba(45,212,191,.15)','rgba(96,165,250,.15)','rgba(167,139,250,.15)','rgba(248,113,113,.15)','rgba(74,222,128,.15)','rgba(251,191,36,.15)','rgba(129,140,248,.15)'][i]}"/>
+        <text x="22" y="${54+i*36+16}" font-family="monospace" font-size="8" font-weight="700" fill="${['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#f87171','#4ade80','#fbbf24','#818cf8'][i]}" text-anchor="middle">S${i+1}</text>
+        <rect x="44" y="${60+i*36}" width="${[60,70,65,55,60,50,55,60][i]}" height="6" rx="3" fill="rgba(255,255,255,.1)"/>
+        <rect x="44" y="${70+i*36}" width="${[40,50,45,35,40,30,35,40][i]}" height="4" rx="2" fill="rgba(255,255,255,.05)"/>
+      `).join('')}
+      <!-- Chat area -->
+      <rect x="151" y="44" width="${w-151}" height="${h-44}" fill="#07080f"/>
+      <!-- Chat header -->
+      <rect x="151" y="44" width="${w-151}" height="48" fill="#0b0d1a"/>
+      <rect x="168" y="56" width="28" height="28" rx="7" fill="rgba(45,212,191,.15)"/>
+      <text x="182" y="74" font-family="monospace" font-size="9" fill="#2dd4bf" text-anchor="middle" font-weight="700">S1</text>
+      <rect x="206" y="60" width="80" height="8" rx="4" fill="rgba(255,255,255,.12)"/>
+      <rect x="206" y="72" width="55" height="5" rx="2" fill="rgba(255,255,255,.05)"/>
+      <!-- Messages -->
+      <!-- User msg -->
+      <rect x="${w-220}" y="${100}" width="200" height="36" rx="8" fill="rgba(201,168,76,.1)" stroke="rgba(201,168,76,.2)" stroke-width="1"/>
+      <rect x="${w-215}" y="${108}" width="120" height="6" rx="3" fill="rgba(201,168,76,.4)"/>
+      <rect x="${w-215}" y="${120}" width="80" height="5" rx="2" fill="rgba(201,168,76,.2)"/>
+      <!-- Agent reply -->
+      <rect x="168" y="150" width="260" height="70" rx="8" fill="#141828" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+      <rect x="178" y="162" width="140" height="6" rx="3" fill="rgba(45,212,191,.5)"/>
+      <rect x="178" y="174" width="230" height="5" rx="2" fill="rgba(255,255,255,.12)"/>
+      <rect x="178" y="184" width="200" height="5" rx="2" fill="rgba(255,255,255,.09)"/>
+      <rect x="178" y="194" width="160" height="5" rx="2" fill="rgba(255,255,255,.07)"/>
+      <!-- Input bar -->
+      <rect x="151" y="${h-52}" width="${w-151}" height="52" fill="#0b0d1a"/>
+      <rect x="164" y="${h-40}" width="${w-230}" height="28" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+      <rect x="${w-64}" y="${h-44}" width="36" height="36" rx="8" fill="rgba(201,168,76,.2)"/>
+    `
+  },
+  {
+    url:'sovereign.app/pipeline',
+    label:'Deal Pipeline — Kanban Board',
+    color:'#2dd4bf',
+    render: (w,h) => `
+      <rect width="${w}" height="44" fill="#0b0d1a"/>
+      ${[0,1,2,3,4,5,6,7].map((i)=>`
+        <rect x="${15+i*(w-30)/8}" y="${52}" width="${(w-50)/8}" height="${h-64}" rx="6" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <rect x="${20+i*(w-30)/8}" y="${58}" width="${(w-70)/9}" height="7" rx="3" fill="${['rgba(148,144,170,.5)','rgba(201,168,76,.5)','rgba(251,191,36,.5)','rgba(96,165,250,.5)','rgba(167,139,250,.5)','rgba(45,212,191,.5)','rgba(74,222,128,.5)','rgba(248,113,113,.5)'][i]}"/>
+        ${[0,1,2].map(j=> j < [3,2,4,2,1,2,1,0][i] ? `
+          <rect x="${20+i*(w-30)/8}" y="${72+j*44}" width="${(w-70)/9}" height="36" rx="5" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+          <rect x="${26+i*(w-30)/8}" y="${78+j*44}" width="${30+Math.random()*30|0}" height="5" rx="2" fill="rgba(255,255,255,.15)"/>
+          <rect x="${26+i*(w-30)/8}" y="${87+j*44}" width="${20+Math.random()*20|0}" height="4" rx="2" fill="rgba(201,168,76,.3)"/>
+          <rect x="${26+i*(w-30)/8}" y="${96+j*44}" width="${15+Math.random()*15|0}" height="3" rx="2" fill="rgba(255,255,255,.06)"/>
+        ` : '').join('')}
+      `).join('')}
+    `
+  },
+  {
+    url:'sovereign.app/intelligence',
+    label:'Market Intelligence — Sector Analysis',
+    color:'#60a5fa',
+    render: (w,h) => {
+      const bars = [62,78,45,91,55,68,82,40,73,58];
+      const maxH = 80;
+      return `
+        <rect width="${w}" height="44" fill="#0b0d1a"/>
+        <!-- stat tiles -->
+        ${[0,1,2,3].map(i=>`
+          <rect x="${10+i*(w-20)/4}" y="52" width="${(w-30)/4}" height="60" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+          <rect x="${20+i*(w-20)/4}" y="64" width="${30+i*5}" height="5" rx="2" fill="rgba(255,255,255,.07)"/>
+          <rect x="${20+i*(w-20)/4}" y="74" width="${20+i*8}" height="12" rx="3" fill="${['rgba(201,168,76,.5)','rgba(45,212,191,.5)','rgba(96,165,250,.5)','rgba(74,222,128,.5)'][i]}"/>
+          <rect x="${20+i*(w-20)/4}" y="92" width="${15+i*4}" height="4" rx="2" fill="rgba(255,255,255,.06)"/>
+        `).join('')}
+        <!-- Chart area -->
+        <rect x="10" y="122" width="${w/2-15}" height="${h-132}" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <rect x="${w/2+5}" y="122" width="${w/2-15}" height="${h-132}" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <!-- Bar chart in left card -->
+        ${bars.map((v,i)=>`
+          <rect x="${20+i*(w/2-35)/10}" y="${h-12-Math.round(v/100*(h-160))}" width="${(w/2-55)/10}" height="${Math.round(v/100*(h-160))}" rx="2" fill="${v>70?'rgba(201,168,76,.7)':'rgba(96,165,250,.4)'}"/>
+        `).join('')}
+        <!-- Line in right card -->
+        <polyline points="${[0,1,2,3,4,5,6,7].map(i=>`${w/2+20+i*((w/2-30)/7)},${h-20-[30,45,35,60,50,70,55,80][i]}`).join(' ')}" fill="none" stroke="rgba(45,212,191,.6)" stroke-width="2"/>
+        ${[0,1,2,3,4,5,6,7].map(i=>`<circle cx="${w/2+20+i*((w/2-30)/7)}" cy="${h-20-[30,45,35,60,50,70,55,80][i]}" r="3" fill="#2dd4bf"/>`).join('')}
+      `;
+    }
+  },
+  {
+    url:'sovereign.app/admin',
+    label:'Admin Dashboard — Live Monitoring',
+    color:'#f87171',
+    render: (w,h) => `
+      <rect width="${w}" height="44" fill="#0b0d1a"/>
+      <!-- sidebar -->
+      <rect y="44" width="130" height="${h-44}" fill="#0f1120"/>
+      ${[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>`
+        <rect x="10" y="${54+i*26}" width="${i===0?110:90}" height="18" rx="5" fill="${i===0?'rgba(201,168,76,.12)':'rgba(255,255,255,.02)'}"/>
+        <rect x="16" y="${60+i*26}" width="8" height="6" rx="2" fill="${i===0?'rgba(201,168,76,.6)':'rgba(255,255,255,.1)'}"/>
+        <rect x="30" y="${61+i*26}" width="${30+i%3*10}" height="4" rx="2" fill="${i===0?'rgba(201,168,76,.4)':'rgba(255,255,255,.07)'}"/>
+      `).join('')}
+      <!-- main content -->
+      <rect x="131" y="44" width="${w-131}" height="${h-44}" fill="#07080f"/>
+      <!-- metric tiles row -->
+      ${[0,1,2,3,4,5].map(i=>`
+        <rect x="${140+i*((w-150)/6)}" y="52" width="${(w-170)/6}" height="54" rx="7" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <rect x="${148+i*((w-150)/6)}" y="${48+i*0+20}" width="${15+i}" height="3" rx="1" fill="rgba(255,255,255,.06)"/>
+        <rect x="${148+i*((w-150)/6)}" y="${48+i*0+28}" width="${20+i*3}" height="10" rx="3" fill="${['rgba(201,168,76,.5)','rgba(74,222,128,.5)','rgba(45,212,191,.5)','rgba(96,165,250,.5)','rgba(167,139,250,.5)','rgba(248,113,113,.5)'][i]}"/>
+        <rect x="${148+i*((w-150)/6)}" y="${48+i*0+42}" width="${12+i*2}" height="3" rx="1" fill="rgba(255,255,255,.04)"/>
+      `).join('')}
+      <!-- two cards below -->
+      <rect x="140" y="116" width="${(w-155)/2}" height="${h-130}" rx="7" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+      <rect x="${140+(w-155)/2+5}" y="116" width="${(w-155)/2}" height="${h-130}" rx="7" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+      <!-- Bar in left -->
+      ${[0,1,2,3,4].map(i=>`
+        <rect x="150" y="${126+i*20}" width="${30+[60,45,80,35,70][i]}" height="12" rx="3" fill="rgba(201,168,76,${[.5,.35,.65,.3,.55][i]})"/>
+        <rect x="150" y="${126+i*20}" width="${8+[20,15,26,12,22][i]}" height="12" rx="3" fill="rgba(201,168,76,${[.8,.6,1,.5,.85][i]})"/>
+      `).join('')}
+      <!-- Agent dots in right -->
+      ${[0,1,2,3,4,5,6].map(i=>`
+        <circle cx="${140+(w-155)/2+20+i*24}" cy="${128}" r="8" fill="${['rgba(201,168,76,.2)','rgba(45,212,191,.2)','rgba(96,165,250,.2)','rgba(167,139,250,.2)','rgba(74,222,128,.2)','rgba(251,191,36,.2)','rgba(248,113,113,.2)'][i]}" stroke="${['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#4ade80','#fbbf24','#f87171'][i]}" stroke-width="1"/>
+        <text x="${140+(w-155)/2+20+i*24}" y="${132}" font-family="monospace" font-size="6" fill="${['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#4ade80','#fbbf24','#f87171'][i]}" text-anchor="middle" font-weight="700">S${i+1}</text>
+      `).join('')}
+    `
+  },
+  {
+    url:'sovereign.app/comms',
+    label:'Comms — Gmail AI Draft (Mila Quinn)',
+    color:'#4ade80',
+    render: (w,h) => `
+      <rect width="${w}" height="44" fill="#0b0d1a"/>
+      <rect x="10" y="52" width="${w/2-15}" height="${h-62}" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+      <rect x="${w/2+5}" y="52" width="${w/2-15}" height="${h-62}" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+      <!-- Left: Gmail thread list -->
+      ${[0,1,2,3,4,5].map(i=>`
+        <rect x="18" y="${60+i*38}" width="${w/2-30}" height="30" rx="5" fill="${i===1?'rgba(201,168,76,.06)':'rgba(255,255,255,.02)'}"/>
+        <rect x="24" y="${66+i*38}" width="6" height="6" rx="3" fill="${['rgba(74,222,128,.6)','rgba(201,168,76,.6)','rgba(148,144,170,.3)','rgba(148,144,170,.3)','rgba(74,222,128,.4)','rgba(148,144,170,.3)'][i]}"/>
+        <rect x="36" y="${66+i*38}" width="${60+i*5}" height="4" rx="2" fill="rgba(255,255,255,.15)"/>
+        <rect x="36" y="${74+i*38}" width="${80+i*3}" height="3" rx="2" fill="rgba(255,255,255,.06)"/>
+        <rect x="${w/2-40}" y="${66+i*38}" width="22" height="4" rx="2" fill="rgba(255,255,255,.05)"/>
+      `).join('')}
+      <!-- Right: Compose / AI draft -->
+      <rect x="${w/2+13}" y="60" width="${w/2-28}" height="32" rx="6" fill="rgba(45,212,191,.06)" stroke="rgba(45,212,191,.2)" stroke-width="1"/>
+      <text x="${w/2+22}" y="${80}" font-family="Inter,sans-serif" font-size="9" fill="#2dd4bf" font-weight="600">✦ Mila Quinn — AI Draft Ready</text>
+      <rect x="${w/2+13}" y="100" width="${w/2-28}" height="20" rx="4" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+      <rect x="${w/2+20}" y="108" width="30" height="4" rx="2" fill="rgba(255,255,255,.08)"/>
+      <rect x="${w/2+57}" y="108" width="60" height="4" rx="2" fill="rgba(255,255,255,.14)"/>
+      ${[0,1,2,3,4,5].map(i=>`
+        <rect x="${w/2+13}" y="${126+i*13}" width="${[180,160,170,150,165,100][i]}" height="4" rx="2" fill="rgba(255,255,255,${[.1,.08,.09,.07,.08,.05][i]})"/>
+      `).join('')}
+      <rect x="${w/2+13}" y="${h-30}" width="${w/2-28}" height="26" rx="6" fill="rgba(201,168,76,.15)" stroke="rgba(201,168,76,.3)" stroke-width="1"/>
+      <text x="${w/2+20}" y="${h-14}" font-family="Inter,sans-serif" font-size="9" fill="#c9a84c">Send via Gmail ↗</text>
+    `
+  },
+  {
+    url:'sovereign.app/vault',
+    label:'Document Vault — M&A Templates',
+    color:'#a78bfa',
+    render: (w,h) => `
+      <rect width="${w}" height="44" fill="#0b0d1a"/>
+      <!-- Search bar -->
+      <rect x="10" y="52" width="${w-20}" height="30" rx="8" fill="#141828" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+      <rect x="20" y="62" width="12" height="10" rx="2" fill="rgba(255,255,255,.08)"/>
+      <rect x="38" y="65" width="120" height="4" rx="2" fill="rgba(255,255,255,.07)"/>
+      <!-- Doc grid -->
+      ${[0,1,2,3,4,5,6,7,8].map(i=>`
+        <rect x="${10+(i%3)*((w-25)/3)}" y="${90+Math.floor(i/3)*78}" width="${(w-30)/3}" height="68" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <rect x="${18+(i%3)*((w-25)/3)}" y="${100+Math.floor(i/3)*78}" width="${(w-50)/3}" height="30" rx="5" fill="${['rgba(201,168,76,.08)','rgba(96,165,250,.08)','rgba(167,139,250,.08)','rgba(74,222,128,.08)','rgba(248,113,113,.08)','rgba(45,212,191,.08)','rgba(251,191,36,.08)','rgba(201,168,76,.05)','rgba(96,165,250,.05)'][i]}"/>
+        <rect x="${24+(i%3)*((w-25)/3)}" y="${108+Math.floor(i/3)*78}" width="20" height="14" rx="3" fill="${['rgba(201,168,76,.3)','rgba(96,165,250,.3)','rgba(167,139,250,.3)','rgba(74,222,128,.3)','rgba(248,113,113,.3)','rgba(45,212,191,.3)','rgba(251,191,36,.3)','rgba(201,168,76,.2)','rgba(96,165,250,.2)'][i]}"/>
+        <rect x="${18+(i%3)*((w-25)/3)}" y="${136+Math.floor(i/3)*78}" width="${40+i*5}" height="4" rx="2" fill="rgba(255,255,255,.1)"/>
+        <rect x="${18+(i%3)*((w-25)/3)}" y="${144+Math.floor(i/3)*78}" width="${25+i*3}" height="3" rx="2" fill="rgba(255,255,255,.05)"/>
+      `).join('')}
+    `
+  },
+  {
+    url:'sovereign.app/analytics',
+    label:'Analytics — IRR & Waterfall Models',
+    color:'#fbbf24',
+    render: (w,h) => {
+      const wfData = [100,140,110,160,120,200,80,240];
+      const wfColors = ['rgba(74,222,128,.7)','rgba(74,222,128,.5)','rgba(248,113,113,.5)','rgba(74,222,128,.6)','rgba(248,113,113,.4)','rgba(74,222,128,.7)','rgba(248,113,113,.5)','rgba(201,168,76,.8)'];
+      return `
+        <rect width="${w}" height="44" fill="#0b0d1a"/>
+        <!-- KPI row -->
+        ${[0,1,2,3].map(i=>`
+          <rect x="${10+i*(w-20)/4}" y="52" width="${(w-28)/4}" height="44" rx="7" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+          <rect x="${18+i*(w-20)/4}" y="62" width="30" height="4" rx="2" fill="rgba(255,255,255,.07)"/>
+          <rect x="${18+i*(w-20)/4}" y="72" width="${25+i*5}" height="10" rx="3" fill="${['rgba(251,191,36,.5)','rgba(74,222,128,.5)','rgba(45,212,191,.5)','rgba(201,168,76,.5)'][i]}"/>
+          <rect x="${18+i*(w-20)/4}" y="86" width="20" height="3" rx="2" fill="rgba(255,255,255,.05)"/>
+        `).join('')}
+        <!-- Waterfall chart -->
+        <rect x="10" y="104" width="${(w-25)*0.55}" height="${h-114}" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        ${wfData.map((v,i)=>`
+          <rect x="${22+i*((((w-25)*0.55)-24)/8)}" y="${h-14-Math.round(v/240*(h-130))}" width="${(((w-25)*0.55)-32)/8}" height="${Math.round(v/240*(h-130))}" rx="2" fill="${wfColors[i]}"/>
+        `).join('')}
+        <!-- IRR donut -->
+        <rect x="${10+(w-25)*0.55+5}" y="104" width="${(w-25)*0.45-5}" height="${h-114}" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <circle cx="${10+(w-25)*0.55+5+(w-25)*0.225}" cy="${104+(h-114)/2}" r="${(h-130)/2.5}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="${(h-130)/7}"/>
+        <circle cx="${10+(w-25)*0.55+5+(w-25)*0.225}" cy="${104+(h-114)/2}" r="${(h-130)/2.5}" fill="none" stroke="#c9a84c" stroke-width="${(h-130)/8}" stroke-dasharray="${(h-130)/2.5*2*3.14159*0.73} ${(h-130)/2.5*2*3.14159*0.27}" stroke-dashoffset="${(h-130)/2.5*2*3.14159*0.25}"/>
+        <text x="${10+(w-25)*0.55+5+(w-25)*0.225}" y="${104+(h-114)/2+5}" font-family="monospace" font-size="12" font-weight="700" fill="#c9a84c" text-anchor="middle">73%</text>
+        <text x="${10+(w-25)*0.55+5+(w-25)*0.225}" y="${104+(h-114)/2+18}" font-family="Inter,sans-serif" font-size="8" fill="rgba(255,255,255,.4)" text-anchor="middle">IRR</text>
+      `;
+    }
+  },
+  {
+    url:'sovereign.app/security',
+    label:'Security — Audit Trail & Compliance',
+    color:'#6b7280',
+    render: (w,h) => `
+      <rect width="${w}" height="44" fill="#0b0d1a"/>
+      <!-- security score -->
+      <rect x="10" y="52" width="${(w-25)/3}" height="80" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+      <circle cx="${10+(w-25)/6}" cy="${92}" r="24" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="6"/>
+      <circle cx="${10+(w-25)/6}" cy="${92}" r="24" fill="none" stroke="#4ade80" stroke-width="6" stroke-dasharray="${24*2*3.14159*0.94} ${24*2*3.14159*0.06}" stroke-dashoffset="${24*2*3.14159*0.25}"/>
+      <text x="${10+(w-25)/6}" y="${97}" font-family="monospace" font-size="11" font-weight="700" fill="#4ade80" text-anchor="middle">94</text>
+      <!-- stat cards -->
+      ${[1,2].map(i=>`
+        <rect x="${10+i*(w-25)/3+i*5}" y="52" width="${(w-25)/3}" height="38" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <rect x="${10+i*(w-25)/3+i*5+8}" y="62" width="25" height="4" rx="2" fill="rgba(255,255,255,.07)"/>
+        <rect x="${10+i*(w-25)/3+i*5+8}" y="72" width="30" height="8" rx="3" fill="${['rgba(74,222,128,.4)','rgba(248,113,113,.2)'][i-1]}"/>
+        <rect x="${10+i*(w-25)/3+i*5}" y="96" width="${(w-25)/3}" height="38" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+      `).join('')}
+      <!-- Audit log table -->
+      <rect x="10" y="140" width="${w-20}" height="${h-150}" rx="8" fill="#141828" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+      <rect x="10" y="140" width="${w-20}" height="16" rx="8" fill="rgba(255,255,255,.03)"/>
+      ${['TIME','EVENT','AGENT','STATUS'].map((lbl,i)=>`<text x="${22+i*(w-30)/4}" y="${152}" font-family="Inter,sans-serif" font-size="7" fill="rgba(255,255,255,.3)" font-weight="600" letter-spacing=".08em">${lbl}</text>`).join('')}
+      ${[0,1,2,3,4,5,6].map(i=>`
+        <rect x="10" y="${158+i*18}" width="${w-20}" height="16" rx="0" fill="${i%2===0?'rgba(255,255,255,.01)':'transparent'}"/>
+        <rect x="18" y="${162+i*18}" width="28" height="4" rx="2" fill="rgba(255,255,255,.08)"/>
+        <rect x="${18+(w-30)/4}" y="${162+i*18}" width="${50+i*4}" height="4" rx="2" fill="rgba(255,255,255,.1)"/>
+        <rect x="${18+(w-30)/2}" y="${162+i*18}" width="35" height="4" rx="2" fill="rgba(255,255,255,.07)"/>
+        <rect x="${18+(w-30)*0.75}" y="${162+i*18}" width="20" height="8" rx="4" fill="${i===2?'rgba(248,113,113,.2)':'rgba(74,222,128,.15)'}"/>
+      `).join('')}
+    `
+  }
+];
+
+function makeScreen(page, w, h) {
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="display:block">
+    <rect width="${w}" height="${h}" fill="#07080f"/>
+    ${page.render(w, h)}
+    <!-- URL bar overlay hint -->
+    <rect x="0" y="0" width="${w}" height="44" fill="rgba(11,13,26,0.95)"/>
+    <circle cx="12" cy="22" r="3" fill="#f87171" opacity=".7"/>
+    <circle cx="22" cy="22" r="3" fill="#fbbf24" opacity=".7"/>
+    <circle cx="32" cy="22" r="3" fill="#4ade80" opacity=".7"/>
+    <rect x="50" y="14" width="${w-100}" height="16" rx="5" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+    <text x="${w/2}" y="25" font-family="monospace" font-size="8" fill="rgba(255,255,255,.3)" text-anchor="middle">${page.url}</text>
+  </svg>`;
+}
+
+// Render all screens
+const grid = document.getElementById('screensGrid');
+PAGES.forEach(page => {
+  const wrap = document.createElement('div');
+  wrap.className = 'screen-frame';
+  const W = 520, H = 320;
+  wrap.innerHTML = `
+    <div class="screen-inner">${makeScreen(page, W, H)}</div>
+    <div class="screen-label" style="border-top:2px solid ${page.color}40">${page.label}</div>
+  `;
+  grid.appendChild(wrap);
+});
+
+/* ─── DOWNLOAD HELPERS ─── */
+function downloadSVG(type) {
+  const svg = type === 'logo-full'
+    ? makeLogo('#07080f','#eae8f4','#c9a84c')
+    : makeIcon(128);
+  const blob = new Blob([svg], {type:'image/svg+xml'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `sovereign-${type}.svg`; a.click();
+  Toast.show('SVG downloaded','ok');
+}
+
+function downloadScreenshots() {
+  const page = PAGES[0];
+  const svg = makeScreen(page, 1440, 900);
+  const blob = new Blob([svg], {type:'image/svg+xml'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'sovereign-command-screen.svg'; a.click();
+  Toast.show('Screenshot downloaded — repeat for each page','ok',4000);
+}
+
+function copyColors() {
+  const colors = '#C9A84C\n#07080F\n#141828\n#2DD4BF\n#4ADE80\n#60A5FA\n#A78BFA\n#F87171\n#EAE8F4';
+  navigator.clipboard.writeText(colors).then(()=>Toast.show('Color palette copied to clipboard','ok'));
+}
+</script>
+</body>
+</html>

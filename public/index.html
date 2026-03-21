@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Project Sovereign — AI-native M&A command engine. Acquire UK SaaS at 4–8× EBITDA. Exit at 15–30×. Zero personal capital. 21 AI agents. Built in London.">
+<meta property="og:title" content="Project Sovereign — UK M&A Command Engine">
+<meta property="og:description" content="21 AI agents. Zero personal capital. Acquire UK SaaS at 4–8×. Exit at 15–30×.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<title>Project Sovereign — UK Tech M&A Command Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+/* ── CANVAS ── */
+#c3d{position:fixed;inset:0;z-index:0;pointer-events:none}
+.z1{position:relative;z-index:1}
+
+/* ── SCROLL PROGRESS ── */
+#scrollProgress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:9999;transition:width .1s linear;pointer-events:none}
+
+/* ── SECTIONS ── */
+.scene-section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;text-align:center;position:relative;overflow:hidden}
+.scene-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(201,168,76,.04) 0%,transparent 70%);pointer-events:none;opacity:0;transition:opacity 1s ease}
+.scene-section.in-view::before{opacity:1}
+
+/* ── HERO ── */
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.28);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px}
+.hero-h1{max-width:900px;line-height:1.04;margin-bottom:22px;font-size:clamp(2.6rem,6.5vw,5.5rem);font-weight:900;background:linear-gradient(140deg,#fff 0%,var(--gold2) 55%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em}
+.hero-sub{font-size:clamp(15px,2vw,19px);color:var(--text2);max-width:600px;line-height:1.75;margin-bottom:36px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.hero-metrics{display:flex;gap:0;margin-top:60px;border:1px solid var(--border2);border-radius:var(--r2);background:rgba(11,13,24,.8);backdrop-filter:blur(16px);overflow:hidden;flex-wrap:wrap}
+.hm{padding:20px 32px;text-align:center;border-right:1px solid var(--border);flex:1;min-width:100px}
+.hm:last-child{border-right:none}
+.hm-val{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;font-family:var(--mono);color:var(--gold2);display:block;line-height:1}
+.hm-label{font-size:10px;color:var(--text3);margin-top:6px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ── REVEAL ANIMATIONS ── */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s ease,transform .8s ease}
+.reveal.active{opacity:1;transform:none}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity .8s ease,transform .8s ease}
+.reveal-left.active{opacity:1;transform:none}
+.reveal-right{opacity:0;transform:translateX(40px);transition:opacity .8s ease,transform .8s ease}
+.reveal-right.active{opacity:1;transform:none}
+.reveal-scale{opacity:0;transform:scale(.92);transition:opacity .8s ease,transform .8s cubic-bezier(.34,1.4,.64,1)}
+.reveal-scale.active{opacity:1;transform:scale(1)}
+[data-delay="1"]{transition-delay:.1s}[data-delay="2"]{transition-delay:.2s}[data-delay="3"]{transition-delay:.3s}[data-delay="4"]{transition-delay:.4s}[data-delay="5"]{transition-delay:.5s}[data-delay="6"]{transition-delay:.6s}[data-delay="7"]{transition-delay:.7s}[data-delay="8"]{transition-delay:.8s}[data-delay="9"]{transition-delay:.9s}
+
+/* ── SECTION LABELS ── */
+.s-label{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.16em;margin-bottom:12px;display:block}
+.s-title{font-size:clamp(24px,4vw,40px);font-weight:800;line-height:1.15;margin-bottom:16px;letter-spacing:-.02em}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:linear-gradient(to right,transparent,var(--border2) 20%,var(--border2) 80%,transparent)}
+
+/* ── AGENTS TICKER ── */
+.ticker-wrap{overflow:hidden;padding:40px 0;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.ticker-inner{display:flex;gap:12px;animation:ticker 50s linear infinite;width:max-content}
+.ticker-inner:hover{animation-play-state:paused}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.agent-chip{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;transition:all .15s}
+.agent-chip:hover{border-color:rgba(201,168,76,.4);transform:translateY(-2px)}
+.chip-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono)}
+.chip-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap}
+.chip-role{font-size:10px;color:var(--text3);white-space:nowrap}
+
+/* ── FEATURES GRID ── */
+.features-section{padding:100px 24px;max-width:1200px;margin:0 auto;width:100%}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+@media(max-width:900px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.feat-grid{grid-template-columns:1fr}}
+.feat{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;transition:all .25s;position:relative;overflow:hidden}
+.feat::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .3s}
+.feat:hover{border-color:var(--border3);transform:translateY(-4px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.feat:hover::after{opacity:.6}
+.feat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+.feat-title{font-size:14px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.feat-desc{font-size:13px;color:var(--text2);line-height:1.7}
+
+/* ── DOCTRINE ── */
+.doctrine-section{padding:100px 24px;max-width:1100px;margin:0 auto;width:100%}
+.doctrine-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+@media(max-width:768px){.doctrine-grid{grid-template-columns:1fr}}
+.doctrine-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px;position:relative;overflow:hidden}
+.doctrine-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px}
+.dc-gold::before{background:var(--gold)}.dc-teal::before{background:var(--teal)}.dc-green::before{background:var(--green)}
+.dc-val{font-size:clamp(2rem,4vw,3rem);font-weight:900;font-family:var(--mono);line-height:1;margin-bottom:6px}
+.dc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;font-weight:700}
+.dc-desc{font-size:13px;color:var(--text2);line-height:1.7}
+
+/* ── TARGET PROFILE ── */
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:28px}
+.profile-tile{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.pt-val{font-size:clamp(1.2rem,2.5vw,1.8rem);font-weight:800;font-family:var(--mono);line-height:1}
+.pt-lbl{font-size:10px;color:var(--text3);margin-top:5px;text-transform:uppercase;letter-spacing:.08em}
+
+/* ── TIMELINE ── */
+.timeline-section{padding:100px 24px;max-width:900px;margin:0 auto;width:100%}
+.tl{position:relative;margin-top:48px}
+.tl::before{content:'';position:absolute;left:28px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--border2) 8%,var(--border2) 92%,transparent)}
+.tl-item{display:flex;gap:20px;padding-bottom:36px}
+.tl-dot{width:56px;height:56px;border-radius:50%;border:1px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;font-family:var(--mono);color:var(--gold);z-index:1;position:relative;transition:all .3s}
+.tl-item:hover .tl-dot{border-color:var(--gold);box-shadow:0 0 20px var(--glow);background:var(--gold-dim)}
+.tl-body{padding-top:14px;flex:1}
+.tl-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+.tl-desc{font-size:13px;color:var(--text2);line-height:1.7}
+.tl-agents{font-size:11px;color:var(--gold);margin-top:6px;font-family:var(--mono)}
+
+/* ── TECH STACK ── */
+.stack-section{padding:80px 24px;max-width:1100px;margin:0 auto;width:100%}
+.stack-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:28px}
+.stack-pill{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;transition:all .2s}
+.stack-pill:hover{border-color:rgba(201,168,76,.4);color:var(--text);transform:translateY(-2px)}
+
+/* ── COMPLIANCE ── */
+.compliance-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+.comp-pill{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px}
+
+/* ── CTA ── */
+.cta-section{padding:120px 24px;text-align:center;background:radial-gradient(ellipse at center,rgba(201,168,76,.07) 0%,transparent 70%);border-top:1px solid var(--border)}
+
+/* ── FOOTER ── */
+.footer{padding:40px 24px;border-top:1px solid var(--border);max-width:1200px;margin:0 auto}
+.footer-links a{font-size:12px;color:var(--text3);text-decoration:none;padding:4px 8px;border-radius:5px;transition:all .15s}
+.footer-links a:hover{color:var(--text);background:var(--surface)}
+
+/* ── 3D SCENE TRANSITION INDICATORS ── */
+.scene-indicator{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100}
+.si-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);cursor:pointer;transition:all .3s}
+.si-dot.active{background:var(--gold);box-shadow:0 0 8px var(--glow)}
+
+@media(max-width:768px){.hero-metrics{flex-direction:column}.hm{border-right:none;border-bottom:1px solid var(--border)}.hm:last-child{border-bottom:none}.tl::before{left:20px}.tl-dot{width:40px;height:40px;font-size:10px}.doctrine-grid,.features-section .feat-grid{grid-template-columns:1fr}.scene-indicator{display:none}}
+@media(max-width:480px){.scene-section{padding:60px 16px}.features-section,.doctrine-section,.stack-section,.timeline-section{padding:60px 16px}}
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div id="scrollProgress" style="width:0%"></div>
+
+<!-- SCENE DOTS -->
+<nav class="scene-indicator" id="sceneNav"></nav>
+
+<!-- 3D CANVAS -->
+<canvas id="c3d"></canvas>
+
+<!-- ═══ HERO ═══ -->
+<section class="scene-section z1" id="sec0" data-scene="hero">
+  <div class="hero-badge reveal"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block"></span>21 Agents Online · London</div>
+  <h1 class="hero-h1 reveal" data-delay="1">Acquire UK SaaS.<br>Pay Nothing Upfront.<br>Build an Empire.</h1>
+  <p class="hero-sub reveal" data-delay="2">Project Sovereign is the AI-native M&A command engine for UK SaaS roll-ups. Zero personal capital. Zero personal guarantees. 21 specialist agents across the full deal lifecycle.</p>
+  <div class="hero-cta reveal" data-delay="3">
+    <a href="login.html" class="btn btn-primary" style="padding:13px 28px;font-size:15px">Enter Command ⌘</a>
+    <a href="resources.html" class="btn btn-outline" style="padding:13px 28px;font-size:15px">How It Works</a>
+  </div>
+  <div class="hero-metrics reveal" data-delay="4">
+    <div class="hm"><span class="hm-val">21</span><div class="hm-label">AI Agents</div></div>
+    <div class="hm"><span class="hm-val">4–8×</span><div class="hm-label">Entry Multiple</div></div>
+    <div class="hm"><span class="hm-val">15–30×</span><div class="hm-label">Exit Multiple</div></div>
+    <div class="hm"><span class="hm-val">£0</span><div class="hm-label">Capital Required</div></div>
+    <div class="hm"><span class="hm-val">0PG</span><div class="hm-label">Personal Guarantees</div></div>
+  </div>
+  <div style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);animation:bounceY 2s ease-in-out infinite;opacity:.4">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10l6 6 6-6" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+</section>
+
+<div class="divider z1"></div>
+
+<!-- ═══ TICKER ═══ -->
+<div class="ticker-wrap z1">
+  <div style="text-align:center;margin-bottom:16px;font-size:11px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase">Your 21-Agent Deal Team — Always On Deck</div>
+  <div id="agentsScroll" class="ticker-inner"></div>
+</div>
+
+<div class="divider z1"></div>
+
+<!-- ═══ FEATURES ═══ -->
+<div class="features-section z1" id="sec1" data-scene="features">
+  <div style="text-align:center;max-width:680px;margin:0 auto">
+    <span class="s-label reveal">Platform Features</span>
+    <h2 class="s-title reveal" data-delay="1">Every tool to execute<br>a UK tech roll-up</h2>
+    <p class="reveal" data-delay="2" style="font-size:16px;color:var(--text2);line-height:1.7">From first contact to final signature — automated across 21 AI agents specialised in every discipline of M&A.</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat reveal" data-delay="1"><div class="feat-icon" style="background:rgba(201,168,76,.12)">⌘</div><div class="feat-title">AI Command Centre</div><div class="feat-desc">Brief any of 21 specialist agents in natural language. They analyse deals, draft documents, model exits, and execute strategies from a single chat interface.</div></div>
+    <div class="feat reveal" data-delay="2"><div class="feat-icon" style="background:rgba(45,212,191,.12)">◎</div><div class="feat-title">Company Intelligence</div><div class="feat-desc">S2 Kira Nyx auto-scrapes companies via Tavily Search — LinkedIn, Trustpilot, Glassdoor, news, and web. Every target gets an AI acquisition score 0–100 with risk/opportunity breakdown.</div></div>
+    <div class="feat reveal" data-delay="3"><div class="feat-icon" style="background:rgba(96,165,250,.12)">▤</div><div class="feat-title">Live Deal Pipeline</div><div class="feat-desc">Kanban board across 8 deal stages. Every card shows EBITDA, ARR%, deal value, NMD structure, seller signal, and AI score. Real-time database sync.</div></div>
+    <div class="feat reveal" data-delay="4"><div class="feat-icon" style="background:rgba(74,222,128,.12)">✉</div><div class="feat-title">AI-Drafted Outreach</div><div class="feat-desc">Mila Quinn (S12) drafts warm emails in your voice. Gmail OAuth connected. Every message logged, tracked, and linked to the deal record automatically.</div></div>
+    <div class="feat reveal" data-delay="5"><div class="feat-icon" style="background:rgba(251,191,36,.12)">◈</div><div class="feat-title">Financial Modelling</div><div class="feat-desc">IRR models, waterfall charts, EBITDA bridges, exit scenarios — all interactive. Thatcher Grey (S9) handles tax. Rhea Vance (S10) models risk.</div></div>
+    <div class="feat reveal" data-delay="6"><div class="feat-icon" style="background:rgba(248,113,113,.12)">⟳</div><div class="feat-title">Automated Workflows</div><div class="feat-desc">8 cron jobs run daily, weekly, and monthly — deal scoring, intelligence refresh, pipeline health, GDPR retention, compliance audits, briefings to Howard.</div></div>
+    <div class="feat reveal" data-delay="7"><div class="feat-icon" style="background:rgba(167,139,250,.12)">◆</div><div class="feat-title">Document Vault</div><div class="feat-desc">NDA templates, LOI drafts, SPA frameworks, 9 legal policies — generated and stored with AES-256-GCM encryption. UK GDPR, FCA, AML, KYC compliant.</div></div>
+    <div class="feat reveal" data-delay="8"><div class="feat-icon" style="background:rgba(240,171,252,.12)">📞</div><div class="feat-title">Direct Agent Comms</div><div class="feat-desc">Agents call, SMS, or WhatsApp Howard via Twilio when urgent signals emerge. Sentinel (S20) alerts on security events. S21 sends weekly briefings.</div></div>
+    <div class="feat reveal" data-delay="9"><div class="feat-icon" style="background:rgba(134,239,172,.12)">⬡</div><div class="feat-title">Admin & Monitoring</div><div class="feat-desc">Full dashboard with health checks, pentest, stress testing, analytics, pixel tracking, AES key management, and UK GDPR compliance framework.</div></div>
+  </div>
+</div>
+
+<div class="divider z1"></div>
+
+<!-- ═══ DOCTRINE ═══ -->
+<div class="doctrine-section z1" id="sec2" data-scene="doctrine">
+  <div style="text-align:center;max-width:680px;margin:0 auto">
+    <span class="s-label reveal">Deal Doctrine</span>
+    <h2 class="s-title reveal" data-delay="1">The acquisition formula<br>that built Sovereign</h2>
+  </div>
+  <div class="doctrine-grid">
+    <div class="doctrine-card dc-gold reveal" data-delay="1">
+      <div class="dc-val" style="color:var(--gold)">NMD</div>
+      <div class="dc-lbl" style="color:var(--gold)">No Money Down</div>
+      <div class="dc-desc">80% deferred consideration paid from business cashflow over 3 years. 20% via ABL secured against receivables. The business acquires itself. Zero personal capital on day one.</div>
+    </div>
+    <div class="doctrine-card dc-teal reveal" data-delay="2">
+      <div class="dc-val" style="color:var(--teal)">0PG</div>
+      <div class="dc-lbl" style="color:var(--teal)">Zero Personal Guarantees</div>
+      <div class="dc-desc">All debt sits at SPV level. No personal assets at risk. Sloane Haze (S8) and Thatcher Grey (S9) structure every deal to keep Howard's personal estate fully protected.</div>
+    </div>
+    <div class="doctrine-card dc-green reveal" data-delay="3">
+      <div class="dc-val" style="color:var(--green)">6×→24×</div>
+      <div class="dc-lbl" style="color:var(--green)">The Sovereign Multiplier</div>
+      <div class="dc-desc">Enter at 4–8× EBITDA (SIC 62010/62020). Migrate to SIC 63110. AI-enhance. Reposition for PE/strategic. Exit at 15–30×. IRR target >60% over 24–36 months.</div>
+    </div>
+  </div>
+  <div style="margin-top:40px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:28px">
+    <div style="text-align:center;margin-bottom:20px"><span class="s-label">Target Profile</span><div style="font-size:18px;font-weight:700">The ideal acquisition target</div></div>
+    <div class="profile-grid">
+      <div class="profile-tile reveal" data-delay="1"><div class="pt-val" style="color:var(--gold)">62010</div><div class="pt-lbl">SIC Code</div></div>
+      <div class="profile-tile reveal" data-delay="2"><div class="pt-val" style="color:var(--teal)">£1M–£5M</div><div class="pt-lbl">EBITDA</div></div>
+      <div class="profile-tile reveal" data-delay="3"><div class="pt-val" style="color:var(--green)">&gt;60%</div><div class="pt-lbl">ARR</div></div>
+      <div class="profile-tile reveal" data-delay="4"><div class="pt-val" style="color:var(--blue)">55–68</div><div class="pt-lbl">Founder Age</div></div>
+      <div class="profile-tile reveal" data-delay="5"><div class="pt-val" style="color:var(--purple)">No VC</div><div class="pt-lbl">Ownership</div></div>
+      <div class="profile-tile reveal" data-delay="6"><div class="pt-val" style="color:var(--amber)">UK</div><div class="pt-lbl">Geography</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider z1"></div>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<div class="timeline-section z1" id="sec3" data-scene="timeline">
+  <div style="text-align:center;max-width:680px;margin:0 auto">
+    <span class="s-label reveal">The Process</span>
+    <h2 class="s-title reveal" data-delay="1">From cold target<br>to completed deal</h2>
+  </div>
+  <div class="tl">
+    <div class="tl-item reveal"><div class="tl-dot">S1</div><div class="tl-body"><div class="tl-title">Sourcing — Silas Vane scans the market</div><div class="tl-desc">S1 runs automated searches via Tavily across LinkedIn, Crunchbase, GitHub, news, and industry databases. Every target scored on NMD suitability, EBITDA quality, ARR stability, and seller signal strength.</div><div class="tl-agents">S1 Silas Vane · S2 Kira Nyx · S4 Lyra Belacqua</div></div></div>
+    <div class="tl-item reveal" data-delay="1"><div class="tl-dot">S12</div><div class="tl-body"><div class="tl-title">Approach — Mila Quinn makes first contact</div><div class="tl-desc">Warm, non-threatening outreach drafted by S12. Framed as strategic partnership exploration — never acquisition. S14 Soren Vale models the founder's psychology and optimal contact timing.</div><div class="tl-agents">S12 Mila Quinn · S14 Soren Vale · S13 Orion Pax</div></div></div>
+    <div class="tl-item reveal" data-delay="2"><div class="tl-dot">S6</div><div class="tl-body"><div class="tl-title">LOI — Vesper Thorne structures the deal</div><div class="tl-desc">NMD Letter of Intent with deferred consideration, vendor finance clauses, and 90-day exclusivity. S7 Caspian Frost lines up ABL facilities. S8 Sloane Haze handles legal structure.</div><div class="tl-agents">S6 Vesper Thorne · S7 Caspian Frost · S8 Sloane Haze</div></div></div>
+    <div class="tl-item reveal" data-delay="3"><div class="tl-dot">S3</div><div class="tl-body"><div class="tl-title">Due Diligence — Bastian Cole goes deep</div><div class="tl-desc">EBITDA quality, ARR cohort analysis, customer concentration, normalisation adjustments. S5 Jaxen Reed reviews IP and cybersecurity. S10 Rhea Vance models risk. S9 finalises tax structure.</div><div class="tl-agents">S3 Bastian Cole · S5 Jaxen Reed · S9 Thatcher Grey · S10 Rhea Vance</div></div></div>
+    <div class="tl-item reveal" data-delay="4"><div class="tl-dot">S11</div><div class="tl-body"><div class="tl-title">Close — Kaelen Voss drives to completion</div><div class="tl-desc">Final negotiation sprint. S8 coordinates SPA execution. S9 finalises tax structure. S20 Sentinel runs compliance checks. Deal completed — zero personal capital deployed.</div><div class="tl-agents">S11 Kaelen Voss · S8 Sloane Haze · S20 Sentinel</div></div></div>
+    <div class="tl-item reveal" data-delay="5"><div class="tl-dot">S15</div><div class="tl-body"><div class="tl-title">Exit — Elara Sterling builds the exit story</div><div class="tl-desc">S17 Nova Skye implements the 100-day plan. S18 Gideon Cross drives AI-enhanced growth. S15 targets PE/strategic at 15–30×. S16 Dr. Aris Thorne enhances the product with AI.</div><div class="tl-agents">S15 Elara Sterling · S17 Nova Skye · S18 Gideon Cross · S16 Dr. Aris Thorne</div></div></div>
+  </div>
+</div>
+
+<div class="divider z1"></div>
+
+<!-- ═══ TECH + COMPLIANCE ═══ -->
+<div class="stack-section z1" id="sec4" data-scene="tech">
+  <div style="text-align:center;max-width:680px;margin:0 auto">
+    <span class="s-label reveal">Built on</span>
+    <h2 class="s-title reveal" data-delay="1">Production-grade infrastructure.<br>Built in 48 hours.</h2>
+    <p class="reveal" data-delay="2" style="font-size:14px;color:var(--text2);line-height:1.7">Every component chosen for security, reliability, and UK data residency.</p>
+  </div>
+  <div class="stack-pills">
+    <div class="stack-pill reveal" data-delay="1">🧠 Anthropic Claude Sonnet 4</div>
+    <div class="stack-pill reveal" data-delay="2">🗄 Supabase PostgreSQL 17</div>
+    <div class="stack-pill reveal" data-delay="3">⚡ Deno Edge Functions</div>
+    <div class="stack-pill reveal" data-delay="4">🔐 AES-256-GCM</div>
+    <div class="stack-pill reveal" data-delay="5">▲ Vercel CDN</div>
+    <div class="stack-pill reveal" data-delay="6">📱 Twilio Call/SMS/WA</div>
+    <div class="stack-pill reveal" data-delay="7">✉ Gmail API OAuth</div>
+    <div class="stack-pill reveal" data-delay="8">🔍 Tavily Search API</div>
+    <div class="stack-pill reveal" data-delay="9">⟳ 8 Cron Jobs</div>
+    <div class="stack-pill reveal" data-delay="1">🌍 eu-west-1 Ireland</div>
+    <div class="stack-pill reveal" data-delay="2">📊 33 DB Tables · RLS</div>
+    <div class="stack-pill reveal" data-delay="3">🛡 Pentest Audited</div>
+  </div>
+  <div style="margin-top:48px;text-align:center">
+    <span class="s-label reveal">Compliance</span>
+    <div class="compliance-pills">
+      <div class="comp-pill reveal" data-delay="1"><span style="color:var(--green)">✓</span>UK GDPR</div>
+      <div class="comp-pill reveal" data-delay="2"><span style="color:var(--green)">✓</span>FCA Monitored</div>
+      <div class="comp-pill reveal" data-delay="3"><span style="color:var(--green)">✓</span>AML Policy</div>
+      <div class="comp-pill reveal" data-delay="4"><span style="color:var(--green)">✓</span>KYC Procedures</div>
+      <div class="comp-pill reveal" data-delay="5"><span style="color:var(--green)">✓</span>PECR Compliant</div>
+      <div class="comp-pill reveal" data-delay="6"><span style="color:var(--green)">✓</span>Companies Act 2006</div>
+      <div class="comp-pill reveal" data-delay="7"><span style="color:var(--green)">✓</span>POCA 2002 AML</div>
+    </div>
+    <div style="margin-top:14px"><a href="legal.html" class="btn btn-ghost btn-sm">View all 9 legal documents →</a></div>
+  </div>
+</div>
+
+<div class="divider z1"></div>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section z1" id="sec5" data-scene="cta">
+  <div style="max-width:600px;margin:0 auto">
+    <div class="hero-badge reveal" style="margin-bottom:24px;display:inline-flex">● Command Engine Active</div>
+    <h2 class="s-title reveal" data-delay="1" style="font-size:clamp(28px,5vw,44px)">Ready to run<br>your first acquisition?</h2>
+    <p class="reveal" data-delay="2" style="font-size:16px;color:var(--text2);max-width:480px;margin:0 auto 32px;line-height:1.7">Sign in to access all 21 agents and start building your UK SaaS roll-up portfolio today.</p>
+    <div class="reveal" data-delay="3" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="login.html" class="btn btn-primary" style="padding:14px 32px;font-size:16px">Enter Command ⌘</a>
+      <a href="resources.html" class="btn btn-outline" style="padding:14px 32px;font-size:16px">Read the Guide</a>
+    </div>
+    <div class="reveal" data-delay="4" style="margin-top:24px;font-size:13px;color:var(--text3)">
+      Questions? <a href="mailto:mercecomventures@gmail.com" style="color:var(--gold)">mercecomventures@gmail.com</a> ·
+      <a href="mediakit.html" style="color:var(--text3)">Media Kit</a> ·
+      <a href="legal.html" style="color:var(--text3)">Legal</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer z1">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="url(#fl)"/><defs><linearGradient id="fl" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#6b4a10"/></linearGradient></defs><path d="M14 6L20 9.5V16.5L14 20L8 16.5V9.5L14 6Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round" fill="none"/><circle cx="14" cy="13" r="2" fill="#000"/></svg>
+      <div><div style="font-size:13px;font-weight:700;color:var(--gold)">Project Sovereign</div><div style="font-size:11px;color:var(--text3)">Howard Henry · London</div></div>
+    </div>
+    <div class="footer-links" style="display:flex;flex-wrap:wrap;gap:4px">
+      <a href="command.html">Command</a><a href="pipeline.html">Pipeline</a><a href="intelligence.html">Intelligence</a>
+      <a href="analytics.html">Analytics</a><a href="vault.html">Vault</a><a href="resources.html">Resources</a>
+      <a href="mediakit.html">Media Kit</a><a href="legal.html">Legal</a><a href="admin.html">Admin</a>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:11px;color:var(--text3)">
+    <span>© 2026 Howard Henry. Project Sovereign is an unregulated M&A introductory service. Not financial advice.</span>
+    <span><a href="legal.html#terms" style="color:var(--text3)">Terms</a> · <a href="legal.html#privacy" style="color:var(--text3)">Privacy</a></span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="app.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════
+   THREE.JS 3D SCENE WITH SCROLL TRANSITIONS
+   ═══════════════════════════════════════ */
+(function(){
+  var canvas = document.getElementById('c3d');
+  var renderer = new THREE.WebGLRenderer({canvas:canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  var W = window.innerWidth, H = window.innerHeight;
+  renderer.setSize(W, H);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(60, W/H, 0.1, 1000);
+  camera.position.set(0, 0, 28);
+
+  function onResize(){
+    W = window.innerWidth; H = window.innerHeight;
+    renderer.setSize(W, H);
+    camera.aspect = W/H;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', onResize);
+
+  // ── LIGHTS ──
+  scene.add(new THREE.AmbientLight(0x1a2550, 0.8));
+  var dL1 = new THREE.DirectionalLight(0xc9a84c, 1.4);
+  dL1.position.set(6, 6, 8); scene.add(dL1);
+  var dL2 = new THREE.DirectionalLight(0x2dd4bf, 0.6);
+  dL2.position.set(-8, -4, 4); scene.add(dL2);
+  var dL3 = new THREE.DirectionalLight(0x6366f1, 0.3);
+  dL3.position.set(0, -10, -5); scene.add(dL3);
+
+  // ── PARTICLE FIELD ──
+  var N = 340;
+  var pGeo = new THREE.BufferGeometry();
+  var pos = new Float32Array(N*3);
+  var vel = [];
+  for(var i=0;i<N;i++){
+    pos[i*3]   = (Math.random()-.5)*90;
+    pos[i*3+1] = (Math.random()-.5)*70;
+    pos[i*3+2] = (Math.random()-.5)*50;
+    vel.push({vx:(Math.random()-.5)*.018, vy:(Math.random()-.5)*.014, vz:(Math.random()-.5)*.01});
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  var pMat = new THREE.PointsMaterial({color:0xc9a84c, size:0.2, transparent:true, opacity:.5, sizeAttenuation:true});
+  var points = new THREE.Points(pGeo, pMat);
+  scene.add(points);
+
+  // ── FLOATING HEXAGONS ──
+  var hexes = [];
+  var hexGeo = new THREE.CylinderGeometry(1,1,0.06,6);
+  var hexData = [
+    [-9,3,-6,0],[-14,-4,-9,1],[11,-2,-7,2],[17,5,-11,0],
+    [-4,-8,-5,2],[7,9,-8,1],[-19,2,-13,0],[13,-9,-10,2]
+  ];
+  hexData.forEach(function(d,i){
+    var mat = new THREE.MeshPhongMaterial({
+      color: i%3===0?0xc9a84c:(i%3===1?0x2dd4bf:0x6366f1),
+      transparent:true, opacity: 0.08+Math.random()*0.12,
+      wireframe: i%4===0
+    });
+    var mesh = new THREE.Mesh(hexGeo, mat);
+    mesh.position.set(d[0],d[1],d[2]);
+    mesh.rotation.x = Math.PI/2;
+    mesh.scale.setScalar(0.7+Math.random()*1.8);
+    hexes.push({mesh:mesh, rx:(Math.random()-.5)*.005, rz:(Math.random()-.5)*.004, phase:Math.random()*Math.PI*2, oy:d[1]});
+    scene.add(mesh);
+  });
+
+  // ── CENTRAL TORUS KNOT ──
+  var tkGeo = new THREE.TorusKnotGeometry(4,0.22,140,18,2,3);
+  var tkMat = new THREE.MeshPhongMaterial({color:0xc9a84c, transparent:true, opacity:.06, wireframe:true});
+  var tk = new THREE.Mesh(tkGeo, tkMat);
+  tk.position.z = -10;
+  scene.add(tk);
+
+  // ── DODECAHEDRON (appears on doctrine section) ──
+  var dodGeo = new THREE.DodecahedronGeometry(5);
+  var dodMat = new THREE.MeshPhongMaterial({color:0x2dd4bf, transparent:true, opacity:.05, wireframe:true});
+  var dod = new THREE.Mesh(dodGeo, dodMat);
+  dod.position.set(14, -6, -15);
+  scene.add(dod);
+
+  // ── ICOSAHEDRON (timeline section) ──
+  var icoGeo = new THREE.IcosahedronGeometry(4);
+  var icoMat = new THREE.MeshPhongMaterial({color:0x6366f1, transparent:true, opacity:.05, wireframe:true});
+  var ico = new THREE.Mesh(icoGeo, icoMat);
+  ico.position.set(-16, 4, -12);
+  scene.add(ico);
+
+  // ── CONNECTION LINES ──
+  var lineMat = new THREE.LineBasicMaterial({color:0xc9a84c, transparent:true, opacity:.04});
+  for(var i=0;i<40;i++){
+    var a=Math.floor(Math.random()*N), b=Math.floor(Math.random()*N);
+    var lGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(pos[a*3],pos[a*3+1],pos[a*3+2]),
+      new THREE.Vector3(pos[b*3],pos[b*3+1],pos[b*3+2])
+    ]);
+    scene.add(new THREE.Line(lGeo, lineMat));
+  }
+
+  // ── SCROLL STATE ──
+  var scrollY = 0, targetScrollY = 0;
+  var scrollProgress = 0;
+  var sections = ['hero','features','doctrine','timeline','tech','cta'];
+
+  // ── SCENE STATES per section ──
+  var sceneStates = {
+    hero:     {camZ:28, camX:0, camY:0, tkOp:.06, dodOp:.05, icoOp:.05, pColor:0xc9a84c, bgTint:0},
+    features: {camZ:24, camX:3,  camY:1,  tkOp:.10, dodOp:.08, icoOp:.04, pColor:0xc9a84c, bgTint:.3},
+    doctrine: {camZ:22, camX:-4, camY:-2, tkOp:.04, dodOp:.15, icoOp:.04, pColor:0x2dd4bf, bgTint:.6},
+    timeline: {camZ:26, camX:5,  camY:2,  tkOp:.04, dodOp:.04, icoOp:.14, pColor:0x6366f1, bgTint:.8},
+    tech:     {camZ:30, camX:-2, camY:-1, tkOp:.08, dodOp:.06, icoOp:.06, pColor:0x4ade80, bgTint:.5},
+    cta:      {camZ:20, camX:0,  camY:0,  tkOp:.15, dodOp:.08, icoOp:.08, pColor:0xc9a84c, bgTint:.2}
+  };
+
+  var currentState = sceneStates.hero;
+  var targetState  = sceneStates.hero;
+
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function lerpState(s, t, progress){
+    var ti = Math.min(Math.max(progress*8, 0), 1);
+    return {
+      camZ: lerp(s.camZ, t.camZ, ti),
+      camX: lerp(s.camX, t.camX, ti),
+      camY: lerp(s.camY, t.camY, ti),
+      tkOp: lerp(s.tkOp, t.tkOp, ti),
+      dodOp: lerp(s.dodOp, t.dodOp, ti),
+      icoOp: lerp(s.icoOp, t.icoOp, ti)
+    };
+  }
+
+  // ── MOUSE ──
+  var mouse = {x:0, y:0}, targetMouse = {x:0, y:0};
+  window.addEventListener('mousemove', function(e){
+    targetMouse.x = (e.clientX/W - .5)*3;
+    targetMouse.y = -(e.clientY/H - .5)*2;
+  });
+
+  // ── GET CURRENT SECTION ──
+  function getCurrentSection(){
+    var docH = document.body.scrollHeight - H;
+    var p = scrollY / Math.max(docH, 1);
+    var idx = Math.floor(p * sections.length);
+    return sections[Math.min(idx, sections.length-1)];
+  }
+
+  // ── ANIMATION LOOP ──
+  var t = 0;
+  var lerpProgress = 0;
+  var lastSection = 'hero';
+
+  function animate(){
+    requestAnimationFrame(animate);
+    t += 0.01;
+
+    // Smooth scroll
+    scrollY += (window.scrollY - scrollY) * 0.08;
+    mouse.x += (targetMouse.x - mouse.x) * 0.05;
+    mouse.y += (targetMouse.y - mouse.y) * 0.05;
+
+    // Get section
+    var docH = document.body.scrollHeight - H;
+    scrollProgress = scrollY / Math.max(docH, 1);
+    var curSection = getCurrentSection();
+
+    if(curSection !== lastSection){
+      currentState = {
+        camZ: camera.position.z, camX: camera.position.x, camY: camera.position.y,
+        tkOp: tkMat.opacity, dodOp: dodMat.opacity, icoOp: icoMat.opacity
+      };
+      targetState = sceneStates[curSection] || sceneStates.hero;
+      lerpProgress = 0;
+      lastSection = curSection;
+    }
+    lerpProgress = Math.min(lerpProgress + 0.025, 1);
+    var ease = lerpProgress < .5 ? 2*lerpProgress*lerpProgress : -1+(4-2*lerpProgress)*lerpProgress;
+
+    var cs = lerpState(currentState, targetState, ease);
+
+    // Apply camera
+    camera.position.z += (cs.camZ - camera.position.z) * 0.06;
+    camera.position.x += (cs.camX + mouse.x - camera.position.x) * 0.04;
+    camera.position.y += (cs.camY + mouse.y - camera.position.y) * 0.04;
+    camera.lookAt(scene.position);
+
+    // Apply opacities
+    tkMat.opacity  += (cs.tkOp  - tkMat.opacity)  * 0.05;
+    dodMat.opacity += (cs.dodOp - dodMat.opacity)  * 0.05;
+    icoMat.opacity += (cs.icoOp - icoMat.opacity)  * 0.05;
+
+    // Rotate main objects
+    tk.rotation.x  = t * .15;
+    tk.rotation.y  = t * .20 + scrollProgress * Math.PI;
+    dod.rotation.x = t * .08 + scrollProgress * Math.PI * .5;
+    dod.rotation.y = t * .12;
+    ico.rotation.y = t * .14 + scrollProgress * Math.PI * .7;
+    ico.rotation.z = t * .09;
+
+    // Animate hexes
+    hexes.forEach(function(h, i){
+      h.mesh.rotation.z += h.rx;
+      h.mesh.position.y = h.oy + Math.sin(t*.7 + h.phase) * .6;
+    });
+
+    // Drift particles
+    for(var i=0;i<N;i++){
+      pos[i*3]   += vel[i].vx;
+      pos[i*3+1] += vel[i].vy;
+      pos[i*3+2] += vel[i].vz;
+      if(Math.abs(pos[i*3])>45)   vel[i].vx *= -1;
+      if(Math.abs(pos[i*3+1])>35) vel[i].vy *= -1;
+      if(Math.abs(pos[i*3+2])>25) vel[i].vz *= -1;
+    }
+    pGeo.attributes.position.needsUpdate = true;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // ── SCENE NAV DOTS ──
+  var nav = document.getElementById('sceneNav');
+  var sectionEls = document.querySelectorAll('[data-scene]');
+  sectionEls.forEach(function(el, i){
+    var dot = document.createElement('div');
+    dot.className = 'si-dot' + (i===0?' active':'');
+    dot.title = el.dataset.scene;
+    dot.addEventListener('click', function(){
+      el.scrollIntoView({behavior:'smooth'});
+    });
+    nav.appendChild(dot);
+  });
+
+  function updateNav(){
+    var scrollMid = window.scrollY + H/2;
+    sectionEls.forEach(function(el, i){
+      var rect = el.getBoundingClientRect();
+      var top = rect.top + window.scrollY;
+      var bot = top + rect.height;
+      var dot = nav.children[i];
+      if(dot) dot.classList.toggle('active', scrollMid>=top && scrollMid<=bot);
+    });
+  }
+  window.addEventListener('scroll', updateNav, {passive:true});
+
+})(); // end THREE
+
+/* ── SCROLL PROGRESS BAR ── */
+window.addEventListener('scroll', function(){
+  var sp = (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100);
+  document.getElementById('scrollProgress').style.width = sp + '%';
+}, {passive:true});
+
+/* ── INTERSECTION OBSERVER — REVEAL ANIMATIONS ── */
+var observer = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      e.target.classList.add('active');
+      // Don't unobserve — keep the animation state
+    }
+  });
+}, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
+
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(function(el, i){
+  // If no explicit delay attribute, stagger by index within parent
+  if(!el.dataset.delay){
+    var siblings = el.parentElement ? el.parentElement.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale') : [];
+    var idx = Array.from(siblings).indexOf(el);
+    if(idx > 0 && idx < 9) el.style.transitionDelay = (idx * 0.08) + 's';
+  }
+  observer.observe(el);
+});
+
+/* ── AGENTS TICKER ── */
+var AGENTS = [
+  {name:'Silas Vane',     role:'CIO · Sourcing',     c:'#c9a84c', bg:'rgba(201,168,76,.15)'},
+  {name:'Kira Nyx',       role:'Data Architect',      c:'#2dd4bf', bg:'rgba(45,212,191,.15)'},
+  {name:'Bastian Cole',   role:'Financial Auditor',   c:'#60a5fa', bg:'rgba(96,165,250,.15)'},
+  {name:'Lyra Belacqua',  role:'Market Sentiment',    c:'#a78bfa', bg:'rgba(167,139,250,.15)'},
+  {name:'Jaxen Reed',     role:'IP · Cybersecurity',  c:'#f87171', bg:'rgba(248,113,113,.15)'},
+  {name:'Vesper Thorne',  role:'Lead Negotiator',     c:'#fbbf24', bg:'rgba(251,191,36,.15)'},
+  {name:'Caspian Frost',  role:'Lender Liaison',      c:'#34d399', bg:'rgba(52,211,153,.15)'},
+  {name:'Sloane Haze',    role:'M&A Attorney',        c:'#fb923c', bg:'rgba(251,146,60,.15)'},
+  {name:'Thatcher Grey',  role:'Tax Strategy',        c:'#38bdf8', bg:'rgba(56,189,248,.15)'},
+  {name:'Rhea Vance',     role:'Risk Management',     c:'#c084fc', bg:'rgba(192,132,252,.15)'},
+  {name:'Kaelen Voss',    role:'Chief Closer',        c:'#e879f9', bg:'rgba(232,121,249,.15)'},
+  {name:'Mila Quinn',     role:'Empathy Lead',        c:'#4ade80', bg:'rgba(74,222,128,.15)'},
+  {name:'Orion Pax',      role:'Funnel Architect',    c:'#818cf8', bg:'rgba(129,140,248,.15)'},
+  {name:'Soren Vale',     role:'Behavioural Analyst', c:'#fb7185', bg:'rgba(251,113,133,.15)'},
+  {name:'Elara Sterling', role:'Exit Lead',           c:'#f0abfc', bg:'rgba(240,171,252,.15)'},
+  {name:'Dr. Aris Thorne',role:'AI Scientist',        c:'#67e8f9', bg:'rgba(103,232,249,.15)'},
+  {name:'Nova Skye',      role:'Operations Lead',     c:'#86efac', bg:'rgba(134,239,172,.15)'},
+  {name:'Gideon Cross',   role:'Growth · Revenue',    c:'#fcd34d', bg:'rgba(252,211,77,.15)'},
+  {name:'Echo',           role:'Interface',           c:'#93c5fd', bg:'rgba(147,197,253,.15)'},
+  {name:'Sentinel',       role:'Security Gatekeeper', c:'#9ca3af', bg:'rgba(156,163,175,.15)'},
+  {name:'The Archivist',  role:'Memory · Learn',      c:'#c084fc', bg:'rgba(192,132,252,.15)'}
+];
+function ini(n){return n.split(' ').map(function(w){return w[0];}).slice(0,2).join('');}
+var scroll = document.getElementById('agentsScroll');
+var html = AGENTS.concat(AGENTS).map(function(a){
+  return '<div class="agent-chip">'
+    + '<div class="chip-av" style="background:'+a.bg+';color:'+a.c+';border:1px solid '+a.c+'30">'+ini(a.name)+'</div>'
+    + '<div><div class="chip-name">'+a.name+'</div><div class="chip-role">'+a.role+'</div></div>'
+    + '</div>';
+}).join('');
+scroll.innerHTML = html;
+
+/* ── BOUNCE ANIMATION ── */
+var style = document.createElement('style');
+style.textContent = '@keyframes bounceY{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
