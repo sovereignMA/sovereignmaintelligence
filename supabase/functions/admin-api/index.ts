@@ -18,9 +18,20 @@ serve(async (req) => {
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
+    // Role check — admin actions restricted to admin/superadmin roles
+    const { data: roleRow } = await sb.from('user_roles').select('role').eq('user_id', user.id).single();
+    const role = roleRow?.role;
+    const isAdmin = role === 'admin' || role === 'superadmin';
+
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
     const { action, payload } = body;
+
+    // ── ADMIN-ONLY GATE ──────────────────────────────────────────
+    const adminOnlyActions = ['admin:users', 'admin:health', 'admin:compliance', 'admin:compliance:add', 'admin:pentest:run', 'admin:pentest:list'];
+    if (adminOnlyActions.includes(action!) && !isAdmin) {
+      return json({ error: 'Forbidden — admin access required' }, 403);
+    }
 
     // ── OVERVIEW ─────────────────────────────────────────────────
     if (action === 'admin:overview') {

@@ -83,14 +83,14 @@ serve(async (req) => {
 
     // ── AI PATTERNS (S21) ─────────────────────────────────────────
     if (action === 'patterns:list') {
-      const { data, error } = await sb.from('ai_patterns').select('*').order('success_rate', { ascending: false }).limit(50);
+      const { data, error } = await sb.from('ai_patterns').select('*').eq('user_id', user.id).order('success_rate', { ascending: false }).limit(50);
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
 
     if (action === 'patterns:improve') {
-      // S21 Archivist: analyse recent audit trail and derive patterns
-      const { data: recent } = await sb.from('audit_trail').select('event, agent, status').order('created_at', { ascending: false }).limit(200);
+      // S21 Archivist: analyse recent audit trail and derive patterns (scoped to this user)
+      const { data: recent } = await sb.from('audit_trail').select('event, agent, status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(200);
       if (!recent) return json({ patterns: [] });
 
       const agentStats = recent.reduce((acc: Record<string, { ok: number; total: number }>, r: { agent: string; status: string }) => {
@@ -102,6 +102,7 @@ serve(async (req) => {
       }, {});
 
       const patterns = Object.entries(agentStats).map(([agent, s]) => ({
+        user_id: user.id,
         pattern_type: 'agent_performance',
         title: `${agent} success rate`,
         description: `${agent} completed ${s.ok}/${s.total} tasks successfully`,

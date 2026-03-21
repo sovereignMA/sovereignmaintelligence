@@ -139,6 +139,12 @@ const API = {
           _Auth.session = session;
           _Auth.user = session.user;
           r = await _req(session.access_token);
+          // If second attempt also 401, session is fully expired — force sign-out
+          if (r.status === 401) {
+            Toast.show('Session expired — signing you out', 'warn', 4000);
+            setTimeout(() => location.href = 'login.html', 2500);
+            return null;
+          }
         } else {
           Toast.show('Session expired — signing you out', 'warn', 4000);
           setTimeout(() => location.href = 'login.html', 2500);
@@ -168,6 +174,12 @@ const API = {
       if(session?.access_token) {
         _Auth.session = session; _Auth.user = session.user;
         r = await _req(session.access_token);
+        // If second attempt also 401, session is fully expired — force sign-out
+        if(r.status === 401) {
+          Toast.show('Session expired — please sign in again','warn',4000);
+          setTimeout(()=>location.href='login.html',2500);
+          return null;
+        }
       } else {
         Toast.show('Session expired — please sign in again','warn',4000);
         setTimeout(()=>location.href='login.html',2500);
