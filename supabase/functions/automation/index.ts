@@ -123,8 +123,20 @@ serve(async (req) => {
         if (r.agent && !lastSeen[r.agent]) lastSeen[r.agent] = r.created_at;
       });
 
+      // Return as object keyed by seat for Object.values() iteration in admin.html
+      const agentMap: Record<string, { seat: string; name: string; specialty: string; status: string; last_active: string | null }> = {};
+      for (const a of AGENTS) {
+        agentMap[a.id] = {
+          seat: a.id,
+          name: a.name,
+          specialty: a.role,
+          status: a.status,
+          last_active: lastSeen[a.id] || null,
+        };
+      }
+
       return json({
-        agents: AGENTS.map(a => ({ ...a, last_active: lastSeen[a.id] || null })),
+        data: agentMap,
         total: AGENTS.length,
         active: AGENTS.filter(a => a.status === 'active').length,
       });
