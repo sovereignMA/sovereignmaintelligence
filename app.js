@@ -154,17 +154,30 @@ const API = {
 
   /* AI — streaming via ai-proxy edge function */
   async chat(opts) {
-    const token = _Auth.token();
+    let token = _Auth.token();
     if(!token){Toast.show('Sign in to use AI agents','warn');return null;}
-    const r = await fetch(`${FN_URL}/ai-proxy`, {
+    const _req = (tok) => fetch(`${FN_URL}/ai-proxy`, {
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-      body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-20250514',agent_name:opts.agent||'unknown'})
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${tok}`},
+      body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-5-20251001',agent_name:opts.agent||'unknown'})
     });
+    let r = await _req(token);
+    // 401 = stale token — refresh once and retry
+    if(r.status === 401) {
+      const { data: { session } } = await window._sb.auth.refreshSession();
+      if(session?.access_token) {
+        _Auth.session = session; _Auth.user = session.user;
+        r = await _req(session.access_token);
+      } else {
+        Toast.show('Session expired — please sign in again','warn',4000);
+        setTimeout(()=>location.href='login.html',2500);
+        return null;
+      }
+    }
     if(!r.ok){
       const e = await r.json().catch(()=>({error:'Unknown'}));
-      if(opts.onError) opts.onError(e.error);
-      Toast.show(e.error||'AI error','err');
+      if(opts.onError) opts.onError(e.error||`AI error ${r.status}`);
+      Toast.show(e.error||`AI error ${r.status}`,'err');
       return null;
     }
     if(opts.onToken) {
