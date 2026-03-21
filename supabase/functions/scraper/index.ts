@@ -97,7 +97,7 @@ ${rawData.slice(0, 12000)}`
       }]
     })
   });
-  if (!res.ok) throw new Error(`Claude error ${res.status}`);
+  if (!res.ok) return {};
   const json = await res.json() as { content?: { text?: string }[] };
   const text = json.content?.[0]?.text ?? '{}';
   try {
@@ -147,8 +147,9 @@ async function scrapeCompany(companyName: string, websiteUrl?: string): Promise<
 
   const rawData = rawChunks.join('\n\n---\n\n');
 
-  // Extract structured intelligence with Claude
-  const intel = await extractWithClaude(rawData, companyName);
+  // Extract structured intelligence with Claude (non-fatal — falls back to empty object)
+  let intel: Record<string, unknown> = {};
+  try { intel = await extractWithClaude(rawData, companyName); } catch { /* ignore */ }
 
   return { ...intel, _raw_sources: queries.map(q => q.label), _scraped_at: new Date().toISOString() };
 }
@@ -208,6 +209,12 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' };
+    const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!auth) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
+    const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
+    if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
+
     const body = await req.json() as {
       action: string;
       deal_id?: string;

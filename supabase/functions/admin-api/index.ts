@@ -22,14 +22,14 @@ serve(async (req) => {
 
     // ── OVERVIEW ─────────────────────────────────────────────────
     if (action === 'admin:overview') {
-      const [deals, contacts, convs, audit, events, intel] = await Promise.all([
+      const [deals, contacts, convs, audit, events, intel] = (await Promise.allSettled([
         sb.from('deals').select('id, stage, score', { count: 'exact' }).eq('user_id', user.id),
         sb.from('contacts').select('id', { count: 'exact' }).eq('user_id', user.id),
         sb.from('conversations').select('id, token_count', { count: 'exact' }).eq('user_id', user.id),
         sb.from('audit_trail').select('event, agent, status, created_at').order('created_at', { ascending: false }).limit(20),
         sb.from('analytics_events').select('id', { count: 'exact' }),
         sb.from('company_intel').select('acquisition_score').order('created_at', { ascending: false }).limit(10),
-      ]);
+      ])).map(r => r.status === 'fulfilled' ? r.value : { data: null, count: null, error: r.reason });
 
       const dealData = deals.data || [];
       const totalTokens = (convs.data || []).reduce((n: number, c: { token_count: number }) => n + (c.token_count || 0), 0);
