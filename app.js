@@ -95,7 +95,7 @@ const _Auth = {
   },
 
   async signUp(email, pass, name) {
-    const {data,error} = await window._sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
+    const {data,error} = await window._sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:location.origin+'/login.html'}});
     if(error){Toast.show(error.message,'err');return null;}
     Toast.show('Account created — check your email','ok',6000);
     return data;
