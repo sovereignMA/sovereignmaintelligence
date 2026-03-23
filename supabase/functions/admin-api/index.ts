@@ -37,7 +37,7 @@ serve(async (req) => {
     // ── OVERVIEW ─────────────────────────────────────────────────
     if (action === 'admin:overview') {
       const [deals, contacts, convs, wfs, analyticsEv, calls, smsRows, auditRows] = (await Promise.allSettled([
-        sb.from('deals').select('id, stage, value, score', { count: 'exact' }).eq('user_id', user.id),
+        sb.from('deals').select('id, stage, deal_value_gbp, score', { count: 'exact' }).eq('user_id', user.id),
         sb.from('contacts').select('id', { count: 'exact' }).eq('user_id', user.id),
         sb.from('conversations').select('id', { count: 'exact' }).eq('user_id', user.id),
         sb.from('workflows').select('id, is_active', { count: 'exact' }).eq('user_id', user.id),
@@ -47,14 +47,14 @@ serve(async (req) => {
         sb.from('audit_trail').select('event, agent, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
       ])).map(r => r.status === 'fulfilled' ? r.value : { data: null, count: null, error: r.reason });
 
-      const dealData = (deals as { data: Array<{ stage: string; value?: number; score?: number }> | null }).data || [];
+      const dealData = (deals as { data: Array<{ stage: string; deal_value_gbp?: number; score?: number }> | null }).data || [];
       const wfData = (wfs as { data: Array<{ id: string; is_active: boolean }> | null; count: number | null }).data || [];
       const callData = (calls as { data: Array<Record<string, unknown>> | null }).data || [];
       const smsData = (smsRows as { data: Array<Record<string, unknown>> | null }).data || [];
       const auditData = (auditRows as { data: Array<Record<string, unknown>> | null }).data || [];
       const analyticsData = (analyticsEv as { count: number | null }).count || 0;
 
-      const pipelineValue = dealData.reduce((n, d) => n + (Number(d.value) || 0), 0);
+      const pipelineValue = dealData.reduce((n, d) => n + (Number(d.deal_value_gbp) || 0), 0);
       const avgScore = dealData.length ? Math.round(dealData.reduce((n, d) => n + (Number(d.score) || 0), 0) / dealData.length) : 0;
       const stageBreakdown = dealData.reduce((acc: Record<string, number>, d) => {
         if (d.stage) acc[d.stage] = (acc[d.stage] || 0) + 1; return acc;
@@ -234,6 +234,55 @@ serve(async (req) => {
           duration_ms: Date.now() - start,
         },
       });
+    }
+
+    // ── API KEYS ──────────────────────────────────────────────────
+    if (action === 'admin:keys:list') {
+      const keyNames = [
+        'ANTHROPIC_API_KEY',
+        'TAVILY_API_KEY',
+        'TWILIO_ACCOUNT_SID',
+        'TWILIO_AUTH_TOKEN',
+        'TWILIO_FROM_NUMBER',
+        'HOWARD_PHONE',
+      ];
+      const data = keyNames.map(name => ({
+        name,
+        status: Deno.env.get(name) ? 'configured' : 'missing',
+      }));
+      return json({ data });
+    }
+
+    if (action === 'admin:keys:rotate') {
+      const key_id = (payload as Record<string, unknown>)?.key_id as string | undefined;
+      await sb.from('audit_trail').insert({
+        user_id: user.id,
+        event: 'key_rotation_requested',
+        agent: 'admin',
+        details: 'Key rotation requested for: ' + key_id,
+        status: 'pending',
+      });
+      return json({ ok: true, message: 'Rotation logged — update the key in your Supabase/Vercel environment' });
+    }
+
+    // ── SYSTEM METRICS ────────────────────────────────────────────
+    if (action === 'admin:metrics:record') {
+      const { metric_name, metric_value, metric_unit, tags } = payload as Record<string, unknown>;
+      const { data, error } = await sb.from('system_metrics').insert({
+        metric_name,
+        metric_value,
+        metric_unit,
+        tags: tags ?? {},
+        recorded_at: new Date().toISOString(),
+      }).select().single();
+      if (error) return json({ error: error.message }, 500);
+      return json({ data });
+    }
+
+    if (action === 'admin:metrics:list') {
+      const { data, error } = await sb.from('system_metrics').select('*').order('recorded_at', { ascending: false }).limit(100);
+      if (error) return json({ error: error.message }, 500);
+      return json({ data });
     }
 
     return json({ error: `Unknown action: ${action}` }, 400);

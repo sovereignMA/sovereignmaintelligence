@@ -513,7 +513,46 @@ Object.assign(API, {
     metricsRecord: (m,v,u,t)           => API._call('admin-api',{action:'admin:metrics:record',payload:{metric_name:m,metric_value:v,metric_unit:u,tags:t}}),
     metricsList:   ()                  => API._call('admin-api',{action:'admin:metrics:list'}),
     stressTest:    (conc,dur)          => API._call('admin-api',{action:'admin:stress:run',payload:{concurrency:conc||5,duration_ms:dur||2000}}),
-  }
+  },
+
+  // ── automation-engine: AI workflow execution ───────────────────
+  engine: {
+    run:              (workflow_id, deal_id, context) => API._call('automation-engine',{action:'engine:run',      payload:{workflow_id,deal_id,context}}),
+    task:             (agent_seat, task, deal_id)     => API._call('automation-engine',{action:'engine:task',     payload:{agent_seat,task,deal_id}}),
+    pipelineAnalysis: ()                              => API._call('automation-engine',{action:'engine:pipeline_analysis'}),
+  },
+
+  // ── cron-jobs: cron management ────────────────────────────────
+  crons: {
+    list:    ()         => API._call('cron-jobs',{action:'crons:list'}),
+    history: (cron_id)  => API._call('cron-jobs',{action:'crons:history',  payload:{cron_id}}),
+    trigger: (cron_id)  => API._call('cron-jobs',{action:'crons:trigger',  payload:{cron_id}}),
+    metrics: ()         => API._call('cron-jobs',{action:'crons:metrics'}),
+  },
+
+  // ── notify-commander: smart notifications ─────────────────────
+  commander: {
+    dispatch:  (title,message,priority,agent,deal_id) => API._call('notify-commander',{action:'commander:dispatch',   payload:{title,message,priority,agent_name:agent,deal_id}}),
+    dealAlert: (deal_id,alert_type,message,agent)     => API._call('notify-commander',{action:'commander:deal_alert', payload:{deal_id,alert_type,message,agent_name:agent}}),
+    history:   (limit)                                => API._call('notify-commander',{action:'commander:history',    payload:{limit}}),
+  },
+
+  // ── sovereign-ops: platform operations ────────────────────────
+  ops: {
+    kpis:             ()                          => API._call('sovereign-ops',{action:'ops:kpis'}),
+    health:           ()                          => API._call('sovereign-ops',{action:'ops:health'}),
+    agentPerformance: (days)                      => API._call('sovereign-ops',{action:'ops:agent_performance', payload:{days}}),
+    recordMetric:     (metric_name,metric_value,metric_unit,tags) => API._call('sovereign-ops',{action:'ops:record_metric',payload:{metric_name,metric_value,metric_unit,tags}}),
+    metrics:          (metric_name,limit)         => API._call('sovereign-ops',{action:'ops:metrics',          payload:{metric_name,limit}}),
+    auditSummary:     (days)                      => API._call('sovereign-ops',{action:'ops:audit_summary',    payload:{days}}),
+  },
+
+  // ── sovereign-api intel + scrape queue ────────────────────────
+  intel: {
+    get:      (deal_id) => API._call('sovereign-api',{action:'intel:get',         deal_id}),
+    list:     ()        => API._call('sovereign-api',{action:'intel:list'}),
+    queueAdd: (deal_id, company_name, website_url) => API._call('sovereign-api',{action:'scrape:queue:add', deal_id, payload:{company_name,website_url}}),
+  },
 });
 
 /* ══════════════════════════════════════

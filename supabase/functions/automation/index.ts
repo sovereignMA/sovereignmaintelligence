@@ -111,7 +111,9 @@ serve(async (req) => {
         data: { agent, ...s },
       }));
 
-      await sb.from('ai_patterns').upsert(patterns, { onConflict: 'title' });
+      const titles = patterns.map(p => p.title);
+      await sb.from('ai_patterns').delete().in('title', titles);
+      if (patterns.length > 0) await sb.from('ai_patterns').insert(patterns);
       return json({ patterns });
     }
 

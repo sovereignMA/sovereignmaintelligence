@@ -133,6 +133,40 @@ serve(async (req) => {
       return json({ data });
     }
 
+    // ── COMPANY INTEL ────────────────────────────────────────────
+    if (action === 'intel:get') {
+      if (!deal_id) return json({ error: 'deal_id required' }, 400);
+      const { data: dealCheck } = await sb.from('deals').select('id').eq('id', deal_id).eq('user_id', user.id).single();
+      if (!dealCheck) return json({ error: 'Deal not found' }, 404);
+      const { data, error } = await sb.from('company_intel').select('*').eq('deal_id', deal_id).single();
+      if (error && error.code !== 'PGRST116') return json({ error: error.message }, 500);
+      return json({ data: data || null });
+    }
+
+    if (action === 'intel:list') {
+      const { data, error } = await sb.from('company_intel')
+        .select('*, deals!inner(id, company_name, stage, score, user_id)')
+        .eq('deals.user_id', user.id)
+        .order('updated_at', { ascending: false });
+      if (error) return json({ error: error.message }, 500);
+      return json({ data });
+    }
+
+    // ── SCRAPE QUEUE ─────────────────────────────────────────────
+    if (action === 'scrape:queue:add') {
+      const { company_name, website_url } = payload || {};
+      if (!deal_id || !company_name) return json({ error: 'deal_id and company_name required' }, 400);
+      const { data, error } = await sb.from('scrape_queue').insert({
+        deal_id,
+        company_name: String(company_name),
+        website_url: website_url ? String(website_url) : null,
+        requested_by: user.id,
+        status: 'pending',
+      }).select().single();
+      if (error) return json({ error: error.message }, 500);
+      return json({ data });
+    }
+
     return json({ error: `Unknown action: ${action}` }, 400);
 
   } catch (e) {

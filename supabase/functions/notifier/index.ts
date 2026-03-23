@@ -47,9 +47,10 @@ serve(async (req) => {
 
     // ── CALL HOWARD ──────────────────────────────────────────────
     if (action === 'call:howard') {
-      const { agent_name, purpose, message } = payload;
+      const agent_name = String(payload?.agent_name || '');
+      const purpose    = String(payload?.purpose    || '');
+      const message    = String(payload?.message    || '');
       const twiml = `<Response><Say voice="Polly.Amy">${message || `${agent_name} alert: ${purpose}`}</Say></Response>`;
-      const twimlUrl = `https://handler.twilio.com/twiml/EH_placeholder`; // Use Twilio Studio or TwiML Bin
       const result = await twilioRequest('Calls.json', { To: howardPhone, From: fromNumber, Twiml: twiml });
       await logCall('call', howardPhone, message, result.sid, result.status);
       return json({ ok: true, sid: result.sid, status: result.status });
@@ -57,7 +58,8 @@ serve(async (req) => {
 
     // ── SMS HOWARD ───────────────────────────────────────────────
     if (action === 'sms:howard') {
-      const { agent_name, message } = payload;
+      const agent_name = String(payload?.agent_name || '');
+      const message    = String(payload?.message    || '');
       const body = `[${agent_name}] ${message}`;
       const result = await twilioRequest('Messages.json', { To: howardPhone, From: fromNumber, Body: body });
       await logCall('sms', howardPhone, body, result.sid, result.status);
@@ -66,7 +68,8 @@ serve(async (req) => {
 
     // ── WHATSAPP HOWARD ──────────────────────────────────────────
     if (action === 'whatsapp:howard') {
-      const { agent_name, message } = payload;
+      const agent_name = String(payload?.agent_name || '');
+      const message    = String(payload?.message    || '');
       const body = `[${agent_name}] ${message}`;
       const whatsappFrom = `whatsapp:${fromNumber}`;
       const whatsappTo   = `whatsapp:${howardPhone}`;
@@ -77,7 +80,10 @@ serve(async (req) => {
 
     // ── SMS CONTACT ──────────────────────────────────────────────
     if (action === 'sms:contact') {
-      const { to, message, contact_id, deal_id } = payload;
+      const to         = String(payload?.to         || '');
+      const message    = String(payload?.message    || '');
+      const contact_id = String(payload?.contact_id || '');
+      const deal_id    = String(payload?.deal_id    || '');
       const result = await twilioRequest('Messages.json', { To: to, From: fromNumber, Body: message });
       await Promise.allSettled([
         logCall('sms', to, message, result.sid, result.status),
