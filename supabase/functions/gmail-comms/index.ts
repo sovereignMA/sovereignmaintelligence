@@ -48,14 +48,13 @@ serve(async (req) => {
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
-    // Get Gmail OAuth token from user session provider token
-    const { data: { session } } = await sb.auth.getSession();
-    const gmailToken = session?.provider_token;
-    if (!gmailToken) return json({ error: 'Gmail not connected — sign in with Google OAuth' }, 401);
-
-    let reqBody: { action?: string; payload?: Record<string, unknown> };
+    let reqBody: { action?: string; payload?: Record<string, unknown>; provider_token?: string };
     try { reqBody = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
-    const { action, payload } = reqBody;
+    const { action, payload, provider_token } = reqBody;
+
+    // Gmail OAuth token must be sent by the client (server-side getSession() returns null with service role)
+    const gmailToken = provider_token;
+    if (!gmailToken) return json({ error: 'Gmail not connected — sign in with Google OAuth' }, 401);
 
     // ── LIST THREADS ─────────────────────────────────────────────
     if (action === 'gmail:threads') {

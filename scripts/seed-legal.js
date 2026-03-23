@@ -1,8 +1,9 @@
 // seed-legal.js — pushes all 9 legal documents to Supabase
 // node scripts/seed-legal.js
 
-const SB_URL  = 'https://kicdjdxxdqtmetphipnn.supabase.co';
-const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpY2RqZHh4ZHF0bWV0cGhpcG5uIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mzg1NDY4OSwiZXhwIjoyMDg5NDMwNjg5fQ.jF1ZP52y0B5GEIWdq8U8hl7dimU5sF_-4q4k9k_nUFY';
+const SB_URL  = process.env.SUPABASE_URL || 'https://kicdjdxxdqtmetphipnn.supabase.co';
+const SB_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SB_KEY) { console.error('Error: SUPABASE_SERVICE_ROLE_KEY env var is required'); process.exit(1); }
 
 const DOCS = [
 

@@ -19,8 +19,8 @@ serve(async (req) => {
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
     // Role check — admin actions restricted to admin/superadmin roles
-    const { data: roleRow } = await sb.from('user_roles').select('role').eq('user_id', user.id).single();
-    const role = roleRow?.role;
+    const { data: profileRow } = await sb.from('user_profiles').select('role').eq('id', user.id).single();
+    const role = profileRow?.role;
     const isAdmin = role === 'admin' || role === 'superadmin';
 
     let body: { action?: string; payload?: Record<string, unknown> };
@@ -40,9 +40,9 @@ serve(async (req) => {
         sb.from('contacts').select('id', { count: 'exact' }).eq('user_id', user.id),
         sb.from('conversations').select('id', { count: 'exact' }).eq('user_id', user.id),
         sb.from('workflows').select('id, is_active', { count: 'exact' }).eq('user_id', user.id),
-        sb.from('analytics_events').select('event_type', { count: 'exact' }).eq('user_id', user.id),
+        sb.from('analytics_events').select('event_name', { count: 'exact' }).eq('user_id', user.id),
         sb.from('phone_calls').select('id, agent_name, purpose, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5),
-        sb.from('phone_calls').select('id, body, created_at').eq('user_id', user.id).eq('type', 'sms').order('created_at', { ascending: false }).limit(5),
+        sb.from('phone_calls').select('id, body, created_at').eq('user_id', user.id).eq('call_type', 'sms').order('created_at', { ascending: false }).limit(5),
         sb.from('audit_trail').select('event, agent, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
       ])).map(r => r.status === 'fulfilled' ? r.value : { data: null, count: null, error: r.reason });
 
@@ -95,12 +95,12 @@ serve(async (req) => {
       const since = new Date(Date.now() - days * 86400000).toISOString();
 
       const [eventsRes, adRes] = (await Promise.allSettled([
-        sb.from('analytics_events').select('event_type, page, device_type, created_at').eq('user_id', user.id).gte('created_at', since),
-        sb.from('ad_tracking').select('event_type, created_at').eq('user_id', user.id).gte('created_at', since),
+        sb.from('analytics_events').select('event_name, page, device_type, created_at').eq('user_id', user.id).gte('created_at', since),
+        sb.from('ad_tracking').select('event_name, created_at').eq('user_id', user.id).gte('created_at', since),
       ])).map(r => r.status === 'fulfilled' ? r.value : { data: null });
 
-      const evRows = (eventsRes as { data: Array<{ event_type?: string; page?: string; device_type?: string }> | null }).data || [];
-      const adRows = (adRes as { data: Array<{ event_type?: string }> | null }).data || [];
+      const evRows = (eventsRes as { data: Array<{ event_name?: string; page?: string; device_type?: string }> | null }).data || [];
+      const adRows = (adRes as { data: Array<{ event_name?: string }> | null }).data || [];
 
       const byEvent: Record<string, number> = {};
       const byDevice: Record<string, number> = {};
@@ -109,7 +109,7 @@ serve(async (req) => {
       let conversions = 0;
 
       for (const r of evRows) {
-        const et = r.event_type || 'unknown';
+        const et = r.event_name || 'unknown';
         byEvent[et] = (byEvent[et] || 0) + 1;
         if (r.device_type) { const dt = r.device_type; byDevice[dt] = (byDevice[dt] || 0) + 1; }
         if (r.page) { const pg = r.page; byPage[pg] = (byPage[pg] || 0) + 1; }

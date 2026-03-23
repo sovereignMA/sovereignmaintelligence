@@ -83,7 +83,7 @@ serve(async (req) => {
 
     // ── AI PATTERNS (S21) ─────────────────────────────────────────
     if (action === 'patterns:list') {
-      const { data, error } = await sb.from('ai_patterns').select('*').eq('user_id', user.id).order('success_rate', { ascending: false }).limit(50);
+      const { data, error } = await sb.from('ai_patterns').select('*').order('success_rate', { ascending: false }).limit(50);
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
@@ -102,7 +102,6 @@ serve(async (req) => {
       }, {});
 
       const patterns = Object.entries(agentStats).map(([agent, s]) => ({
-        user_id: user.id,
         pattern_type: 'agent_performance',
         title: `${agent} success rate`,
         description: `${agent} completed ${s.ok}/${s.total} tasks successfully`,
@@ -117,7 +116,7 @@ serve(async (req) => {
 
     // ── AGENTS STATUS ─────────────────────────────────────────────
     if (action === 'agents:status') {
-      const { data: recentAudit } = await sb.from('audit_trail').select('agent, status, created_at').order('created_at', { ascending: false }).limit(100);
+      const { data: recentAudit } = await sb.from('audit_trail').select('agent, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);
       const lastSeen: Record<string, string> = {};
       (recentAudit || []).forEach((r: { agent: string; created_at: string }) => {
         if (r.agent && !lastSeen[r.agent]) lastSeen[r.agent] = r.created_at;

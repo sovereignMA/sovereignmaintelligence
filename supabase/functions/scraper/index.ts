@@ -212,8 +212,12 @@ Deno.serve(async (req: Request) => {
     const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' };
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!auth) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
-    const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-    if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
+    // Allow service role key (used by cron jobs) — otherwise validate as user JWT
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (auth !== serviceKey) {
+      const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
+      if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
+    }
 
     const body = await req.json() as {
       action: string;
