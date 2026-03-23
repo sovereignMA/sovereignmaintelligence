@@ -20,7 +20,8 @@ serve(async (req) => {
     if (!auth) return json({ error: 'Unauthorized' }, 401);
 
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-    if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
+    if (authErr) return json({ error: 'Auth service unavailable' }, 503);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
 
     let body: { action?: string; payload?: Record<string, unknown>; deal_id?: string; contact_id?: string };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }

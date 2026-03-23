@@ -216,7 +216,8 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (auth !== serviceKey) {
       const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-      if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
+      if (authErr) return new Response(JSON.stringify({ error: 'Auth service unavailable' }), { status: 503, headers: CORS_HEADERS });
+      if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
     }
 
     const body = await req.json() as {

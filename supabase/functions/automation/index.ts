@@ -40,7 +40,8 @@ serve(async (req) => {
 
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-    if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
+    if (authErr) return json({ error: 'Auth service unavailable' }, 503);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
 
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }

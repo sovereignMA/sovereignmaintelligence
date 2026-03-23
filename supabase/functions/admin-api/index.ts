@@ -16,7 +16,8 @@ serve(async (req) => {
 
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-    if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
+    if (authErr) return json({ error: 'Auth service unavailable' }, 503);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
 
     // Role check — admin actions restricted to admin/superadmin roles
     const { data: profileRow } = await sb.from('user_profiles').select('role').eq('id', user.id).single();
