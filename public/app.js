@@ -428,9 +428,12 @@ const _Analytics = {
       device_type: device,
       user_agent: navigator.userAgent.slice(0, 200)
     };
-    
+
     // Fire to Supabase (non-blocking)
     if(window._sb) {
+      // Attach user_id if authenticated so RLS passes and rows are attributed
+      const sess = await window._sb.auth.getSession?.();
+      if(sess?.data?.session?.user?.id) payload.user_id = sess.data.session.user.id;
       window._sb.from('analytics_events').insert(payload)
         .then(() => {}).catch(() => {});
     }
