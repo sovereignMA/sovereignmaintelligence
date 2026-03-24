@@ -3,12 +3,17 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
+const MISSING_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ANTHROPIC_API_KEY']
+  .filter(k => !Deno.env.get(k));
+if (MISSING_VARS.length) console.error('[automation-engine] Missing env vars:', MISSING_VARS.join(', '));
+
+const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') || '';
 
 async function runClaudeStep(system: string, userMessage: string, maxTokens = 800): Promise<string> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -32,6 +37,7 @@ async function runClaudeStep(system: string, userMessage: string, maxTokens = 80
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  if (MISSING_VARS.length) return json({ error: `Server misconfiguration — missing: ${MISSING_VARS.join(', ')}` }, 500);
 
   try {
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');

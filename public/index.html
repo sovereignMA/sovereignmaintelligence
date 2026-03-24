@@ -4,10 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Project Sovereign — AI-native M&A command engine. Acquire UK SaaS at 4–8× EBITDA. Exit at 15–30×. Zero personal capital. 21 AI agents. Built in London.">
-<meta property="og:title" content="Project Sovereign — UK M&A Command Engine">
-<meta property="og:description" content="21 AI agents. Zero personal capital. Acquire UK SaaS at 4–8×. Exit at 15–30×.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://sovereigncmd.xyz/">
+<meta property="og:title" content="Project Sovereign — UK SaaS M&A Command Engine">
+<meta property="og:description" content="21 AI agents. Zero capital. Zero PGs. Acquire UK SaaS.">
+<meta property="og:image" content="https://sovereigncmd.xyz/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Project Sovereign — UK SaaS M&A Command Engine">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/og-image.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Project Sovereign","applicationCategory":"BusinessApplication","description":"AI-native M&A command engine for UK SaaS roll-ups","author":{"@type":"Person","name":"Howard Henry","address":{"@type":"PostalAddress","addressLocality":"London","addressCountry":"GB"}}}
+</script>
 <title>Project Sovereign — UK Tech M&A Command Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -308,6 +315,23 @@
       <a href="legal.html" style="color:var(--text3)">Legal</a>
     </div>
   </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section style="max-width:900px;margin:0 auto;padding:5rem 2rem">
+  <h2 style="text-align:center;font-size:2rem;color:#C9A84C;margin-bottom:2rem">FAQ</h2>
+  <details style="background:#141828;border:1px solid rgba(201,168,76,0.1);border-radius:12px;margin-bottom:1rem;padding:1.25rem">
+    <summary style="cursor:pointer;font-weight:500">How does No Money Down work?</summary>
+    <p style="margin-top:1rem;color:#9490AA">80% deferred consideration paid from business cashflow over 3 years + 20% ABL secured against receivables. The business acquires itself.</p>
+  </details>
+  <details style="background:#141828;border:1px solid rgba(201,168,76,0.1);border-radius:12px;margin-bottom:1rem;padding:1.25rem">
+    <summary style="cursor:pointer;font-weight:500">What does Zero Personal Guarantees mean?</summary>
+    <p style="margin-top:1rem;color:#9490AA">All debt sits at SPV level. Your home and personal assets are never at risk.</p>
+  </details>
+  <details style="background:#141828;border:1px solid rgba(201,168,76,0.1);border-radius:12px;margin-bottom:1rem;padding:1.25rem">
+    <summary style="cursor:pointer;font-weight:500">Is this regulated financial advice?</summary>
+    <p style="margin-top:1rem;color:#9490AA">No. Sovereign is an unregulated M&amp;A introductory service. Not FCA-authorised.</p>
+  </details>
 </section>
 
 <!-- ═══ FOOTER ═══ -->
@@ -645,5 +669,13 @@ var style = document.createElement('style');
 style.textContent = '@keyframes bounceY{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}';
 document.head.appendChild(style);
 </script>
+<div id="cookie-banner" style="position:fixed;bottom:0;left:0;right:0;background:#141828;border-top:1px solid rgba(201,168,76,0.2);padding:1rem 2rem;z-index:9999;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem">
+  <p style="flex:1;min-width:280px;font-size:0.9rem;color:#9490AA">We use essential cookies to make Sovereign work. <a href="/legal.html#cookies" style="color:#C9A84C">Learn more</a></p>
+  <div style="display:flex;gap:0.75rem">
+    <button onclick="localStorage.setItem('cookies','no');this.parentElement.parentElement.remove()" style="padding:0.5rem 1.25rem;border-radius:6px;background:transparent;color:#9490AA;border:1px solid #9490AA;cursor:pointer">Decline</button>
+    <button onclick="localStorage.setItem('cookies','yes');this.parentElement.parentElement.remove()" style="padding:0.5rem 1.25rem;border-radius:6px;background:#C9A84C;color:#07080F;border:none;cursor:pointer;font-weight:500">Accept</button>
+  </div>
+</div>
+<script>if(localStorage.getItem('cookies'))document.getElementById('cookie-banner')?.remove()</script>
 </body>
 </html>

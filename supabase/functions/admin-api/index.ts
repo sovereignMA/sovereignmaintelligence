@@ -2,13 +2,19 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const MISSING_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']
+  .filter(k => !Deno.env.get(k));
+if (MISSING_VARS.length) console.error('[admin-api] Missing env vars:', MISSING_VARS.join(', '));
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  if (MISSING_VARS.length) return json({ error: `Server misconfiguration — missing: ${MISSING_VARS.join(', ')}` }, 500);
 
   try {
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
@@ -27,6 +33,10 @@ serve(async (req) => {
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
     const { action, payload } = body;
+
+    // ── INPUT VALIDATION ────────────────────────────────────────
+    const VALID_ACTIONS = new Set(['admin:overview','admin:analytics','admin:users','admin:health','admin:compliance','admin:compliance:add','admin:pentest:run','admin:pentest:list','admin:stress:run','admin:keys:list','admin:keys:rotate','admin:metrics:record','admin:metrics:list']);
+    if (!action || !VALID_ACTIONS.has(action)) return json({ error: `Unknown action: ${action}` }, 400);
 
     // ── ADMIN-ONLY GATE ──────────────────────────────────────────
     const adminOnlyActions = ['admin:users', 'admin:health', 'admin:compliance', 'admin:compliance:add', 'admin:pentest:run', 'admin:pentest:list', 'admin:analytics', 'admin:stress:run'];

@@ -2,13 +2,19 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const MISSING_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']
+  .filter(k => !Deno.env.get(k));
+if (MISSING_VARS.length) console.error('[sovereign-api] Missing env vars:', MISSING_VARS.join(', '));
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  if (MISSING_VARS.length) return json({ error: `Server misconfiguration — missing: ${MISSING_VARS.join(', ')}` }, 500);
 
   try {
     const sb = createClient(
@@ -26,6 +32,13 @@ serve(async (req) => {
     let body: { action?: string; payload?: Record<string, unknown>; deal_id?: string; contact_id?: string };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
     const { action, payload, deal_id, contact_id } = body;
+
+    // ── INPUT VALIDATION ────────────────────────────────────────
+    const VALID_ACTIONS = new Set(['deals:list','deals:create','deals:update','deals:delete','contacts:list','contacts:create','contacts:update','outreach:log','outreach:list','docs:list','docs:save','conv:save','audit:log','profile:get','profile:update','intel:get','intel:list','scrape:queue:add']);
+    if (!action || !VALID_ACTIONS.has(action)) return json({ error: `Unknown action: ${action}` }, 400);
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (deal_id && !UUID_RE.test(deal_id)) return json({ error: 'Invalid deal_id' }, 400);
+    if (contact_id && !UUID_RE.test(contact_id)) return json({ error: 'Invalid contact_id' }, 400);
 
     // ── DEALS ──────────────────────────────────────────────────
     if (action === 'deals:list') {

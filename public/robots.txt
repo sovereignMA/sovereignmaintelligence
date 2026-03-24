@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /command.html
+Disallow: /pipeline.html
+Disallow: /intelligence.html
+Disallow: /analytics.html
+Disallow: /vault.html
+Disallow: /security.html
+Disallow: /comms.html
+Sitemap: https://sovereigncmd.xyz/sitemap.xml
+Crawl-delay: 1

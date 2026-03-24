@@ -2,8 +2,9 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -46,6 +47,10 @@ serve(async (req) => {
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
     const { action, payload } = body;
+
+    // ── INPUT VALIDATION ────────────────────────────────────────
+    const VALID_ACTIONS = new Set(['workflow:list','workflow:create','workflow:toggle','workflow:run','patterns:list','patterns:improve','agents:status']);
+    if (!action || !VALID_ACTIONS.has(action)) return json({ error: `Unknown action: ${action}` }, 400);
 
     // ── WORKFLOWS ─────────────────────────────────────────────────
     if (action === 'workflow:list') {

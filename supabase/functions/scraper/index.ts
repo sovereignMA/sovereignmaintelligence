@@ -5,11 +5,16 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const TAVILY_API_KEY   = Deno.env.get('TAVILY_API_KEY')!;
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
-const SUPABASE_URL     = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const TAVILY_API_KEY   = Deno.env.get('TAVILY_API_KEY') || '';
+const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') || '';
+const SUPABASE_URL     = Deno.env.get('SUPABASE_URL') || '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 
+const MISSING_VARS = ['TAVILY_API_KEY', 'ANTHROPIC_API_KEY', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']
+  .filter(k => !Deno.env.get(k));
+if (MISSING_VARS.length) console.error('[scraper] Missing env vars:', MISSING_VARS.join(', '));
+
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
 const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // ── Tavily search helper ──────────────────────────────────────────────────────
@@ -205,11 +210,14 @@ async function processQueue() {
 // ── Main handler ──────────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type' } });
+    return new Response(null, { headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, content-type' } });
+  }
+  if (MISSING_VARS.length) {
+    return new Response(JSON.stringify({ error: `Server misconfiguration — missing: ${MISSING_VARS.join(', ')}` }), { status: 500, headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Content-Type': 'application/json' } });
   }
 
   try {
-    const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' };
+    const CORS_HEADERS = { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' };
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!auth) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
     // Allow service role key (used by cron jobs) — otherwise validate as user JWT
@@ -272,5 +280,5 @@ Deno.serve(async (req: Request) => {
 });
 
 function scrapeJson(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' } });
+  return new Response(JSON.stringify(data), { status, headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' } });
 }
