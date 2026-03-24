@@ -792,6 +792,11 @@ window.addEventListener('auth:ready',async e=>{
     setTimeout(()=>location.href='login.html?next=admin.html',2000);
     return;
   }
+  // Brief settle delay after OAuth redirect — gives Supabase auth time to propagate
+  // the new session before edge functions try to validate the token
+  if(location.hash || location.search.includes('code=')){
+    await new Promise(ok=>setTimeout(ok,1000));
+  }
   await loadOverview();
 });
 </script>

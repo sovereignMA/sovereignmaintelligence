@@ -120,6 +120,8 @@ window.Auth = _Auth;
    API MODULE — Edge Function calls
    ══════════════════════════════════════ */
 const API = {
+  _refreshLock: null,
+
   async _call(fn, body) {
     const _req = async (tok) => fetch(`${FN_URL}/${fn}`, {
       method: 'POST',
@@ -135,27 +137,44 @@ const API = {
 
       // 401 = possibly stale token — refresh once and retry
       if (r.status === 401) {
-        // autoRefreshToken may have already rotated the token while this request was in-flight.
-        // Use getSession() first to avoid double-consuming the refresh token (rotation race).
-        let { data: { session: currentSession } } = await window._sb.auth.getSession();
-        if (!currentSession?.access_token || currentSession.access_token === token) {
-          // Token unchanged or missing — needs an explicit refresh
-          const { data: { session: refreshed } } = await window._sb.auth.refreshSession();
-          if (!refreshed?.access_token) {
-            // No valid refresh token — genuine session expiry
-            Toast.show('Session expired — signing you out', 'warn', 4000);
-            setTimeout(() => location.href = 'login.html', 2500);
-            return null;
-          }
-          currentSession = refreshed;
+        // Coalesce concurrent refresh attempts to avoid thundering herd
+        if (!this._refreshLock) {
+          this._refreshLock = (async () => {
+            // Brief pause — edge function may return 401 on a valid token if Supabase auth
+            // hasn't propagated the session yet (common right after OAuth sign-in)
+            await new Promise(ok => setTimeout(ok, 800));
+            let { data: { session: s } } = await window._sb.auth.getSession();
+            if (!s?.access_token || s.access_token === token) {
+              const { data: { session: refreshed } } = await window._sb.auth.refreshSession();
+              s = refreshed;
+            }
+            return s;
+          })();
+        }
+        let currentSession;
+        try { currentSession = await this._refreshLock; } finally { this._refreshLock = null; }
+
+        if (!currentSession?.access_token) {
+          // No valid refresh token — genuine session expiry
+          Toast.show('Session expired — signing you out', 'warn', 4000);
+          setTimeout(() => location.href = 'login.html', 2500);
+          return null;
         }
         _Auth.session = currentSession;
         _Auth.user = currentSession.user;
         r = await _req(currentSession.access_token);
         if (r.status === 401) {
-          // Fresh token still rejected — edge function auth service issue, not session expiry
-          Toast.show('Authentication error — please try again', 'warn', 3000);
-          return null;
+          // One more retry after a short delay — covers propagation lag on fresh sign-in
+          await new Promise(ok => setTimeout(ok, 1500));
+          const { data: { session: s2 } } = await window._sb.auth.getSession();
+          if (s2?.access_token) {
+            _Auth.session = s2; _Auth.user = s2.user;
+            r = await _req(s2.access_token);
+          }
+          if (r.status === 401) {
+            Toast.show('Authentication error — please try again', 'warn', 3000);
+            return null;
+          }
         }
       }
 
@@ -175,8 +194,9 @@ const API = {
       body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-5-20251001',agent_name:opts.agent||'unknown'})
     });
     let r = await _req(token);
-    // 401 = possibly stale token — refresh once and retry
+    // 401 = possibly stale token — refresh once and retry (reuse coalesced refresh from _call)
     if(r.status === 401) {
+      await new Promise(ok => setTimeout(ok, 800));
       let { data: { session: currentSession } } = await window._sb.auth.getSession();
       if(!currentSession?.access_token || currentSession.access_token === token) {
         const { data: { session: refreshed } } = await window._sb.auth.refreshSession();
@@ -191,9 +211,15 @@ const API = {
       _Auth.session = currentSession; _Auth.user = currentSession.user;
       r = await _req(currentSession.access_token);
       if(r.status === 401) {
-        if(opts.onError) opts.onError('Authentication error — please try again');
-        Toast.show('Authentication error — please try again','warn',3000);
-        return null;
+        // One more retry — covers auth propagation lag on fresh sign-in
+        await new Promise(ok => setTimeout(ok, 1500));
+        const { data: { session: s2 } } = await window._sb.auth.getSession();
+        if(s2?.access_token) { _Auth.session = s2; _Auth.user = s2.user; r = await _req(s2.access_token); }
+        if(r.status === 401) {
+          if(opts.onError) opts.onError('Authentication error — please try again');
+          Toast.show('Authentication error — please try again','warn',3000);
+          return null;
+        }
       }
     }
     if(!r.ok){
