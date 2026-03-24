@@ -283,14 +283,13 @@ serve(async (req) => {
         metric_value,
         metric_unit,
         tags: tags ?? {},
-        recorded_at: new Date().toISOString(),
       }).select().single();
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
 
     if (action === 'admin:metrics:list') {
-      const { data, error } = await sb.from('system_metrics').select('*').order('recorded_at', { ascending: false }).limit(100);
+      const { data, error } = await sb.from('system_metrics').select('*').order('created_at', { ascending: false }).limit(100);
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }

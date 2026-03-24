@@ -9,8 +9,8 @@ const CORS = {
 };
 
 async function twilioRequest(endpoint: string, params: Record<string, string>) {
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID')!;
-  const authToken  = Deno.env.get('TWILIO_AUTH_TOKEN')!;
+  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID') || '';
+  const authToken  = Deno.env.get('TWILIO_AUTH_TOKEN') || '';
   const body = new URLSearchParams(params).toString();
   const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/${endpoint}`, {
     method: 'POST',
@@ -40,8 +40,11 @@ serve(async (req) => {
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
     const { action, payload } = body;
-    const fromNumber  = Deno.env.get('TWILIO_FROM_NUMBER')!;
-    const howardPhone = Deno.env.get('HOWARD_PHONE')!;
+    const fromNumber  = Deno.env.get('TWILIO_FROM_NUMBER') || '';
+    const howardPhone = Deno.env.get('HOWARD_PHONE') || '';
+    if (!fromNumber || !howardPhone || !Deno.env.get('TWILIO_ACCOUNT_SID') || !Deno.env.get('TWILIO_AUTH_TOKEN')) {
+      return json({ error: 'Twilio not configured — add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, HOWARD_PHONE to Edge Function secrets' }, 500);
+    }
 
     const logCall = (type: string, to: string, body: string, sid: string, status: string) =>
       sb.from('phone_calls').insert({ user_id: user.id, agent_name: payload?.agent_name || 'notifier', call_type: type, to_number: to, purpose: payload?.purpose, body, twilio_sid: sid, status });
