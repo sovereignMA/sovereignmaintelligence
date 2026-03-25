@@ -27,7 +27,7 @@ serve(async (req) => {
 
     let body: { system?: string; messages?: unknown[]; max_tokens?: number; stream?: boolean; model?: string; agent_name?: string };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
-    const { system, messages, max_tokens = 1200, stream = false, model = 'claude-sonnet-4-5-20251001', agent_name = 'unknown' } = body;
+    const { system, messages, max_tokens = 1200, stream = false, model = 'claude-sonnet-4-6', agent_name = 'unknown' } = body;
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -46,9 +46,10 @@ serve(async (req) => {
     });
 
     if (!anthropicRes.ok) {
-      let err: { error?: { message?: string } } = {};
+      let err: { error?: { message?: string; type?: string } } = {};
       try { err = await anthropicRes.json(); } catch { /* ignore */ }
-      return json({ error: err.error?.message || `Anthropic error ${anthropicRes.status}` }, anthropicRes.status);
+      console.error(`[ai-proxy] Anthropic ${anthropicRes.status}: ${JSON.stringify(err)}`);
+      return json({ error: err.error?.message || `Anthropic error ${anthropicRes.status}`, anthropic_status: anthropicRes.status, details: err }, anthropicRes.status);
     }
 
     // Log to audit trail (fire and forget)

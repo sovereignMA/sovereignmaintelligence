@@ -191,7 +191,7 @@ const API = {
     const _req = (tok) => fetch(`${FN_URL}/ai-proxy`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${tok}`},
-      body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-5-20251001',agent_name:opts.agent||'unknown'})
+      body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-6',agent_name:opts.agent_name||'unknown'})
     });
     let r = await _req(token);
     // 401 = possibly stale token — refresh once and retry (reuse coalesced refresh from _call)

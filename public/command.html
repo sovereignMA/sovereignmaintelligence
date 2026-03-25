@@ -146,7 +146,7 @@
 </head>
 <body>
 <div id="nav-placeholder"></div>
-<div class="app-shell" style="margin-top:56px">
+<div class="app-shell">
   <!-- SIDEBAR -->
   <div class="cmd-sidebar" id="cmdSidebar">
     <div id="sidebarContent"></div>
@@ -233,7 +233,7 @@
 
 
 
-<script src="app.js"></script>
+<script src="app.js?v=27"></script>
 <script>
 var AGENTS=[
   {seat:"S1", name:"Silas Vane",       role:"CIO — Forensic Sourcing",           c:"#2dd4bf",bg:"rgba(45,212,191,.15)"},
@@ -293,7 +293,7 @@ var QUICK=[
   {label:"💰 Lender options for NMD", text:"Which UK lenders will fund a SaaS acquisition against recurring revenue? What are realistic terms in 2025?"}
 ];
 
-var activeAgent=AGENTS[0], streaming=false, history=[];
+var activeAgent=AGENTS[0], streaming=false, chatHistory=[];
 
 function ini(n){return n.split(' ').map(function(w){return w[0]}).slice(0,2).join('')}
 function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -402,7 +402,7 @@ document.getElementById('sidebarToggle').onclick = function(){
 
 // Clear
 document.getElementById('clearBtn').onclick = function(){
-  history=[];
+  chatHistory=[];
   document.getElementById('chat').innerHTML='';
 };
 
@@ -459,7 +459,7 @@ async function doSend(override){
   }
   inp.value=''; inp.style.height='auto';
   streaming=true; document.getElementById('send').disabled=true;
-  history.push({role:'user',content:text});
+  chatHistory.push({role:'user',content:text});
   appendUserMsg(text);
   var agent=activeAgent;
   var mbId=appendAgentMsg(agent);
@@ -467,13 +467,13 @@ async function doSend(override){
 
   await API.chat({
     system: sys,
-    messages: history.slice(-14),
+    messages: chatHistory.slice(-14),
     max_tokens: 1200,
     stream: true,
     agent_name: agent.name,
     onToken: function(acc){ updateBubble(mbId, acc, false); },
     onDone: function(acc){
-      history.push({role:'assistant',content:acc});
+      chatHistory.push({role:'assistant',content:acc});
       updateBubble(mbId, acc, true);
       streaming=false;
       document.getElementById('send').disabled=false;
