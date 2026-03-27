@@ -679,7 +679,8 @@ async function openEmail(id) {
     if (bodyHtml) {
       var safeHtml = sanitizeEmailHtml(bodyHtml);
       var emailStyles = 'body{font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#333;padding:20px;margin:0;background:#fff}img{max-width:100%}a{color:#1a73e8}pre,code{background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:13px}';
-      var srcdocContent = '<!DOCTYPE html><html><head><style>' + emailStyles + '</style></head><body>' + safeHtml + '</body></html>';
+      var srcdocContent = '<!DOCTYPE html><html><head><style>' + emailStyles + '</style></head><body>' + safeHtml + '<script defer src="/_vercel/speed-insights/script.js"></script>
+</body></html>';
       bodyDiv.innerHTML = '<iframe id="emailFrame" sandbox="allow-popups allow-popups-to-escape-sandbox" srcdoc="" style="width:100%;border:none;background:#fff;border-radius:10px;min-height:400px;box-shadow:0 1px 3px rgba(0,0,0,.1)"></iframe>';
       var frame = document.getElementById('emailFrame');
       frame.setAttribute('srcdoc', srcdocContent);
@@ -1260,5 +1261,6 @@ window.addEventListener('auth:changed', function(e) {
   }
 });
 </script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 </body>
 </html>
