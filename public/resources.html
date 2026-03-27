@@ -2,10 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Project Sovereign">
+<meta property="og:title" content="Resources — Project Sovereign">
+<meta property="og:description" content="21 AI agents. Zero capital. Acquire UK SaaS at 4-8x EBITDA.">
+<meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Resources%20-%20Project%20Sovereign">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Resources — Project Sovereign">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Resources%20-%20Project%20Sovereign">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Project Sovereign Resources — How to use and navigate the platform. Guides, tutorials, and reference docs.">
 <title>Resources — Project Sovereign</title>
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=34">
 <style>
 .res-wrap{max-width:1100px;margin:0 auto;padding:40px 20px}
 .res-hero{text-align:center;padding:56px 20px 44px;border-bottom:1px solid var(--border);margin-bottom:0}
@@ -92,6 +105,7 @@
       <a class="toc-link" href="#admin">Admin Dashboard</a>
       <a class="toc-link" href="#doctrine">Deal Doctrine</a>
       <a class="toc-link" href="#security">Security & Privacy</a>
+      <a class="toc-link" href="#billing">Billing & Trial</a>
     </nav>
 
     <!-- CONTENT -->
@@ -132,6 +146,8 @@
               <tr><td class="mono" style="color:var(--gold)">/vault</td><td>Vault</td><td>Document storage, M&A template generation</td><td><span class="badge badge-amber">Auth</span></td></tr>
               <tr><td class="mono" style="color:var(--gold)">/security</td><td>Security</td><td>Audit trail, IP monitoring, threat log</td><td><span class="badge badge-amber">Auth</span></td></tr>
               <tr><td class="mono" style="color:var(--gold)">/admin</td><td>Admin</td><td>Full system monitoring, pentest, compliance</td><td><span class="badge badge-red">Superadmin</span></td></tr>
+              <tr><td class="mono" style="color:var(--gold)">/mail</td><td>Mail</td><td>Gmail integration, AI-drafted emails, alias management</td><td><span class="badge badge-amber">Auth</span></td></tr>
+              <tr><td class="mono" style="color:var(--gold)">/upgrade</td><td>Pricing</td><td>Plan selection, billing, referral credits</td><td><span class="badge badge-green">Public</span></td></tr>
               <tr><td class="mono" style="color:var(--gold)">/legal</td><td>Legal</td><td>All policies and agreements</td><td><span class="badge badge-green">Public</span></td></tr>
               <tr><td class="mono" style="color:var(--gold)">/resources</td><td>Resources</td><td>This guide</td><td><span class="badge badge-green">Public</span></td></tr>
               <tr><td class="mono" style="color:var(--gold)">/mediakit</td><td>Media Kit</td><td>Brand assets, press materials</td><td><span class="badge badge-green">Public</span></td></tr>
@@ -358,11 +374,32 @@
         </div>
       </section>
 
+      <!-- BILLING & TRIAL -->
+      <section class="res-section" id="billing">
+        <div class="res-h2"><span class="ico">💳</span>Billing & Trial</div>
+        <p class="res-p">Sovereign operates on a subscription model via Stripe. All plans include a 21-day free trial with full access.</p>
+
+        <div class="steps" style="margin-bottom:20px">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">21-Day Free Trial</div><div class="step-desc">Every new account starts with a 21-day free trial — no credit card required for Solo and Deal Team plans. Full access to all 21 agents, pipeline, intelligence, vault, comms, and admin. A countdown banner appears at 7 days remaining.</div></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Upgrade at <code style="color:var(--gold);font-size:12px">/upgrade</code></div><div class="step-desc">Choose a plan (Solo £149/mo, Deal Team £399/mo, Fund/PE £1,200/mo). Monthly or annual billing — annual saves 20%. Checkout is handled securely by Stripe. You're redirected back to the command centre on success.</div></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">Manage Your Subscription</div><div class="step-desc">Open the user menu (top right) → <strong style="color:var(--text)">Manage Subscription</strong>. This opens the Stripe billing portal where you can update your payment method, view invoices, or cancel. Changes take effect at the end of your current billing period.</div></div></div>
+          <div class="step-card"><div class="step-num">4</div><div class="step-body"><div class="step-title">Referral Credits</div><div class="step-desc">Open the user menu → <strong style="color:var(--text)">Invite & Earn</strong>. Share your unique referral link. When someone you refer subscribes to any paid plan, you both receive 30 days free credit added automatically to your account. No limit on referrals.</div></div></div>
+        </div>
+
+        <div class="tip"><span class="tip-icon">💡</span>Referral credits are applied as additional trial days. If you have 15 credits when your trial ends, you get 15 more days before your first charge.</div>
+        <div class="tip warn-tip" style="margin-top:8px"><span class="tip-icon">⚠</span>When your trial expires, the platform enters read-only mode — your pipeline, deals, and all data are preserved. Upgrade at any time to restore full access. No data is ever deleted.</div>
+
+        <div style="margin-top:16px;font-size:13px;color:var(--text3)">
+          Billing questions: <a href="mailto:mercecomventures@gmail.com" style="color:var(--gold)">mercecomventures@gmail.com</a> ·
+          <a href="upgrade.html" style="color:var(--gold)">View Pricing →</a>
+        </div>
+      </section>
+
     </div><!-- /res-content -->
   </div><!-- /res-layout -->
 </div><!-- /res-wrap -->
 
-<script src="app.js?v=27"></script>
+<script src="app.js?v=34"></script>
 <script>
 // Highlight active TOC link on scroll
 const sections = document.querySelectorAll('.res-section');

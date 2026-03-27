@@ -4,10 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Project Sovereign">
+<meta property="og:title" content="Command Engine — Project Sovereign">
+<meta property="og:description" content="21 AI agents. Zero capital. Acquire UK SaaS at 4-8x EBITDA.">
+<meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Command%20Engine%20-%20Project%20Sovereign">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Command Engine — Project Sovereign">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Command%20Engine%20-%20Project%20Sovereign">
 <title>Command Engine — Project Sovereign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=34">
 <style>
 .app-shell { height: calc(100vh - 56px); display: flex; overflow: hidden; }
 
@@ -142,6 +155,16 @@
 .pname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pstage { font-size: 10px; color: var(--text3); font-family: var(--mono); }
 #aac { background: var(--surface); border-radius: var(--radius); padding: 10px; border-left: 2px solid var(--gold); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.conv-item { display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background .12s;font-size:11px;color:var(--text2); }
+.conv-item:hover { background:var(--surface); }
+.conv-item.active { background:var(--surface2);color:var(--gold); }
+.conv-title { flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.conv-agent { font-size:9px;color:var(--text3);font-family:var(--mono); }
+.conv-new { display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:11px;color:var(--teal);transition:background .12s;margin:4px 0; }
+.conv-new:hover { background:var(--surface); }
+.handoff-bar { display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border2); }
+.handoff-btn { background:var(--surface2);border:1px solid;border-radius:var(--radius);padding:5px 10px;font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s;font-weight:500; }
+.handoff-btn:hover { background:var(--gold-dim);border-color:rgba(201,168,76,.4)!important;color:var(--gold)!important; }
 </style>
 </head>
 <body>
@@ -150,6 +173,10 @@
   <!-- SIDEBAR -->
   <div class="cmd-sidebar" id="cmdSidebar">
     <div id="sidebarContent"></div>
+    <div id="convHistory" style="border-top:1px solid var(--border);padding:8px 0;display:none">
+      <div class="sb-section">Recent Conversations</div>
+      <div id="convList" style="padding:0 6px"></div>
+    </div>
   </div>
 
   <!-- CONTENT -->
@@ -233,7 +260,7 @@
 
 
 
-<script src="app.js?v=27"></script>
+<script src="app.js?v=34"></script>
 <script>
 var AGENTS=[
   {seat:"S1", name:"Silas Vane",       role:"CIO — Forensic Sourcing",           c:"#2dd4bf",bg:"rgba(45,212,191,.15)"},
@@ -281,19 +308,116 @@ var PERSONAS={
   S20:"You are Sentinel, Gatekeeper. Filter information, prioritise Commander attention, summarise deal status, protect bandwidth ruthlessly.",
   S21:"You are The Archivist, VPM. Synthesise success patterns, flag historical failure matches, provide institutional memory making the team smarter over time."
 };
-var SYSTEM="Project Sovereign — UK tech M&A roll-up command engine. Respond as your agent role with deep domain expertise.\n\nDOCTRINE: All acquisitions via Deferred Consideration, Vendor Finance, or ABL. Zero personal capital. Zero personal guarantees (director warranties disclosed honestly, target-company level only). SIC 62010/62020 targets → migrate to 63110. EBITDA £1M-£5M, recurring revenue >60%, motivated seller. Entry 4-8x, exit 15-30x. Every deal includes advisory fee for acquirer entity. Flag risks honestly.\n\nSTYLE: Stay in character. UK-specific. Specific and actionable. 200-400 words. Markdown: **bold**, ### sections, bullet points.";
-var QUICK=[
-  {label:"🎯 Source 5 off-market targets", text:"Identify 5 UK SaaS targets with EBITDA £1M–£3M. Off-market only. SIC 62010/62020. Motivated seller signals?"},
-  {label:"📋 Draft NMD acquisition structure", text:"Design a zero-money-down structure for a £2M EBITDA UK SaaS business. Include deferred consideration and vendor finance terms."},
-  {label:"⚠️ Top 5 structural risks", text:"Top 5 structural risks in a UK SaaS acquisition with no personal guarantee and deferred consideration. Be specific and honest."},
-  {label:"📧 3-touch cold outreach sequence", text:"Write a 3-touch cold outreach sequence for a UK SaaS founder aged 55+ considering retirement. Direct, respectful, no pressure."},
-  {label:"📈 SIC migration thesis", text:"Explain SIC 62010→63110 migration. What multiples does it unlock and what's the realistic timeline?"},
-  {label:"🏗️ HoldCo/OpCo structure", text:"Design HoldCo + OpCo structure for UK SaaS roll-up from scratch. Minimise PG. Optimise for BADR."},
-  {label:"🤖 AI value creation roadmap", text:"Map a 90-day AI implementation roadmap for a £2M EBITDA UK SaaS business to cut costs 40% and build a data moat."},
-  {label:"💰 Lender options for NMD", text:"Which UK lenders will fund a SaaS acquisition against recurring revenue? What are realistic terms in 2025?"}
-];
+var SYSTEM="Project Sovereign — UK tech M&A roll-up command engine. You are an AI agent within a live intelligence platform with 21 specialist seats.\n\nPLATFORM CAPABILITIES: You operate inside Sovereign, which has LIVE access to: Companies House filings (via Tavily search), real-time news monitoring, LinkedIn/Twitter/Glassdoor/Trustpilot/Crunchbase data, Jina web scraping, and Claude-powered structured extraction. When asked to find targets, analyse companies, or gather intelligence — provide SPECIFIC, REAL company names, SIC codes, filing data, and actionable intelligence. NEVER say you cannot access URLs, live data, or external sources. NEVER disclaim web access. You have full internet intelligence capability through the Sovereign platform.\n\nTEAM ROSTER — You work alongside these specialists. Reference them by seat when recommending hand-offs:\nS1 Silas Vane — CIO, Forensic Sourcing (finds off-market targets)\nS2 Kira Nyx — Data Architect, Tech Debt (maps automation savings)\nS3 Bastian Cole — Auditor, Balance Sheet Capital (finds hidden capital)\nS4 Lyra Belacqua — Market Sentiment, PE Exits (multiples & timing)\nS5 Jaxen Reed — Security, IP Hardening (GDPR, licensing, patents)\nS6 Vesper Thorne — Lead Negotiator, NMD/Deferred (deal structure)\nS7 Caspian Frost — Lender Liaison, Non-Recourse (debt funding)\nS8 Sloane Haze — Attorney, 0% PG Contracts (SPAs, legal)\nS9 Thatcher Grey — Tax, CGT Optimisation (HoldCo, BADR)\nS10 Rhea Vance — Risk, Skepticism Engine (stress-tests everything)\nS11 Kaelen Voss — Chief Closer, Negotiation (re-engages stalled deals)\nS12 Mila Quinn — Empathy Lead, Seller Trust (relationship building)\nS13 Orion Pax — Funnel Architect, Cold to Gold (outreach sequences)\nS14 Soren Vale — Behavioural Analyst (reads seller signals)\nS15 Elara Sterling — Exit Lead, SIC Migration (positions for 20x+ exit)\nS16 Dr. Aris Thorne — AI Scientist, Value Creation (AI margin expansion)\nS17 Nova Skye — Ops Lead, Roll-Up Integration (100-day playbook)\nS18 Gideon Cross — Growth, Post-Acq Revenue (scaling & cross-sell)\nS19 Echo — Interface, Systems Bridge (API & toolstack)\nS20 Sentinel — Gatekeeper, Signal Filter (prioritises attention)\nS21 The Archivist — VPM, Vector Pattern Memory (institutional memory)\n\nPIPELINE PROTOCOL: At the end of EVERY response, include a ### Next Steps section recommending which 2-3 agents should handle the next phase. Use format: **→ S[N] [Name]** — [what they should do]. This creates a connected pipeline where intelligence flows between agents. When you receive context from another agent (marked [HANDOFF FROM S[N]]), build directly on their output — do not repeat their work, advance the analysis.\n\nDOCTRINE: All acquisitions via Deferred Consideration, Vendor Finance, or ABL. Zero personal capital. Zero personal guarantees (director warranties disclosed honestly, target-company level only). SIC 62010/62020 targets → migrate to 63110. EBITDA £1M-£5M, recurring revenue >60%, motivated seller. Entry 4-8x, exit 15-30x. Every deal includes advisory fee for acquirer entity. Flag risks honestly.\n\nSTYLE: Stay in character. UK-specific. Specific and actionable. 200-400 words. Markdown: **bold**, ### sections, bullet points. Provide real company names, real data points, real SIC codes. Be the expert the Commander hired you to be.";
+var AGENT_QUICK={
+  S1:[
+    {label:"🎯 Source 5 off-market targets",text:"Identify 5 UK SaaS targets with EBITDA £1M–£3M. Off-market only. SIC 62010/62020. Motivated seller signals?"},
+    {label:"🔍 Companies House deep dive",text:"Walk me through how to forensically source UK SaaS targets using Companies House filings — aged accounts, director changes, SIC codes."},
+    {label:"📊 Succession pressure signals",text:"What are the top indicators of succession pressure in a UK SaaS founder? How do I identify them from public filings?"}
+  ],
+  S2:[
+    {label:"🔧 Tech debt assessment",text:"How do I assess technical debt in a UK SaaS target during DD? What red flags should I look for in the codebase?"},
+    {label:"🤖 AI cost-cutting roadmap",text:"Map which roles and processes in a £2M EBITDA SaaS can be automated with AI in the first 90 days post-acquisition."},
+    {label:"🏗️ Infrastructure audit checklist",text:"Create a technical infrastructure audit checklist for a UK SaaS acquisition. Focus on scalability, security, and legacy risk."}
+  ],
+  S3:[
+    {label:"💰 Hidden balance sheet capital",text:"Where can I find hidden capital in a UK SaaS target's balance sheet? Deferred revenue, R&D credits, working capital cycles."},
+    {label:"📋 Self-funding acquisition model",text:"Model a self-funding acquisition: how to use the target's own cash flow and balance sheet to fund the purchase."},
+    {label:"🔢 R&D tax credit optimisation",text:"How can R&D tax credits be maximised in a UK SaaS company post-acquisition? Walk me through the claim structure."}
+  ],
+  S4:[
+    {label:"📈 SIC migration thesis",text:"Explain SIC 62010→63110 migration. What multiples does it unlock and what's the realistic timeline?"},
+    {label:"📊 PE exit heatmap",text:"Map the current PE exit landscape for UK SaaS. Which SIC codes, revenue bands, and margins are attracting the highest multiples?"},
+    {label:"🔄 IRR compression trends",text:"How is IRR compression affecting UK mid-market SaaS valuations? What entry multiples still deliver 25%+ IRR?"}
+  ],
+  S5:[
+    {label:"🔒 IP hardening checklist",text:"Create an IP hardening checklist for a UK SaaS acquisition. Cover code licensing, GDPR, trade secrets, and patent positioning."},
+    {label:"⚖️ GDPR compliance DD",text:"What GDPR risks should I look for in a UK SaaS DD? How do I assess data processing agreements and breach history?"},
+    {label:"🛡️ Code licensing audit",text:"How do I audit open-source code licensing risk in a SaaS target? What licences are deal-breakers for institutional buyers?"}
+  ],
+  S6:[
+    {label:"📋 Draft NMD structure",text:"Design a zero-money-down structure for a £2M EBITDA UK SaaS business. Include deferred consideration and vendor finance terms."},
+    {label:"🤝 Earn-out framework",text:"Design an earn-out structure that bridges a £500K price gap on a UK SaaS deal. Performance metrics, payment schedule, protections."},
+    {label:"📄 Locked-box vs completion accounts",text:"Compare locked-box vs completion accounts for a UK SaaS acquisition. When does each make sense?"}
+  ],
+  S7:[
+    {label:"💰 Lender options for NMD",text:"Which UK lenders will fund a SaaS acquisition against recurring revenue? What are realistic terms in 2025?"},
+    {label:"🏦 ABL vs revenue-based lending",text:"Compare asset-based lending vs revenue-based financing for acquiring a £2M ARR UK SaaS business. Pros, cons, typical terms."},
+    {label:"📊 Non-recourse debt structures",text:"Structure a non-recourse debt package for a UK SaaS roll-up. What collateral do lenders accept against ARR?"}
+  ],
+  S8:[
+    {label:"⚖️ Draft SPA key terms",text:"Draft the key commercial terms for a UK SPA acquiring a SaaS business via deferred consideration. Minimise PG exposure."},
+    {label:"📝 Consulting fee structure",text:"Design a consulting/advisory fee structure that the acquiring entity charges the target post-completion. UK company law compliant."},
+    {label:"🛡️ Warranty & indemnity framework",text:"What warranty and indemnity insurance options are available for a sub-£5M UK SaaS acquisition? W&I vs seller warranties."}
+  ],
+  S9:[
+    {label:"🏗️ HoldCo/OpCo structure",text:"Design HoldCo + OpCo structure for UK SaaS roll-up from scratch. Minimise PG. Optimise for BADR."},
+    {label:"💷 BADR qualification path",text:"Walk me through Business Asset Disposal Relief qualification for a UK SaaS roll-up exit. What are the conditions and planning steps?"},
+    {label:"🔄 Inter-group loan strategy",text:"Design an inter-group loan structure between HoldCo and OpCo to extract profits tax-efficiently. Stay within HMRC transfer pricing rules."}
+  ],
+  S10:[
+    {label:"⚠️ Top 5 structural risks",text:"Top 5 structural risks in a UK SaaS acquisition with no personal guarantee and deferred consideration. Be specific and honest."},
+    {label:"📉 Downside scenario model",text:"Model the worst-case scenario for a £2M EBITDA SaaS acquisition. Revenue churn, key-man departure, market downturn."},
+    {label:"🚩 Counterparty risk flags",text:"What counterparty risk flags should I watch for in seller behaviour during a UK SaaS deal negotiation?"}
+  ],
+  S11:[
+    {label:"🤝 Re-engage stalled deal",text:"A UK SaaS seller has gone cold after LOI stage. Design a re-engagement strategy. 3 approaches, timing, and framing."},
+    {label:"💬 Bridge a price gap",text:"The seller wants £8M, our model says £6M. Design 3 creative structures to bridge this gap without increasing personal risk."},
+    {label:"✅ Closing checklist",text:"Create a deal-closing checklist for a UK SaaS acquisition. From signed SPA to Day 1 integration. Critical path items only."}
+  ],
+  S12:[
+    {label:"💚 Seller trust playbook",text:"Design a trust-building communication playbook for a UK SaaS founder considering selling. First contact to completion."},
+    {label:"📧 Empathetic follow-up sequence",text:"Write 3 empathetic follow-up messages for a seller who expressed interest but hasn't responded in 2 weeks."},
+    {label:"🎯 Emotional journey mapping",text:"Map the emotional journey of a UK SaaS founder selling their business. Where are the drop-off points and how do we support them?"}
+  ],
+  S13:[
+    {label:"📧 3-touch cold outreach",text:"Write a 3-touch cold outreach sequence for a UK SaaS founder aged 55+ considering retirement. Direct, respectful, no pressure."},
+    {label:"🔗 LinkedIn sequence",text:"Design a 5-step LinkedIn outreach sequence for UK SaaS founders. Connection request through to meeting booked."},
+    {label:"📊 Pipeline conversion metrics",text:"What conversion rates should I target at each stage of a cold-to-warm seller pipeline? Industry benchmarks for UK M&A."}
+  ],
+  S14:[
+    {label:"🧠 Seller hesitation analysis",text:"A seller said 'let me think about it' after our second meeting. Analyse what this likely means and recommend next steps."},
+    {label:"⏱️ Timing & urgency signals",text:"What behavioural signals indicate a UK SaaS seller is ready to move quickly? How do I distinguish genuine urgency from pressure tactics?"},
+    {label:"📋 Communication pattern analysis",text:"How do I read seller communication patterns — response times, language shifts, question types — to assess deal probability?"}
+  ],
+  S15:[
+    {label:"📈 SIC migration execution",text:"Step-by-step execution plan for migrating a UK SaaS company from SIC 62010 to 63110. Timeline, risks, and multiple uplift."},
+    {label:"🏆 Competitive exit process",text:"Design a competitive exit process for a UK SaaS roll-up. How do I create bidding tension among institutional buyers?"},
+    {label:"📊 Exit readiness assessment",text:"Create an exit readiness scorecard for a UK SaaS roll-up. What metrics and structures must be in place for a 20x+ exit?"}
+  ],
+  S16:[
+    {label:"🤖 AI value creation roadmap",text:"Map a 90-day AI implementation roadmap for a £2M EBITDA UK SaaS business to cut costs 40% and build a data moat."},
+    {label:"📊 Churn prediction model",text:"Design an AI churn prediction system for a UK B2B SaaS. What data points, models, and integration architecture?"},
+    {label:"🧪 LLM automation opportunities",text:"Identify the highest-ROI LLM automation opportunities in a typical UK SaaS business. Customer support, sales, ops."}
+  ],
+  S17:[
+    {label:"📋 100-day integration playbook",text:"Create a 100-day post-acquisition integration playbook for a UK SaaS business. Finance, tech, team, customers."},
+    {label:"🔧 Tech stack rationalisation",text:"How do I rationalise tech stacks across 3 acquired UK SaaS businesses? Prioritisation framework and timeline."},
+    {label:"📊 Reporting standardisation",text:"Design a standardised financial reporting framework for a UK SaaS roll-up with 3-5 portfolio companies."}
+  ],
+  S18:[
+    {label:"📈 Post-acq revenue scaling",text:"Design a post-acquisition revenue scaling strategy for a UK B2B SaaS. AI outbound, channel partners, cross-sell."},
+    {label:"🤝 Channel partnership model",text:"Build a channel partnership programme for a UK SaaS roll-up. Partner types, incentives, onboarding, revenue share."},
+    {label:"🎯 Cross-sell strategy",text:"Design a cross-sell strategy across 3 acquired UK SaaS businesses with overlapping customer bases."}
+  ],
+  S19:[
+    {label:"🔌 API integration architecture",text:"Design the API integration architecture for Project Sovereign's command engine. Real-time data feeds, webhooks, monitoring."},
+    {label:"🛠️ Toolstack recommendation",text:"Recommend the optimal toolstack for a UK SaaS M&A operation. CRM, deal room, DD management, comms, analytics."},
+    {label:"📊 Real-time intelligence feeds",text:"Design a real-time intelligence feed system that monitors Companies House, news, social, and financial data for target companies."}
+  ],
+  S20:[
+    {label:"📊 Deal status summary",text:"Summarise the current status of all active deals. Priority ranking, next actions, blockers, and risk flags."},
+    {label:"🔔 Signal filter priorities",text:"What information should reach the Commander daily vs weekly vs only-if-critical? Design a signal filtering framework."},
+    {label:"⚡ Bandwidth protection protocol",text:"Design a bandwidth protection protocol. How should incoming requests be triaged, delegated, or deferred?"}
+  ],
+  S21:[
+    {label:"📚 Pattern recognition",text:"What patterns from successful UK SaaS acquisitions should inform our current deal pipeline? Historical success factors."},
+    {label:"🚩 Historical failure analysis",text:"What are the most common failure patterns in UK SaaS roll-ups? Match against our current approach and flag risks."},
+    {label:"🧠 Institutional memory brief",text:"Compile an institutional memory brief: key decisions made, lessons learned, and frameworks validated across all deals to date."}
+  ]
+};
 
-var activeAgent=AGENTS[0], streaming=false, chatHistory=[];
+var activeAgent=AGENTS[0], streaming=false, chatHistory=[], currentConvId=null;
 
 function ini(n){return n.split(' ').map(function(w){return w[0]}).slice(0,2).join('')}
 function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -352,15 +476,20 @@ window.addEventListener('auth:ready', function(e){ updateBanner(e.detail?.user);
   });
 })();
 
-// Build welcome
-(function(){
-  var chat = document.getElementById('chat');
-  var html = '<div class="welcome-panel"><h2>Command Engine Online</h2><p>Select an agent, then brief them below. Each seat is a domain expert in UK tech roll-up M&A. All deal structures: NMD, zero personal capital, zero personal guarantees.</p><div class="quick-grid">';
-  QUICK.forEach(function(q){
+// Build welcome panel — agent-specific
+function renderWelcome(agent){
+  var a = agent || activeAgent;
+  var qs = AGENT_QUICK[a.seat] || [];
+  var html = '<div class="welcome-panel"><h2>'+esc(a.name)+'</h2><p style="color:'+a.c+';font-weight:500;margin-bottom:4px">'+esc(a.role)+'</p><p>'+esc(PERSONAS[a.seat]||'').replace(/^You are [^.]+\.\s*/,'')+'</p><div class="quick-grid">';
+  qs.forEach(function(q){
     html += '<button class="qbtn" data-text="'+esc(q.text)+'">'+q.label+'</button>';
   });
   html += '</div></div>';
-  chat.innerHTML = html;
+  return html;
+}
+(function(){
+  var chat = document.getElementById('chat');
+  chat.innerHTML = renderWelcome(AGENTS[0]);
   chat.addEventListener('click', function(e){
     var qb = e.target.closest('.qbtn');
     if(qb) doSend(qb.dataset.text);
@@ -392,6 +521,11 @@ function selectAgent(a){
   document.getElementById('aac-seat').textContent = a.seat;
   document.getElementById('aac').style.borderLeftColor = a.c;
   document.getElementById('inp').placeholder = 'Brief '+a.name+'…';
+  // Re-render welcome if no messages in chat
+  if(chatHistory.length===0){
+    var chat=document.getElementById('chat');
+    chat.innerHTML=renderWelcome(a);
+  }
 }
 selectAgent(AGENTS[0]);
 
@@ -400,10 +534,11 @@ document.getElementById('sidebarToggle').onclick = function(){
   document.getElementById('cmdSidebar').classList.toggle('collapsed');
 };
 
-// Clear
+// Clear — start a new conversation
 document.getElementById('clearBtn').onclick = function(){
   chatHistory=[];
-  document.getElementById('chat').innerHTML='';
+  currentConvId=null;
+  document.getElementById('chat').innerHTML=renderWelcome();
 };
 
 // Agent pill
@@ -445,8 +580,105 @@ function appendAgentMsg(a){
 }
 function updateBubble(id,text,done){
   var el=document.getElementById(id); if(!el)return;
-  el.innerHTML=renderMd(text)+(done?'':'<span class="cursor"></span>');
+  var rendered=renderMd(text)+(done?'':'<span class="cursor"></span>');
+  if(done){
+    // Parse hand-off suggestions: → S[N] [Name]
+    var handoffs=[];
+    var re=/→\s*S(\d+)\s+([A-Za-z\.\s]+?)(?:\s*—|\s*\*\*)/g;
+    var m;
+    while((m=re.exec(text))!==null){
+      var seat='S'+m[1];
+      var ag=AGENTS.find(function(a){return a.seat===seat});
+      if(ag&&ag.seat!==activeAgent.seat) handoffs.push(ag);
+    }
+    if(handoffs.length){
+      rendered+='<div class="handoff-bar">';
+      handoffs.forEach(function(ag){
+        rendered+='<button class="handoff-btn" data-seat="'+ag.seat+'" style="border-color:'+ag.c+'30;color:'+ag.c+'" onclick="handoffTo(\''+ag.seat+'\')">→ '+ag.seat+' '+esc(ag.name)+'</button>';
+      });
+      rendered+='</div>';
+    }
+  }
+  el.innerHTML=rendered;
   el.parentElement.parentElement.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+function handoffTo(seat){
+  var ag=AGENTS.find(function(a){return a.seat===seat});
+  if(!ag)return;
+  var fromAgent=activeAgent;
+  // Get the last assistant message as context
+  var lastMsg='';
+  for(var i=chatHistory.length-1;i>=0;i--){
+    if(chatHistory[i].role==='assistant'){lastMsg=chatHistory[i].content;break;}
+  }
+  // Switch to the target agent and start fresh
+  selectAgent(ag);
+  chatHistory=[];
+  currentConvId=null;
+  document.getElementById('chat').innerHTML='';
+  var context='[HANDOFF FROM '+fromAgent.seat+' '+fromAgent.name+'] The previous agent provided this intelligence:\n\n'+lastMsg+'\n\nBuild on this analysis. Advance the pipeline from your specialist perspective.';
+  doSend(context);
+}
+
+// Conversation history
+function loadConvList(){
+  if(!Auth.user) return;
+  API.convs.list().then(function(r){
+    var list=r&&r.data;
+    if(!list||!list.length){ document.getElementById('convHistory').style.display='none'; return; }
+    document.getElementById('convHistory').style.display='block';
+    var html='<div class="conv-new" onclick="newConversation()">+ New conversation</div>';
+    list.forEach(function(c){
+      var agent=AGENTS.find(function(a){return a.seat===c.agent_seat});
+      var color=agent?agent.c:'var(--text3)';
+      html+='<div class="conv-item'+(c.id===currentConvId?' active':'')+'" data-id="'+c.id+'" onclick="loadConv(\''+c.id+'\')">'
+        +'<span class="conv-agent" style="color:'+color+'">'+esc(c.agent_seat||'')+'</span>'
+        +'<span class="conv-title">'+esc(c.title||'Untitled')+'</span>'
+        +'</div>';
+    });
+    document.getElementById('convList').innerHTML=html;
+  }).catch(function(){});
+}
+
+function newConversation(){
+  chatHistory=[];
+  currentConvId=null;
+  document.getElementById('chat').innerHTML=renderWelcome();
+  loadConvList();
+}
+
+function loadConv(id){
+  API.convs.load(id).then(function(r){
+    var conv=r&&r.data;
+    if(!conv) return;
+    currentConvId=conv.id;
+    chatHistory=conv.messages||[];
+    // Switch to the agent this conversation was with
+    var agent=AGENTS.find(function(a){return a.seat===conv.agent_seat})||AGENTS[0];
+    selectAgent(agent);
+    // Render messages
+    var chat=document.getElementById('chat');
+    chat.innerHTML='';
+    chatHistory.forEach(function(m){
+      if(m.role==='user'){
+        var div=document.createElement('div'); div.className='msg user';
+        div.innerHTML='<div class="msg-av" style="background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.3)">⌘</div>'
+          +'<div class="bubble"><div style="white-space:pre-wrap">'+esc(m.content)+'</div></div>';
+        chat.appendChild(div);
+      } else {
+        var div=document.createElement('div'); div.className='msg agent';
+        div.innerHTML='<div class="msg-av" style="background:'+agent.bg+';color:'+agent.c+';border:1px solid '+agent.c+'30">'+ini(agent.name)+'</div>'
+          +'<div class="bubble agent-bubble">'
+          +'<div class="msg-meta"><span class="meta-seat" style="color:'+agent.c+'">'+agent.seat+'</span> '+agent.name+'</div>'
+          +'<div>'+renderMd(m.content)+'</div>'
+          +'</div>';
+        chat.appendChild(div);
+      }
+    });
+    if(chat.lastChild) chat.lastChild.scrollIntoView({behavior:'smooth',block:'end'});
+    loadConvList();
+  }).catch(function(e){ Toast.show('Failed to load conversation','error'); });
 }
 
 async function doSend(override){
@@ -479,10 +711,12 @@ async function doSend(override){
       document.getElementById('send').disabled=false;
       // Save conversation to Supabase
       if(Auth.user){
-        API.convs.save(
-          {agent_seat:agent.seat,agent_name:agent.name,title:text.slice(0,60)},
-          [{role:'user',content:text,tokens_used:0},{role:'assistant',content:acc,tokens_used:0}]
-        ).catch(function(){});
+        var convObj={agent_seat:agent.seat,agent_name:agent.name,title:chatHistory[0]?.content?.slice(0,60)||text.slice(0,60)};
+        if(currentConvId) convObj.id=currentConvId;
+        API.convs.save(convObj,chatHistory).then(function(r){
+          if(r&&r.data&&r.data.id) currentConvId=r.data.id;
+          loadConvList();
+        }).catch(function(){});
       }
     },
     onError: function(err){
@@ -501,6 +735,8 @@ window.addEventListener('auth:ready', function(e){
     setTimeout(function(){
       location.href='login.html?next='+encodeURIComponent(location.pathname.split('/').pop());
     },1800);
+  } else {
+    loadConvList();
   }
 });
 </script>

@@ -75,7 +75,7 @@ serve(async (req) => {
       const agent_name = String(payload?.agent_name || '');
       const message    = String(payload?.message    || '');
       const body = `[${agent_name}] ${message}`;
-      const whatsappFrom = `whatsapp:${fromNumber}`;
+      const whatsappFrom = Deno.env.get('TWILIO_WHATSAPP_FROM') || `whatsapp:${fromNumber}`;
       const whatsappTo   = `whatsapp:${howardPhone}`;
       const result = await twilioRequest('Messages.json', { To: whatsappTo, From: whatsappFrom, Body: body });
       await logCall('whatsapp', howardPhone, body, result.sid, result.status);

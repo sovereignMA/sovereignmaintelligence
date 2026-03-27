@@ -240,11 +240,13 @@ Deno.serve(async (req: Request) => {
 
     switch (action) {
       case 'scrape:full': {
-        if (!deal_id || !company_name) {
-          return scrapeJson({ error: 'deal_id and company_name required' }, 400);
+        if (!company_name) {
+          return scrapeJson({ error: 'company_name required' }, 400);
         }
         const intel = await scrapeCompany(company_name, website_url);
-        await upsertIntel(deal_id, intel);
+        if (deal_id) {
+          await upsertIntel(deal_id, intel);
+        }
         return scrapeJson({ ok: true, intel });
       }
 

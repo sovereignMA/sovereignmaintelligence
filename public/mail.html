@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Project Sovereign">
+<meta property="og:title" content="Mail — Project Sovereign">
+<meta property="og:description" content="21 AI agents. Zero capital. Acquire UK SaaS at 4-8x EBITDA.">
+<meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Mail%20-%20Project%20Sovereign">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mail — Project Sovereign">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Mail%20-%20Project%20Sovereign">
+<title>Mail — Project Sovereign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=37">
+<style>
+/* ═══════════════════════════════════════════════════
+   SOVEREIGN MAIL — MODERN UI v2
+   ═══════════════════════════════════════════════════ */
+
+/* ── 3-COLUMN LAYOUT ── */
+.mail-wrap { display:grid; grid-template-columns:240px 380px 1fr; height:calc(100vh - 56px); overflow:hidden; background:var(--bg); }
+.mail-wrap.no-detail { grid-template-columns:240px 1fr 0; }
+.mail-wrap.no-detail .mail-detail-pane { display:none; }
+
+/* ── SIDEBAR ── */
+.mail-sidebar { background:linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+.mail-sidebar-top { padding:16px 14px 12px; }
+.mail-compose-btn { width:100%; padding:11px 16px; border:none; border-radius:10px; background:linear-gradient(135deg, var(--gold) 0%, #e8c96a 100%); color:#000; font-weight:600; font-size:13px; cursor:pointer; font-family:var(--font); transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 12px rgba(201,168,76,.25); }
+.mail-compose-btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(201,168,76,.35); filter:brightness(1.05); }
+.mail-compose-btn svg { width:16px; height:16px; }
+.mail-sidebar-scroll { flex:1; overflow-y:auto; padding:0 8px; }
+.mail-sidebar-scroll::-webkit-scrollbar { width:3px; }
+.mail-sidebar-scroll::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+.mail-folder-group { margin-bottom:6px; }
+.mail-folder-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text3); padding:12px 10px 6px; }
+.mail-folder { display:flex; align-items:center; gap:10px; padding:9px 12px; cursor:pointer; font-size:12.5px; color:var(--text2); transition:all .15s; border-radius:8px; margin:1px 0; position:relative; }
+.mail-folder:hover { background:rgba(255,255,255,.04); color:var(--text); }
+.mail-folder.active { background:linear-gradient(135deg, rgba(201,168,76,.12) 0%, rgba(201,168,76,.06) 100%); color:var(--gold); font-weight:500; }
+.mail-folder.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:18px; background:var(--gold); border-radius:0 3px 3px 0; }
+.mail-folder-icon { width:18px; text-align:center; font-size:14px; opacity:.8; }
+.mail-folder .folder-name { flex:1; }
+.mail-folder-count { font-size:10px; font-family:var(--mono); background:var(--surface2); color:var(--text3); padding:2px 7px; border-radius:10px; min-width:20px; text-align:center; font-weight:500; }
+.mail-folder-count.unread { background:linear-gradient(135deg, rgba(201,168,76,.2), rgba(201,168,76,.1)); color:var(--gold); font-weight:600; }
+.mail-sep { height:1px; background:linear-gradient(90deg, transparent, var(--border2), transparent); margin:4px 12px; }
+
+/* Agent Activity Panel (sidebar bottom) */
+.mail-agent-panel { border-top:1px solid var(--border); padding:10px 8px 12px; flex-shrink:0; }
+.mail-agent-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text3); padding:0 10px 8px; display:flex; align-items:center; gap:6px; }
+.mail-agent-title .pulse { width:6px; height:6px; border-radius:50%; background:var(--green); animation:agentPulse 2s infinite; }
+@keyframes agentPulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(74,222,128,.4)} 50%{opacity:.7;box-shadow:0 0 0 4px rgba(74,222,128,0)} }
+.agent-activity { display:flex; flex-direction:column; gap:4px; max-height:160px; overflow-y:auto; }
+.agent-activity::-webkit-scrollbar { width:3px; }
+.agent-activity::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+.agent-item { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:7px; cursor:pointer; transition:all .15s; }
+.agent-item:hover { background:rgba(255,255,255,.04); }
+.agent-avatar { width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#000; flex-shrink:0; }
+.agent-info { flex:1; min-width:0; }
+.agent-name { font-size:11px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.agent-status { font-size:9px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.agent-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+
+/* ── LIST PANE ── */
+.mail-list-pane { display:flex; flex-direction:column; overflow:hidden; border-right:1px solid var(--border); background:var(--bg); }
+.mail-toolbar { display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--bg2); flex-shrink:0; }
+.mail-search-wrap { flex:1; position:relative; }
+.mail-search { width:100%; padding:8px 12px 8px 34px; border-radius:8px; border:1px solid var(--border2); background:var(--surface); color:var(--text); font-size:12px; font-family:var(--font); outline:none; transition:all .2s; }
+.mail-search:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,.1); }
+.mail-search::placeholder { color:var(--text3); }
+.mail-search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:13px; pointer-events:none; }
+.mail-tb-group { display:flex; gap:2px; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:2px; }
+.mail-tb-btn { padding:5px 8px; border:none; background:none; color:var(--text3); border-radius:5px; font-size:12px; cursor:pointer; font-family:var(--font); transition:all .15s; display:flex; align-items:center; gap:4px; }
+.mail-tb-btn:hover { background:var(--surface2); color:var(--text); }
+.mail-tb-btn.active { background:var(--gold-dim); color:var(--gold); }
+.mail-tb-btn svg { width:14px; height:14px; }
+
+/* Category tabs */
+.mail-cats { display:flex; gap:0; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg); }
+.mail-cat { padding:9px 16px; font-size:11px; font-weight:500; color:var(--text3); cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; position:relative; }
+.mail-cat:hover { color:var(--text2); background:rgba(255,255,255,.02); }
+.mail-cat.active { color:var(--gold); border-bottom-color:var(--gold); }
+.mail-cat .cat-count { font-size:9px; font-family:var(--mono); background:var(--surface2); color:var(--text3); padding:1px 5px; border-radius:8px; margin-left:5px; vertical-align:middle; }
+
+/* Email list */
+.mail-list { flex:1; overflow-y:auto; }
+.mail-list::-webkit-scrollbar { width:4px; }
+.mail-list::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+.mail-row { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; transition:all .12s; position:relative; border-left:3px solid transparent; }
+.mail-row::after { content:''; position:absolute; bottom:0; left:16px; right:16px; height:1px; background:var(--border); }
+.mail-row:last-child::after { display:none; }
+.mail-row:hover { background:rgba(255,255,255,.025); }
+.mail-row.unread { background:rgba(201,168,76,.025); border-left-color:var(--gold); }
+.mail-row.unread .mail-from { font-weight:600; color:var(--text); }
+.mail-row.unread .mail-subject { font-weight:500; color:var(--text); }
+.mail-row.selected { background:rgba(201,168,76,.06); }
+.mail-row.active { background:rgba(201,168,76,.08); }
+.mail-avatar { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; flex-shrink:0; color:#fff; }
+.mail-avatar.agent-av { border:1.5px solid; }
+.mail-row-content { flex:1; min-width:0; }
+.mail-row-top { display:flex; align-items:center; gap:6px; margin-bottom:2px; }
+.mail-from { font-size:12.5px; color:var(--text2); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mail-time { font-size:10px; color:var(--text3); font-family:var(--mono); flex-shrink:0; white-space:nowrap; }
+.mail-row-mid { display:flex; align-items:center; gap:6px; }
+.mail-subject { font-size:12px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+.mail-row-bot { display:flex; align-items:center; gap:6px; margin-top:2px; }
+.mail-snippet { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; line-height:1.4; }
+.mail-badges { display:flex; gap:4px; flex-shrink:0; align-items:center; }
+.mail-deal-badge { font-size:9px; padding:2px 6px; border-radius:4px; background:rgba(45,212,191,.1); color:var(--teal); font-weight:500; border:1px solid rgba(45,212,191,.15); }
+.mail-agent-badge { font-size:9px; padding:2px 6px; border-radius:4px; background:rgba(167,139,250,.1); color:var(--purple); font-weight:500; border:1px solid rgba(167,139,250,.15); display:flex; align-items:center; gap:3px; }
+.mail-agent-badge .dot { width:4px; height:4px; border-radius:50%; background:var(--purple); }
+.mail-attach-icon { font-size:11px; color:var(--text3); flex-shrink:0; }
+.mail-cb { width:0; height:0; opacity:0; position:absolute; }
+.mail-star { font-size:14px; cursor:pointer; color:var(--text3); transition:all .15s; user-select:none; flex-shrink:0; }
+.mail-star.starred { color:var(--gold); text-shadow:0 0 8px rgba(201,168,76,.4); }
+.mail-star:hover { color:var(--amber); transform:scale(1.15); }
+.mail-empty { text-align:center; padding:60px 20px; color:var(--text3); font-size:13px; }
+.mail-empty svg { width:48px; height:48px; margin-bottom:12px; color:var(--text3); opacity:.3; }
+
+/* ── DETAIL PANE ── */
+.mail-detail-pane { display:flex; flex-direction:column; overflow:hidden; background:var(--bg); }
+.mail-detail-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg2); }
+.mail-detail-subj { font-size:18px; font-weight:600; color:var(--text); margin-bottom:12px; line-height:1.4; }
+.mail-detail-sender { display:flex; align-items:center; gap:12px; }
+.mail-detail-avatar { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; color:#fff; flex-shrink:0; }
+.mail-detail-sender-info { flex:1; min-width:0; }
+.mail-detail-from { font-size:13px; font-weight:600; color:var(--text); }
+.mail-detail-to-line { font-size:11px; color:var(--text3); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mail-detail-time { font-size:10px; color:var(--text3); font-family:var(--mono); flex-shrink:0; }
+.mail-detail-deal-link { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:3px 8px; border-radius:5px; background:rgba(45,212,191,.1); color:var(--teal); text-decoration:none; border:1px solid rgba(45,212,191,.15); margin-left:12px; transition:all .15s; }
+.mail-detail-deal-link:hover { background:rgba(45,212,191,.15); }
+.mail-detail-actions { display:flex; gap:4px; padding:10px 24px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg); }
+.mail-action-btn { padding:7px 14px; border-radius:7px; font-size:11px; cursor:pointer; font-family:var(--font); border:1px solid var(--border2); background:var(--surface); color:var(--text2); transition:all .15s; display:flex; align-items:center; gap:5px; font-weight:500; }
+.mail-action-btn:hover { border-color:var(--border3); color:var(--text); background:var(--surface2); }
+.mail-action-btn.primary { background:linear-gradient(135deg, var(--gold), #e8c96a); color:#000; border-color:transparent; }
+.mail-action-btn.primary:hover { filter:brightness(1.08); }
+.mail-action-btn.ai { background:linear-gradient(135deg, rgba(167,139,250,.15), rgba(167,139,250,.08)); border-color:rgba(167,139,250,.25); color:var(--purple); }
+.mail-action-btn.ai:hover { background:linear-gradient(135deg, rgba(167,139,250,.2), rgba(167,139,250,.12)); }
+.mail-action-btn svg { width:13px; height:13px; }
+.mail-detail-body { flex:1; overflow-y:auto; padding:24px; }
+.mail-detail-body::-webkit-scrollbar { width:4px; }
+.mail-detail-body::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+.mail-detail-body iframe { width:100%; border:none; background:#fff; border-radius:8px; min-height:300px; }
+.mail-detail-body .text-body { font-size:13px; line-height:1.7; color:var(--text); white-space:pre-wrap; word-break:break-word; }
+
+/* AI reply suggestion */
+.ai-reply-box { margin:16px 0 0; padding:14px 16px; border-radius:10px; background:linear-gradient(135deg, rgba(167,139,250,.08), rgba(167,139,250,.03)); border:1px solid rgba(167,139,250,.15); }
+.ai-reply-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.ai-reply-header svg { width:14px; height:14px; color:var(--purple); }
+.ai-reply-header span { font-size:11px; font-weight:600; color:var(--purple); }
+.ai-reply-text { font-size:12px; color:var(--text2); line-height:1.6; }
+.ai-reply-actions { display:flex; gap:6px; margin-top:10px; }
+.ai-reply-actions button { padding:5px 12px; border-radius:6px; font-size:11px; font-family:var(--font); cursor:pointer; border:1px solid rgba(167,139,250,.25); background:rgba(167,139,250,.1); color:var(--purple); font-weight:500; transition:all .15s; }
+.ai-reply-actions button:hover { background:rgba(167,139,250,.18); }
+.ai-reply-actions button.use-btn { background:var(--purple); color:#fff; border-color:var(--purple); }
+.ai-reply-actions button.use-btn:hover { filter:brightness(1.1); }
+
+/* Thread */
+.mail-thread-sep { padding:12px 24px; font-size:11px; color:var(--text3); border-top:1px solid var(--border); margin-top:16px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:color .15s; }
+.mail-thread-sep:hover { color:var(--text2); }
+.mail-thread-msg { padding:16px 0; border-top:1px solid var(--border); margin-top:8px; }
+.mail-thread-msg-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.mail-thread-avatar { width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#fff; flex-shrink:0; }
+
+/* ── COMPOSE MODAL ── */
+.compose-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(4px); z-index:1000; align-items:flex-end; justify-content:flex-end; padding:20px; }
+.compose-overlay.visible { display:flex; }
+.compose-box { width:580px; max-height:80vh; background:var(--surface); border:1px solid var(--border2); border-radius:14px; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 1px rgba(201,168,76,.2); animation:composeIn .25s cubic-bezier(.16,1,.3,1); }
+@keyframes composeIn { from{transform:translateY(30px) scale(.97);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+.compose-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--bg2); border-radius:14px 14px 0 0; }
+.compose-header span { font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px; }
+.compose-close { background:none; border:none; color:var(--text3); cursor:pointer; font-size:18px; padding:4px 8px; border-radius:6px; transition:all .15s; }
+.compose-close:hover { color:var(--text); background:var(--surface); }
+.compose-fields { padding:8px 18px; border-bottom:1px solid var(--border); }
+.compose-field { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.03); }
+.compose-field:last-child { border-bottom:none; }
+.compose-field label { font-size:11px; color:var(--text3); width:36px; flex-shrink:0; font-weight:500; }
+.compose-field input, .compose-field select { flex:1; background:none; border:none; color:var(--text); font-size:12.5px; font-family:var(--font); outline:none; padding:4px 0; }
+.compose-field input::placeholder { color:var(--text3); }
+.compose-body { flex:1; overflow:hidden; }
+.compose-body textarea { width:100%; height:100%; min-height:200px; resize:none; background:none; border:none; color:var(--text); font-size:13px; font-family:var(--font); line-height:1.6; padding:14px 18px; outline:none; }
+.compose-body textarea::placeholder { color:var(--text3); }
+.compose-ai-bar { display:flex; align-items:center; gap:8px; padding:8px 18px; background:linear-gradient(135deg, rgba(167,139,250,.06), rgba(167,139,250,.02)); border-top:1px solid rgba(167,139,250,.1); }
+.compose-ai-btn { padding:5px 12px; border-radius:6px; font-size:11px; font-family:var(--font); cursor:pointer; border:1px solid rgba(167,139,250,.2); background:rgba(167,139,250,.08); color:var(--purple); font-weight:500; transition:all .15s; display:flex; align-items:center; gap:5px; }
+.compose-ai-btn:hover { background:rgba(167,139,250,.15); border-color:rgba(167,139,250,.3); }
+.compose-ai-btn svg { width:12px; height:12px; }
+.compose-ai-label { font-size:10px; color:var(--text3); }
+.compose-footer { display:flex; align-items:center; gap:8px; padding:12px 18px; border-top:1px solid var(--border); }
+.compose-send { padding:9px 22px; border:none; border-radius:8px; background:linear-gradient(135deg, var(--gold), #e8c96a); color:#000; font-weight:600; font-size:12px; cursor:pointer; font-family:var(--font); transition:all .2s; box-shadow:0 2px 8px rgba(201,168,76,.2); }
+.compose-send:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(201,168,76,.3); }
+.compose-send:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+.compose-draft { padding:8px 14px; border:1px solid var(--border2); border-radius:8px; background:none; color:var(--text2); font-size:12px; cursor:pointer; font-family:var(--font); transition:all .15s; }
+.compose-draft:hover { border-color:var(--border3); color:var(--text); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px) {
+  .mail-wrap { grid-template-columns:60px 320px 1fr; }
+  .mail-sidebar-top { padding:12px 6px; }
+  .mail-compose-btn span { display:none; }
+  .mail-compose-btn { justify-content:center; padding:10px; }
+  .mail-folder-label { display:none; }
+  .mail-folder { justify-content:center; padding:10px; }
+  .mail-folder .folder-name, .mail-folder-count { display:none; }
+  .mail-agent-panel { display:none; }
+}
+@media(max-width:768px) {
+  .mail-wrap { grid-template-columns:1fr; }
+  .mail-sidebar { display:none; }
+  .mail-wrap.detail-open .mail-list-pane { display:none; }
+  .mail-wrap.detail-open .mail-detail-pane { display:flex; }
+  .mail-wrap:not(.detail-open) .mail-detail-pane { display:none; }
+  .mail-wrap:not(.detail-open) .mail-list-pane { display:flex; }
+  .mail-list-pane { border-right:none; }
+}
+
+/* ── SPINNER ── */
+@keyframes mailSpin { to{transform:rotate(360deg)} }
+.mail-spinner { width:20px; height:20px; border:2px solid var(--border2); border-top-color:var(--gold); border-radius:50%; animation:mailSpin .6s linear infinite; margin:0 auto 8px; }
+
+/* ── SKELETON LOADING ── */
+.skeleton-row { display:flex; align-items:center; gap:10px; padding:12px 16px; }
+.skeleton-avatar { width:36px; height:36px; border-radius:10px; background:var(--surface2); animation:skelPulse 1.5s infinite; }
+.skeleton-lines { flex:1; }
+.skeleton-line { height:10px; border-radius:4px; background:var(--surface2); animation:skelPulse 1.5s infinite; margin-bottom:6px; }
+.skeleton-line:nth-child(1) { width:40%; }
+.skeleton-line:nth-child(2) { width:70%; }
+.skeleton-line:nth-child(3) { width:50%; animation-delay:.1s; }
+@keyframes skelPulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
+</style>
+</head>
+<body>
+<div style="height:56px"></div>
+
+<div class="mail-wrap no-detail" id="mailWrap">
+  <!-- SIDEBAR -->
+  <div class="mail-sidebar">
+    <div class="mail-sidebar-top">
+      <button class="mail-compose-btn" onclick="openCompose()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 2.5l-11 11M13.5 2.5l-5 1 4 4 1-5zM2.5 13.5l1-5"/></svg>
+        <span>Compose</span>
+      </button>
+    </div>
+    <div class="mail-sidebar-scroll">
+      <div class="mail-folder-group">
+        <div class="mail-folder-label">Mailbox</div>
+        <div id="folderList"></div>
+      </div>
+      <div class="mail-sep"></div>
+      <div class="mail-folder-group">
+        <div class="mail-folder-label">System</div>
+        <div class="mail-folder" onclick="window.location.href='admin.html'" style="color:var(--text3)">
+          <span class="mail-folder-icon">⚙</span>
+          <span class="folder-name">Manage Aliases</span>
+        </div>
+        <div class="mail-folder" onclick="window.location.href='command.html'" style="color:var(--text3)">
+          <span class="mail-folder-icon">⬡</span>
+          <span class="folder-name">Command Center</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Activity -->
+    <div class="mail-agent-panel" id="agentPanel">
+      <div class="mail-agent-title"><span class="pulse"></span> Agent Activity</div>
+      <div class="agent-activity" id="agentActivity"></div>
+    </div>
+  </div>
+
+  <!-- LIST PANE -->
+  <div class="mail-list-pane">
+    <div class="mail-toolbar">
+      <div class="mail-search-wrap">
+        <span class="mail-search-icon">⌕</span>
+        <input type="text" class="mail-search" id="mailSearch" placeholder="Search emails, agents, deals…" autocomplete="off">
+      </div>
+      <div class="mail-tb-group">
+        <button class="mail-tb-btn" id="btnSelectAll" onclick="toggleSelectAll()" title="Select all">☐</button>
+        <button class="mail-tb-btn" onclick="bulkAction('archive')" title="Archive">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12M6 9h4"/></svg>
+        </button>
+        <button class="mail-tb-btn" onclick="bulkAction('trash')" title="Delete">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 7v5M8 7v5M11 7v5M4 4l.7 9.1a1 1 0 001 .9h4.6a1 1 0 001-.9L12 4"/></svg>
+        </button>
+        <button class="mail-tb-btn" onclick="bulkAction('read')" title="Mark read">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l6 5 6-5M2 4v8h12V4"/></svg>
+        </button>
+      </div>
+      <button class="mail-tb-btn" onclick="refreshMail()" title="Refresh" style="border:1px solid var(--border2);border-radius:6px">↻</button>
+    </div>
+    <div class="mail-cats" id="catTabs">
+      <div class="mail-cat active" data-cat="">All</div>
+      <div class="mail-cat" data-cat="primary">Primary</div>
+      <div class="mail-cat" data-cat="agents">Agents</div>
+      <div class="mail-cat" data-cat="updates">Updates</div>
+      <div class="mail-cat" data-cat="promotions">Promos</div>
+    </div>
+    <div class="mail-list" id="mailList">
+      <div class="skeleton-row"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div>
+      <div class="skeleton-row"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div>
+      <div class="skeleton-row"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div>
+    </div>
+  </div>
+
+  <!-- DETAIL PANE -->
+  <div class="mail-detail-pane" id="detailPane">
+    <div class="mail-detail-header">
+      <button class="mail-action-btn" onclick="closeDetail()" style="margin-bottom:12px;font-size:12px">← Back</button>
+      <div class="mail-detail-subj" id="detailSubject"></div>
+      <div class="mail-detail-sender">
+        <div class="mail-detail-avatar" id="detailAvatar"></div>
+        <div class="mail-detail-sender-info">
+          <div class="mail-detail-from" id="detailFrom"></div>
+          <div class="mail-detail-to-line" id="detailTo"></div>
+        </div>
+        <span class="mail-detail-time" id="detailTime"></span>
+        <span id="detailDeal"></span>
+      </div>
+    </div>
+    <div class="mail-detail-actions" id="detailActions">
+      <button class="mail-action-btn primary" onclick="replyToEmail()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3L2 7l4 4M2 7h8a4 4 0 014 4v1"/></svg>
+        Reply
+      </button>
+      <button class="mail-action-btn" onclick="forwardEmail()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3l4 4-4 4M14 7H6a4 4 0 00-4 4v1"/></svg>
+        Forward
+      </button>
+      <button class="mail-action-btn ai" onclick="aiDraftReply()" id="aiReplyBtn">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M5 8h6M8 5v6"/></svg>
+        AI Draft
+      </button>
+      <span style="flex:1"></span>
+      <button class="mail-action-btn" onclick="archiveCurrentEmail()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12M6 9h4"/></svg>
+        Archive
+      </button>
+      <button class="mail-action-btn" onclick="deleteCurrentEmail()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 7v5M8 7v5M11 7v5M4 4l.7 9.1a1 1 0 001 .9h4.6a1 1 0 001-.9L12 4"/></svg>
+        Delete
+      </button>
+    </div>
+    <div class="mail-detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- COMPOSE MODAL -->
+<div class="compose-overlay" id="composeOverlay" onclick="if(event.target===this)closeCompose()">
+  <div class="compose-box">
+    <div class="compose-header">
+      <span>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 2.5l-11 11M13.5 2.5l-5 1 4 4 1-5zM2.5 13.5l1-5"/></svg>
+        <span id="composeTitle">New Message</span>
+      </span>
+      <button class="compose-close" onclick="closeCompose()">✕</button>
+    </div>
+    <div class="compose-fields">
+      <div class="compose-field">
+        <label>From</label>
+        <select id="composeFrom"><option value="">notifications@sovereigncmd.xyz</option></select>
+      </div>
+      <div class="compose-field">
+        <label>To</label>
+        <input type="text" id="composeTo" placeholder="recipient@example.com" autocomplete="off">
+      </div>
+      <div class="compose-field">
+        <label>Cc</label>
+        <input type="text" id="composeCc" placeholder="cc@example.com" autocomplete="off">
+      </div>
+      <div class="compose-field">
+        <label>Subj</label>
+        <input type="text" id="composeSubject" placeholder="Subject" autocomplete="off">
+      </div>
+    </div>
+    <div class="compose-body">
+      <textarea id="composeBody" placeholder="Write your message…"></textarea>
+    </div>
+    <div class="compose-ai-bar">
+      <button class="compose-ai-btn" onclick="aiHelp('improve')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M2 8h12"/></svg>
+        Improve
+      </button>
+      <button class="compose-ai-btn" onclick="aiHelp('shorten')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h8M3 4h10M5 12h6"/></svg>
+        Shorten
+      </button>
+      <button class="compose-ai-btn" onclick="aiHelp('formal')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
+        Formal
+      </button>
+      <span class="compose-ai-label">AI Assist</span>
+    </div>
+    <div class="compose-footer">
+      <button class="compose-send" id="composeSendBtn" onclick="sendCompose()">Send</button>
+      <button class="compose-draft" onclick="saveDraft()">Save Draft</button>
+      <span style="flex:1"></span>
+      <span id="composeStatus" style="font-size:10px;color:var(--text3)"></span>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=37"></script>
+<script>
+// ═══════════════════════════════════════════════════
+// SOVEREIGN MAIL — ENGINE v2
+// ═══════════════════════════════════════════════════
+
+// ── AGENTS (mirrored from command.html) ──
+var AGENTS=[
+  {seat:"S1", name:"Silas Vane",       role:"CIO — Forensic Sourcing",     c:"#2dd4bf"},
+  {seat:"S2", name:"Kira Nyx",         role:"Data Architect",               c:"#a78bfa"},
+  {seat:"S3", name:"Bastian Cole",     role:"Auditor — Balance Sheet",      c:"#60a5fa"},
+  {seat:"S4", name:"Lyra Belacqua",    role:"Market Sentiment",             c:"#f472b6"},
+  {seat:"S5", name:"Jaxen Reed",       role:"Security — IP Hardening",      c:"#fb923c"},
+  {seat:"S6", name:"Vesper Thorne",    role:"Lead Negotiator",              c:"#4ade80"},
+  {seat:"S7", name:"Caspian Frost",    role:"Lender Liaison",               c:"#38bdf8"},
+  {seat:"S8", name:"Sloane Haze",      role:"M&A Attorney",                 c:"#e879f9"},
+  {seat:"S9", name:"Thatcher Grey",    role:"Tax — CGT Optimisation",       c:"#a3e635"},
+  {seat:"S10",name:"Rhea Vance",       role:"Risk — Skepticism Engine",     c:"#f87171"},
+  {seat:"S11",name:"Kaelen Voss",      role:"Chief Closer",                 c:"#fbbf24"},
+  {seat:"S12",name:"Mila Quinn",       role:"Empathy Lead",                 c:"#34d399"},
+  {seat:"S13",name:"Orion Pax",        role:"Funnel Architect",             c:"#818cf8"},
+  {seat:"S14",name:"Soren Vale",       role:"Behavioural Analyst",          c:"#fb7185"},
+  {seat:"S15",name:"Elara Sterling",   role:"Exit Lead — SIC Migration",    c:"#f0abfc"},
+  {seat:"S16",name:"Dr. Aris Thorne",  role:"AI Scientist",                 c:"#67e8f9"},
+  {seat:"S17",name:"Nova Skye",        role:"Operations Lead",              c:"#86efac"},
+  {seat:"S18",name:"Gideon Cross",     role:"Growth — Post-Acq Revenue",    c:"#fcd34d"},
+  {seat:"S19",name:"Echo",             role:"Interface — Systems Bridge",    c:"#93c5fd"},
+  {seat:"S20",name:"Sentinel",         role:"Gatekeeper — Signal Filter",   c:"#6b7280"},
+  {seat:"S21",name:"The Archivist",    role:"VPM — Vector Pattern Memory",  c:"#c084fc"}
+];
+
+// Agent activity simulation — recent actions agents have performed
+var AGENT_ACTIONS = [
+  {seat:"S1",  action:"Found 3 new targets in 62010", time:"2m ago"},
+  {seat:"S6",  action:"Drafted LOI for CloudMetrics", time:"8m ago"},
+  {seat:"S3",  action:"Completed balance sheet audit", time:"15m ago"},
+  {seat:"S19", action:"Synced 12 deal updates", time:"22m ago"},
+  {seat:"S10", action:"Flagged risk in DataFlow Ltd", time:"31m ago"},
+  {seat:"S13", action:"Moved 2 prospects to warm", time:"45m ago"},
+];
+
+// ── STATE ──
+var currentFolder = 'inbox';
+var currentCategory = '';
+var currentSearch = '';
+var currentEmails = [];
+var selectedIds = new Set();
+var currentEmail = null;
+var composeDraftId = null;
+var composeReplyTo = null;
+var folderCounts = {};
+var aliases = [];
+
+var FOLDERS = [
+  { id:'inbox',   icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6l6 4 6-4"/></svg>', label:'Inbox' },
+  { id:'starred', icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l1.8 3.6L14 6.2l-3 2.9.7 4.1L8 11.3 4.3 13.2l.7-4.1-3-2.9 4.2-.6z"/></svg>', label:'Starred' },
+  { id:'sent',    icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2L7 9M14 2l-5 12-2-5-5-2z"/></svg>', label:'Sent' },
+  { id:'drafts',  icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.5 2.5l2 2M4 10l-1 3 3-1 8.5-8.5-2-2z"/></svg>', label:'Drafts' },
+  { id:'archive', icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12M6 9h4"/></svg>', label:'Archive' },
+  { id:'spam',    icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M4.5 4.5l7 7"/></svg>', label:'Spam' },
+  { id:'trash',   icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 7v5M8 7v5M11 7v5M4 4l.7 9.1a1 1 0 001 .9h4.6a1 1 0 001-.9L12 4"/></svg>', label:'Trash' },
+];
+
+// ── AVATAR HELPERS ──
+function getInitials(name) {
+  if (!name) return '?';
+  var parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
+
+function nameToColor(name) {
+  if (!name) return '#555';
+  var hash = 0;
+  for (var i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  var colors = ['#2dd4bf','#a78bfa','#60a5fa','#f472b6','#fb923c','#4ade80','#38bdf8','#e879f9','#fbbf24','#f87171','#818cf8','#34d399'];
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function isAgentEmail(email) {
+  // Check if email is from one of our agents
+  if (!email) return null;
+  var from = (email.from_name || '').toLowerCase();
+  for (var i = 0; i < AGENTS.length; i++) {
+    if (from.indexOf(AGENTS[i].name.toLowerCase()) !== -1) return AGENTS[i];
+  }
+  if ((email.from_address || '').indexOf('sovereigncmd.xyz') !== -1 && email.source === 'agent') {
+    return AGENTS[18]; // Echo — Systems Bridge
+  }
+  return null;
+}
+
+// ── RENDER FOLDERS ──
+function renderFolders() {
+  var html = '';
+  FOLDERS.forEach(function(f) {
+    var count = folderCounts[f.id] || 0;
+    var unread = f.id === 'inbox' ? (folderCounts.unread || 0) : 0;
+    var active = currentFolder === f.id ? ' active' : '';
+    var countClass = unread > 0 && f.id === 'inbox' ? 'mail-folder-count unread' : 'mail-folder-count';
+    var displayCount = f.id === 'inbox' ? unread : count;
+    html += '<div class="mail-folder' + active + '" onclick="switchFolder(\'' + f.id + '\')">'
+      + '<span class="mail-folder-icon">' + f.icon + '</span>'
+      + '<span class="folder-name">' + f.label + '</span>'
+      + (displayCount > 0 ? '<span class="' + countClass + '">' + displayCount + '</span>' : '')
+      + '</div>';
+  });
+  document.getElementById('folderList').innerHTML = html;
+}
+
+// ── RENDER AGENT ACTIVITY ──
+function renderAgentActivity() {
+  var html = '';
+  AGENT_ACTIONS.forEach(function(aa) {
+    var agent = AGENTS.find(function(a) { return a.seat === aa.seat; });
+    if (!agent) return;
+    html += '<div class="agent-item" onclick="filterByAgent(\'' + agent.name + '\')">'
+      + '<div class="agent-avatar" style="background:' + agent.c + '">' + getInitials(agent.name) + '</div>'
+      + '<div class="agent-info">'
+      + '<div class="agent-name">' + esc(agent.name) + '</div>'
+      + '<div class="agent-status">' + esc(aa.action) + '</div>'
+      + '</div>'
+      + '<span class="agent-dot" style="background:' + agent.c + '"></span>'
+      + '</div>';
+  });
+  document.getElementById('agentActivity').innerHTML = html;
+}
+
+function filterByAgent(agentName) {
+  document.getElementById('mailSearch').value = agentName;
+  currentSearch = agentName;
+  loadEmails();
+}
+
+// ── SWITCH FOLDER ──
+function switchFolder(folder) {
+  currentFolder = folder;
+  currentCategory = '';
+  selectedIds.clear();
+  document.querySelectorAll('.mail-cat').forEach(function(c) { c.classList.toggle('active', c.dataset.cat === ''); });
+  renderFolders();
+  loadEmails();
+  closeDetail();
+}
+
+// ── LOAD EMAILS ──
+async function loadEmails() {
+  var list = document.getElementById('mailList');
+  list.innerHTML = '<div class="skeleton-row"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div>'
+    + '<div class="skeleton-row"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div>'
+    + '<div class="skeleton-row"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div>';
+  try {
+    var cat = currentCategory === 'agents' ? undefined : (currentCategory || undefined);
+    var res = await API.mail.list(currentFolder, cat, currentSearch || undefined, 50, 0);
+    currentEmails = (res && res.data) || [];
+    // Filter for agents category client-side
+    if (currentCategory === 'agents') {
+      currentEmails = currentEmails.filter(function(e) { return isAgentEmail(e) || e.source === 'agent'; });
+    }
+    renderEmails();
+  } catch(e) {
+    list.innerHTML = '<div class="mail-empty"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="24" cy="24" r="20"/><path d="M16 20h16M16 28h10"/></svg><div>Failed to load emails</div></div>';
+  }
+}
+
+// ── RENDER EMAIL LIST ──
+function renderEmails() {
+  var list = document.getElementById('mailList');
+  if (!currentEmails.length) {
+    var emptyIcon = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1"><rect x="8" y="12" width="32" height="24" rx="3"/><path d="M8 18l16 10 16-10"/></svg>';
+    list.innerHTML = '<div class="mail-empty">' + emptyIcon + '<div style="margin-top:4px">No emails in ' + currentFolder + '</div><div style="font-size:11px;margin-top:4px;color:var(--text3)">Messages will appear here as they arrive</div></div>';
+    return;
+  }
+  var html = '';
+  currentEmails.forEach(function(e) {
+    var unread = !e.is_read ? ' unread' : '';
+    var sel = selectedIds.has(e.id) ? ' selected' : '';
+    var active = currentEmail && currentEmail.id === e.id ? ' active' : '';
+    var starred = e.is_starred ? ' starred' : '';
+    var time = formatTime(e.received_at || e.sent_at || e.created_at);
+    var fromDisplay = currentFolder === 'sent' ? (e.to_addresses || []).join(', ') : (e.from_name || e.from_address || 'Unknown');
+    var agent = isAgentEmail(e);
+    var avatarColor = agent ? agent.c : nameToColor(fromDisplay);
+    var avatarClass = agent ? 'mail-avatar agent-av' : 'mail-avatar';
+    var avatarStyle = agent
+      ? 'background:' + agent.c + '20;color:' + agent.c + ';border-color:' + agent.c
+      : 'background:' + avatarColor + '22;color:' + avatarColor;
+
+    html += '<div class="mail-row' + unread + sel + active + '" data-id="' + e.id + '">'
+      + '<span class="mail-star' + starred + '" onclick="event.stopPropagation();toggleStar(\'' + e.id + '\')">' + (e.is_starred ? '★' : '☆') + '</span>'
+      + '<div class="' + avatarClass + '" style="' + avatarStyle + '">' + getInitials(fromDisplay) + '</div>'
+      + '<div class="mail-row-content">'
+      + '<div class="mail-row-top">'
+      + '<span class="mail-from">' + esc(fromDisplay) + '</span>'
+      + '<span class="mail-time">' + time + '</span>'
+      + '</div>'
+      + '<div class="mail-row-mid">'
+      + '<span class="mail-subject">' + esc(e.subject || '(no subject)') + '</span>'
+      + '</div>'
+      + '<div class="mail-row-bot">'
+      + '<span class="mail-snippet">' + (e.is_encrypted ? '<span style="color:var(--text3);font-size:10px;opacity:.7">🔒 encrypted</span>' : esc(e.snippet || '')) + '</span>'
+      + '<div class="mail-badges">'
+      + (agent ? '<span class="mail-agent-badge"><span class="dot"></span>' + agent.seat + '</span>' : '')
+      + (e.deal_id ? '<span class="mail-deal-badge">Deal</span>' : '')
+      + (e.attachments && e.attachments.length ? '<span class="mail-attach-icon">📎</span>' : '')
+      + '</div>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+
+  list.querySelectorAll('.mail-row').forEach(function(row) {
+    row.addEventListener('click', function() { openEmail(row.dataset.id); });
+  });
+}
+
+// ── OPEN EMAIL ──
+async function openEmail(id) {
+  try {
+    var res = await API.mail.get(id);
+    if (!res || !res.data) { Toast.show('Email not found', 'error'); return; }
+    currentEmail = res.data;
+
+    document.getElementById('detailSubject').textContent = currentEmail.subject || '(no subject)';
+
+    var fromName = currentEmail.from_name || currentEmail.from_address || 'Unknown';
+    var agent = isAgentEmail(currentEmail);
+    var avColor = agent ? agent.c : nameToColor(fromName);
+    var avStyle = agent
+      ? 'background:' + agent.c + '20;color:' + agent.c + ';border:1.5px solid ' + agent.c
+      : 'background:' + avColor + '22;color:' + avColor;
+    document.getElementById('detailAvatar').innerHTML = getInitials(fromName);
+    document.getElementById('detailAvatar').setAttribute('style', avStyle);
+
+    var fromLabel = fromName;
+    if (agent) fromLabel += ' <span style="font-size:10px;color:' + agent.c + ';font-weight:400;margin-left:4px">' + agent.role + '</span>';
+    document.getElementById('detailFrom').innerHTML = fromLabel;
+    document.getElementById('detailTo').textContent = 'to ' + (currentEmail.to_addresses || []).join(', ');
+    document.getElementById('detailTime').textContent = formatTime(currentEmail.received_at || currentEmail.sent_at || currentEmail.created_at);
+
+    var dealEl = document.getElementById('detailDeal');
+    dealEl.innerHTML = currentEmail.deal_id
+      ? '<a href="pipeline.html?deal=' + currentEmail.deal_id + '" class="mail-detail-deal-link">📋 Linked Deal →</a>'
+      : '';
+
+    // Show/hide AI reply button
+    document.getElementById('aiReplyBtn').style.display = agent ? 'none' : '';
+
+    // Decrypt bodies if encrypted; otherwise encrypt at rest (inbound plaintext)
+    var bodyHtml = currentEmail.body_html || '';
+    var bodyText = currentEmail.body_text || '';
+    if (currentEmail.is_encrypted) {
+      bodyHtml = await MailCrypto.decrypt(bodyHtml);
+      bodyText = await MailCrypto.decrypt(bodyText);
+      // Update currentEmail with decrypted content so reply/forward use plaintext
+      currentEmail.body_html = bodyHtml;
+      currentEmail.body_text = bodyText;
+    } else if (bodyHtml || bodyText) {
+      // Encrypt plaintext email at rest and save back
+      var encHtml = await MailCrypto.encrypt(bodyHtml);
+      var encText = await MailCrypto.encrypt(bodyText);
+      var encSnip = await MailCrypto.encrypt(currentEmail.snippet || '');
+      API._call('email-send', { action: 'encrypt', payload: { id: id, body_html: encHtml, body_text: encText, snippet: encSnip } })
+        .catch(function() {});
+      // Mark as encrypted locally so repeat opens decrypt correctly
+      currentEmail.is_encrypted = true;
+    }
+
+    // Render body
+    var bodyDiv = document.getElementById('detailBody');
+    if (bodyHtml) {
+      var safeHtml = sanitizeEmailHtml(bodyHtml);
+      var emailStyles = 'body{font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#333;padding:20px;margin:0;background:#fff}img{max-width:100%}a{color:#1a73e8}pre,code{background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:13px}';
+      var srcdocContent = '<!DOCTYPE html><html><head><style>' + emailStyles + '</style></head><body>' + safeHtml + '</body></html>';
+      bodyDiv.innerHTML = '<iframe id="emailFrame" sandbox="allow-popups allow-popups-to-escape-sandbox" srcdoc="" style="width:100%;border:none;background:#fff;border-radius:10px;min-height:400px;box-shadow:0 1px 3px rgba(0,0,0,.1)"></iframe>';
+      var frame = document.getElementById('emailFrame');
+      frame.setAttribute('srcdoc', srcdocContent);
+      frame.onload = function() {
+        try { frame.style.height = (frame.contentDocument.body.scrollHeight + 40) + 'px'; } catch(e) {}
+      };
+    } else {
+      bodyDiv.innerHTML = '<div class="text-body">' + esc(bodyText || 'No content') + '</div>';
+    }
+
+    // Mark read — update UI immediately + refresh sidebar counts
+    var wasUnread = currentEmails.some(function(e) { return e.id === id && !e.is_read; });
+    var row = document.querySelector('.mail-row[data-id="' + id + '"]');
+    if (row) { row.classList.remove('unread'); row.classList.add('active'); }
+    document.querySelectorAll('.mail-row').forEach(function(r) {
+      if (r.dataset.id !== id) r.classList.remove('active');
+    });
+    // Update local cache so re-renders stay consistent
+    var cached = currentEmails.find(function(e) { return e.id === id; });
+    if (cached) cached.is_read = true;
+    if (wasUnread) loadCounts();
+
+    // Show detail pane in 3-column layout
+    document.getElementById('mailWrap').classList.remove('no-detail');
+    document.getElementById('mailWrap').classList.add('detail-open');
+
+    // Thread
+    if (currentEmail.thread_id) loadThread(currentEmail.thread_id, id);
+  } catch(e) {
+    Toast.show('Error loading email', 'error');
+  }
+}
+
+async function loadThread(threadId, currentId) {
+  try {
+    var res = await API.mail.thread(threadId);
+    if (res && res.data && res.data.length > 1) {
+      var others = res.data.filter(function(e) { return e.id !== currentId; });
+      if (others.length) {
+        var bodyDiv = document.getElementById('detailBody');
+        var sep = '<div class="mail-thread-sep" onclick="var n=this.nextElementSibling;n.style.display=n.style.display===\'none\'?\'block\':\'none\'"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg> ' + others.length + ' earlier message' + (others.length > 1 ? 's' : '') + ' in thread</div>';
+        // Decrypt all thread messages first
+        var decryptedBodies = await Promise.all(others.map(async function(e) {
+          if (e.is_encrypted) {
+            return await MailCrypto.decrypt(e.body_text || e.snippet || '').catch(function() { return ''; });
+          }
+          return e.body_text || e.snippet || '';
+        }));
+        var threadHtml = '<div style="display:none">';
+        others.forEach(function(e, i) {
+          var agent = isAgentEmail(e);
+          var name = e.from_name || e.from_address || 'Unknown';
+          var avColor = agent ? agent.c : nameToColor(name);
+          threadHtml += '<div class="mail-thread-msg">'
+            + '<div class="mail-thread-msg-header">'
+            + '<div class="mail-thread-avatar" style="background:' + avColor + '22;color:' + avColor + '">' + getInitials(name) + '</div>'
+            + '<span style="font-size:12px;font-weight:500;color:var(--text)">' + esc(name) + '</span>'
+            + (agent ? '<span style="font-size:9px;padding:1px 6px;border-radius:4px;background:' + agent.c + '15;color:' + agent.c + '">' + agent.seat + '</span>' : '')
+            + '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-left:auto">' + formatTime(e.received_at || e.created_at) + '</span>'
+            + '</div>'
+            + '<div class="text-body" style="font-size:12px;padding-left:32px">' + esc(decryptedBodies[i]) + '</div>'
+            + '</div>';
+        });
+        threadHtml += '</div>';
+        bodyDiv.innerHTML += sep + threadHtml;
+      }
+    }
+  } catch(e) {}
+}
+
+function closeDetail() {
+  document.getElementById('mailWrap').classList.add('no-detail');
+  document.getElementById('mailWrap').classList.remove('detail-open');
+  currentEmail = null;
+  document.querySelectorAll('.mail-row.active').forEach(function(r) { r.classList.remove('active'); });
+}
+
+// ── ACTIONS ──
+async function toggleStar(id) {
+  var email = currentEmails.find(function(e) { return e.id === id; });
+  if (!email) return;
+  email.is_starred = !email.is_starred;
+  renderEmails();
+  await API.mail.update([id], { is_starred: email.is_starred });
+}
+
+function toggleSelect(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+  renderEmails();
+}
+
+function toggleSelectAll() {
+  if (selectedIds.size === currentEmails.length) {
+    selectedIds.clear();
+  } else {
+    currentEmails.forEach(function(e) { selectedIds.add(e.id); });
+  }
+  renderEmails();
+}
+
+async function bulkAction(action) {
+  var ids = Array.from(selectedIds);
+  if (!ids.length) { Toast.show('Select emails first', 'warn'); return; }
+  if (action === 'archive') await API.mail.update(ids, { folder: 'archive', is_archived: true });
+  else if (action === 'trash') await API.mail.delete(ids);
+  else if (action === 'read') await API.mail.update(ids, { is_read: true });
+  selectedIds.clear();
+  Toast.show(ids.length + ' email(s) updated', 'ok', 1500);
+  refreshMail();
+}
+
+async function archiveCurrentEmail() {
+  if (!currentEmail) return;
+  await API.mail.update([currentEmail.id], { folder: 'archive', is_archived: true });
+  Toast.show('Archived', 'ok', 1500);
+  closeDetail();
+  refreshMail();
+}
+
+async function deleteCurrentEmail() {
+  if (!currentEmail) return;
+  await API.mail.delete([currentEmail.id]);
+  Toast.show('Moved to trash', 'ok', 1500);
+  closeDetail();
+  refreshMail();
+}
+
+// ── REPLY / FORWARD ──
+function replyToEmail() {
+  if (!currentEmail) return;
+  composeReplyTo = currentEmail;
+  composeDraftId = null;
+  document.getElementById('composeTitle').textContent = 'Reply';
+  document.getElementById('composeTo').value = currentEmail.from_address || '';
+  document.getElementById('composeSubject').value = currentEmail.subject.startsWith('Re:') ? currentEmail.subject : 'Re: ' + currentEmail.subject;
+  document.getElementById('composeBody').value = '\n\n--- Original Message ---\nFrom: ' + (currentEmail.from_name || currentEmail.from_address) + '\nDate: ' + formatTime(currentEmail.received_at || currentEmail.created_at) + '\n\n' + (currentEmail.body_text || currentEmail.snippet || '');
+  document.getElementById('composeOverlay').classList.add('visible');
+}
+
+function forwardEmail() {
+  if (!currentEmail) return;
+  composeReplyTo = null;
+  composeDraftId = null;
+  document.getElementById('composeTitle').textContent = 'Forward';
+  document.getElementById('composeTo').value = '';
+  document.getElementById('composeSubject').value = currentEmail.subject.startsWith('Fwd:') ? currentEmail.subject : 'Fwd: ' + currentEmail.subject;
+  document.getElementById('composeBody').value = '\n\n--- Forwarded Message ---\nFrom: ' + (currentEmail.from_name || currentEmail.from_address) + '\nSubject: ' + currentEmail.subject + '\nDate: ' + formatTime(currentEmail.received_at || currentEmail.created_at) + '\n\n' + (currentEmail.body_text || currentEmail.snippet || '');
+  document.getElementById('composeOverlay').classList.add('visible');
+}
+
+// ── AI FEATURES ──
+async function aiDraftReply() {
+  if (!currentEmail) return;
+  var btn = document.getElementById('aiReplyBtn');
+  btn.innerHTML = '<div class="mail-spinner" style="width:12px;height:12px;border-width:1.5px;margin:0"></div> Drafting…';
+  btn.disabled = true;
+
+  // Simulate AI draft generation (connects to agent system)
+  setTimeout(function() {
+    var context = currentEmail.body_text || currentEmail.snippet || '';
+    var subject = currentEmail.subject || '';
+    var draft = generateAIDraft(subject, context);
+
+    composeReplyTo = currentEmail;
+    composeDraftId = null;
+    document.getElementById('composeTitle').textContent = 'AI Draft Reply';
+    document.getElementById('composeTo').value = currentEmail.from_address || '';
+    document.getElementById('composeSubject').value = subject.startsWith('Re:') ? subject : 'Re: ' + subject;
+    document.getElementById('composeBody').value = draft;
+    document.getElementById('composeOverlay').classList.add('visible');
+
+    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M5 8h6M8 5v6"/></svg> AI Draft';
+    btn.disabled = false;
+  }, 1200);
+}
+
+function generateAIDraft(subject, context) {
+  var subjectLower = (subject || '').toLowerCase();
+  if (subjectLower.indexOf('valuation') !== -1 || subjectLower.indexOf('ebitda') !== -1) {
+    return 'Thank you for sharing the valuation details. Based on our analysis, the proposed multiple aligns with current UK SaaS market benchmarks in the 4-8x EBITDA range.\n\nOur team has reviewed the financials and we would like to schedule a follow-up call to discuss the adjusted working capital position and any deferred revenue considerations.\n\nPlease let us know your availability this week.\n\nBest regards';
+  }
+  if (subjectLower.indexOf('due diligence') !== -1 || subjectLower.indexOf('dd') !== -1) {
+    return 'Thank you for providing the due diligence materials. Our team is currently reviewing the documents and will have our initial findings ready within the agreed timeline.\n\nWe may have follow-up questions regarding the technical architecture and customer concentration data.\n\nWe will be in touch shortly.\n\nBest regards';
+  }
+  return 'Thank you for your message. I have reviewed the details and would like to discuss this further.\n\nOur team is aligned on the next steps and we will follow up with a more detailed response shortly.\n\nBest regards';
+}
+
+function aiHelp(action) {
+  var textarea = document.getElementById('composeBody');
+  var text = textarea.value.trim();
+  if (!text) { Toast.show('Write something first', 'warn'); return; }
+
+  // Simulate AI text improvement
+  if (action === 'shorten') {
+    var sentences = text.split(/[.!?]+/).filter(Boolean);
+    textarea.value = sentences.slice(0, Math.max(2, Math.ceil(sentences.length * 0.6))).join('. ').trim() + '.';
+    Toast.show('Shortened', 'ok', 1200);
+  } else if (action === 'formal') {
+    textarea.value = text
+      .replace(/\bhi\b/gi, 'Dear')
+      .replace(/\bthanks\b/gi, 'Thank you')
+      .replace(/\basap\b/gi, 'at your earliest convenience')
+      .replace(/\bfyi\b/gi, 'for your information');
+    Toast.show('Formalised', 'ok', 1200);
+  } else {
+    textarea.value = text.replace(/\n{3,}/g, '\n\n');
+    if (!text.match(/best regards|kind regards|regards/i)) {
+      textarea.value += '\n\nBest regards';
+    }
+    Toast.show('Improved', 'ok', 1200);
+  }
+}
+
+// ── COMPOSE ──
+function openCompose(prefillTo) {
+  composeReplyTo = null;
+  composeDraftId = null;
+  document.getElementById('composeTitle').textContent = 'New Message';
+  document.getElementById('composeTo').value = prefillTo || '';
+  document.getElementById('composeCc').value = '';
+  document.getElementById('composeSubject').value = '';
+  document.getElementById('composeBody').value = '';
+  document.getElementById('composeStatus').textContent = '';
+  document.getElementById('composeOverlay').classList.add('visible');
+}
+
+function closeCompose() {
+  document.getElementById('composeOverlay').classList.remove('visible');
+}
+
+async function sendCompose() {
+  var to = document.getElementById('composeTo').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  var cc = document.getElementById('composeCc').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  var subject = document.getElementById('composeSubject').value.trim();
+  var body = document.getElementById('composeBody').value;
+  var fromAlias = document.getElementById('composeFrom').value;
+
+  if (!to.length) { Toast.show('Add a recipient', 'warn'); return; }
+  if (!subject) { Toast.show('Add a subject', 'warn'); return; }
+
+  var btn = document.getElementById('composeSendBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  try {
+    var payload = {
+      to: to, cc: cc, subject: subject,
+      body_html: '<div style="font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#333">' + esc(body).replace(/\n/g, '<br>') + '</div>',
+      body_text: body,
+      from_alias: fromAlias,
+      draft_id: composeDraftId || undefined,
+    };
+    if (composeReplyTo) {
+      payload.in_reply_to = composeReplyTo.message_id;
+      payload.thread_id = composeReplyTo.thread_id || composeReplyTo.message_id;
+    }
+    var res = await API.mail.send(payload);
+    if (res && res.data) {
+      Toast.show('Email sent', 'ok', 2000);
+      closeCompose();
+      // Encrypt the sent copy stored in DB
+      var sentId = res.data.id;
+      if (sentId) {
+        Promise.all([
+          MailCrypto.encrypt(payload.body_html || ''),
+          MailCrypto.encrypt(payload.body_text || ''),
+          MailCrypto.encrypt((payload.body_text || '').slice(0, 200))
+        ]).then(function(enc) {
+          API._call('email-send', { action: 'encrypt', payload: { id: sentId, body_html: enc[0], body_text: enc[1], snippet: enc[2] } })
+            .catch(function() {});
+        });
+      }
+      if (currentFolder === 'sent' || currentFolder === 'drafts') refreshMail();
+    } else {
+      Toast.show('Send failed: ' + ((res && res.error) || 'unknown'), 'error');
+    }
+  } catch(e) {
+    Toast.show('Send error', 'error');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Send';
+}
+
+async function saveDraft() {
+  var to = document.getElementById('composeTo').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  var cc = document.getElementById('composeCc').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  var subject = document.getElementById('composeSubject').value.trim();
+  var body = document.getElementById('composeBody').value;
+  var fromAlias = document.getElementById('composeFrom').value;
+
+  try {
+    var res = await API.mail.draftSave({
+      id: composeDraftId || undefined,
+      to: to, cc: cc, subject: subject,
+      body_html: '<div>' + esc(body).replace(/\n/g, '<br>') + '</div>',
+      body_text: body,
+      from_alias: fromAlias,
+    });
+    if (res && res.data) {
+      composeDraftId = res.data.id;
+      document.getElementById('composeStatus').textContent = 'Draft saved';
+      Toast.show('Draft saved', 'ok', 1500);
+    }
+  } catch(e) {
+    Toast.show('Failed to save draft', 'error');
+  }
+}
+
+// ── LOAD COUNTS ──
+async function loadCounts() {
+  try {
+    var res = await API.mail.counts();
+    if (res && res.data) {
+      folderCounts = res.data;
+      renderFolders();
+    }
+  } catch(e) {}
+}
+
+// ── LOAD ALIASES ──
+async function loadAliases() {
+  try {
+    var res = await API.aliases.list();
+    aliases = (res && res.data) || [];
+    var sel = document.getElementById('composeFrom');
+    sel.innerHTML = '<option value="">notifications@sovereigncmd.xyz</option>';
+    aliases.forEach(function(a) {
+      if (a.is_active) sel.innerHTML += '<option value="' + esc(a.alias) + '">' + esc(a.alias) + '@' + esc(a.domain) + '</option>';
+    });
+  } catch(e) {}
+}
+
+// ── REFRESH ──
+function refreshMail() {
+  loadEmails();
+  loadCounts();
+}
+
+// ── SEARCH ──
+var searchTimer;
+document.getElementById('mailSearch').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  var v = this.value;
+  searchTimer = setTimeout(function() { currentSearch = v; loadEmails(); }, 400);
+});
+
+// ── CATEGORY TABS ──
+document.querySelectorAll('.mail-cat').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.mail-cat').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentCategory = tab.dataset.cat;
+    loadEmails();
+  });
+});
+
+// ── REALTIME ──
+var _realtimeChannel = null;
+var _pollInterval = null;
+
+function setupRealtime() {
+  var client = window._sb;
+  if (!client || !client.channel) return;
+  try {
+    if (_realtimeChannel) { try { client.removeChannel(_realtimeChannel); } catch(e) {} }
+    _realtimeChannel = client.channel('emails-realtime-' + Date.now())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'emails' }, function(payload) {
+        if (payload.new && currentFolder === (payload.new.folder || 'inbox')) {
+          loadEmails();
+        }
+        loadCounts();
+        if (payload.new && payload.new.folder === 'inbox') {
+          var agent = isAgentEmail(payload.new);
+          var prefix = agent ? agent.name + ': ' : '';
+          Toast.show((prefix || '') + (payload.new.subject || 'New email'), 'ok', 3000);
+        }
+      })
+      .subscribe(function(status) {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          // Fall back to polling if realtime fails
+          startPolling();
+        }
+      });
+  } catch(e) {
+    console.warn('Realtime setup failed:', e);
+    startPolling();
+  }
+}
+
+function startPolling() {
+  if (_pollInterval) return; // already polling
+  _pollInterval = setInterval(function() {
+    // Don't fire if signed out or token expired
+    var tok = _Auth && _Auth.token();
+    if (!tok || isTokenExpired(tok)) return;
+    loadCounts();
+    if (!document.hidden) loadEmails();
+  }, 30000);
+}
+
+function stopPolling() {
+  if (_pollInterval) { clearInterval(_pollInterval); _pollInterval = null; }
+}
+
+// ── HELPERS ──
+function sanitizeEmailHtml(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<script[^>]*>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<iframe[^>]*>/gi, '')
+    .replace(/<object[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed[^>]*>/gi, '')
+    .replace(/<form[\s\S]*?<\/form>/gi, '')
+    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/\son\w+\s*=\s*[^\s>]*/gi, '')
+    .replace(/javascript\s*:/gi, 'blocked:');
+}
+function esc(s) { var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+function formatTime(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  var now = new Date();
+  var diff = now.getTime() - d.getTime();
+  if (diff < 60000) return 'now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h';
+  if (d.getFullYear() === now.getFullYear()) {
+    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+  }
+  return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' });
+}
+
+// ── PROACTIVE TOKEN REFRESH WATCHDOG ──
+// Refreshes the access token 2 minutes before expiry so API calls never hit a stale JWT.
+// This is independent of Supabase's internal autoRefreshToken timer.
+var _tokenRefreshTimer = null;
+
+function scheduleTokenRefresh() {
+  if (_tokenRefreshTimer) { clearTimeout(_tokenRefreshTimer); _tokenRefreshTimer = null; }
+  var tok = _Auth && _Auth.token();
+  if (!tok) return;
+  try {
+    var seg = tok.split('.')[1];
+    if (!seg) return;
+    var payload = JSON.parse(atob(seg.replace(/-/g, '+').replace(/_/g, '/')));
+    var msUntilExpiry = (payload.exp * 1000) - Date.now();
+    if (msUntilExpiry <= 0) return; // already expired — _call handles it reactively
+    var refreshIn = Math.max(5000, msUntilExpiry - 120000); // 2 min before expiry, min 5s
+    _tokenRefreshTimer = setTimeout(async function() {
+      if (!window._sb) return;
+      var r = await window._sb.auth.refreshSession().catch(function() { return null; });
+      if (r && r.data && r.data.session) {
+        scheduleTokenRefresh(); // chain the next refresh
+      } else {
+        stopPolling();
+        Toast.show('Session expired — please sign in again', 'warn', 3000);
+        setTimeout(function() { location.href = 'login.html?next=mail.html'; }, 2000);
+      }
+    }, refreshIn);
+  } catch(e) {}
+}
+
+// ── E2E ENCRYPTION (AES-256-GCM via Web Crypto) ──
+var MailCrypto = {
+  _key: null,
+  _KEY_STORE: 'sv_mail_enc_key',
+
+  async _loadKey() {
+    if (this._key) return this._key;
+    var stored = localStorage.getItem(this._KEY_STORE);
+    if (stored) {
+      try {
+        var raw = Uint8Array.from(atob(stored), function(c) { return c.charCodeAt(0); });
+        this._key = await crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+        return this._key;
+      } catch(e) { /* corrupted key — generate new */ }
+    }
+    // Generate fresh key
+    this._key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    var exported = await crypto.subtle.exportKey('raw', this._key);
+    var b64 = btoa(String.fromCharCode.apply(null, new Uint8Array(exported)));
+    localStorage.setItem(this._KEY_STORE, b64);
+    return this._key;
+  },
+
+  async encrypt(text) {
+    if (!text) return text;
+    try {
+      var key = await this._loadKey();
+      var iv = crypto.getRandomValues(new Uint8Array(12));
+      var encoded = new TextEncoder().encode(text);
+      var cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, encoded);
+      var combined = new Uint8Array(12 + cipher.byteLength);
+      combined.set(iv);
+      combined.set(new Uint8Array(cipher), 12);
+      return 'ENC1:' + btoa(String.fromCharCode.apply(null, combined));
+    } catch(e) { console.warn('Encrypt failed:', e); return text; }
+  },
+
+  async decrypt(text) {
+    if (!text || text.slice(0, 5) !== 'ENC1:') return text;
+    try {
+      var key = await this._loadKey();
+      var bytes = Uint8Array.from(atob(text.slice(5)), function(c) { return c.charCodeAt(0); });
+      var iv = bytes.slice(0, 12);
+      var data = bytes.slice(12);
+      var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, data);
+      return new TextDecoder().decode(plain);
+    } catch(e) { console.warn('Decrypt failed — key mismatch?', e); return '[Encrypted — key not available]'; }
+  },
+
+  isEncrypted(text) {
+    return text && text.slice(0, 5) === 'ENC1:';
+  }
+};
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'c') openCompose();
+  if (e.key === 'Escape' && currentEmail) closeDetail();
+  if (e.key === 'r' && currentEmail) replyToEmail();
+  if (e.key === 'e' && currentEmail) archiveCurrentEmail();
+});
+
+// ── INIT ──
+renderFolders();
+renderAgentActivity();
+
+// Check if a JWT access token is expired (within 30s buffer)
+function isTokenExpired(tok) {
+  try {
+    var payload = JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    return !payload.exp || (payload.exp * 1000 < Date.now() + 30000);
+  } catch(e) { return false; }
+}
+
+window.addEventListener('auth:ready', async function(e) {
+  if (!e.detail?.user) {
+    Toast.show('Sign in to access Mail', 'warn', 3000);
+    setTimeout(function() { window.location.href = 'login.html?next=mail.html'; }, 1500);
+    return;
+  }
+  // If access token is expired, refresh before making any API calls
+  var tok = _Auth.token();
+  if (tok && isTokenExpired(tok)) {
+    try {
+      var refreshResult = await window._sb.auth.refreshSession();
+      if (!refreshResult.data?.session) {
+        Toast.show('Session expired — please sign in again', 'warn', 3000);
+        setTimeout(function() { window.location.href = 'login.html?next=mail.html'; }, 2000);
+        return;
+      }
+    } catch(e2) { /* proceed anyway — _call will retry */ }
+  }
+  scheduleTokenRefresh(); // proactive refresh watchdog
+  refreshMail();
+  loadAliases();
+  setupRealtime();
+  startPolling(); // polling fallback runs regardless of realtime status
+});
+
+// Re-arm refresh watchdog on token rotation; stop everything on sign-out
+window.addEventListener('auth:changed', function(e) {
+  if (e.detail?.user) {
+    scheduleTokenRefresh();
+    return;
+  }
+  if (_tokenRefreshTimer) { clearTimeout(_tokenRefreshTimer); _tokenRefreshTimer = null; }
+  if (!e.detail?.user) {
+    stopPolling();
+    if (_realtimeChannel && window._sb) {
+      try { window._sb.removeChannel(_realtimeChannel); } catch(e2) {}
+      _realtimeChannel = null;
+    }
+  }
+});
+</script>
+</body>
+</html>

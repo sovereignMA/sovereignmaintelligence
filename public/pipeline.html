@@ -4,10 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Project Sovereign">
+<meta property="og:title" content="Pipeline — Project Sovereign">
+<meta property="og:description" content="21 AI agents. Zero capital. Acquire UK SaaS at 4-8x EBITDA.">
+<meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Pipeline%20-%20Project%20Sovereign">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pipeline — Project Sovereign">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Pipeline%20-%20Project%20Sovereign">
 <title>Pipeline — Project Sovereign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=34">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
@@ -67,6 +80,76 @@
 .nmd-cell { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 14px; text-align: center; }
 .nmd-val { font-size: 22px; font-weight: 700; font-family: var(--mono); }
 .nmd-label { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* ── 3D WORKFLOW TREE ───────────────────────────── */
+.wf-scene { perspective: 1200px; overflow-x: auto; overflow-y: visible; padding: 24px; }
+.wf-track { display: flex; gap: 0; transform-style: preserve-3d; transform: rotateX(8deg) rotateY(-3deg); transition: transform .5s ease; min-width: max-content; }
+.wf-track:hover { transform: rotateX(2deg) rotateY(0deg); }
+.wf-stage { position: relative; min-width: 150px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+.wf-stage-header { text-align: center; margin-bottom: 12px; position: relative; z-index: 2; }
+.wf-stage-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: 4px 12px; border-radius: 20px; display: inline-block; }
+.wf-stage-progress { font-size: 10px; color: var(--text3); margin-top: 4px; font-family: var(--mono); }
+.wf-connector { position: absolute; top: 16px; left: 100%; width: 100%; height: 2px; z-index: 1; }
+.wf-connector-line { height: 2px; width: 100%; background: linear-gradient(90deg, var(--clr) 0%, transparent 100%); position: relative; }
+.wf-connector-line::after { content: ''; position: absolute; right: 0; top: -3px; width: 0; height: 0; border-left: 6px solid var(--clr); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.wf-nodes { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 0 6px; }
+
+/* Node card */
+.wf-node { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; cursor: pointer; transition: all .25s cubic-bezier(.4,0,.2,1); transform-style: preserve-3d; position: relative; overflow: hidden; }
+.wf-node::before { content: ''; position: absolute; inset: 0; border-radius: 8px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.wf-node:hover { transform: translateZ(20px) scale(1.03); box-shadow: 0 12px 30px rgba(0,0,0,.5); border-color: var(--border3); }
+.wf-node.completed { border-left: 3px solid var(--green); }
+.wf-node.completed::before { background: linear-gradient(135deg, rgba(74,222,128,.06), transparent); opacity: 1; }
+.wf-node.in_progress { border-left: 3px solid var(--gold); animation: wfPulse 2s infinite; }
+.wf-node.in_progress::before { background: linear-gradient(135deg, rgba(201,168,76,.08), transparent); opacity: 1; }
+.wf-node.blocked { border-left: 3px solid var(--red); opacity: .7; }
+.wf-node.pending { border-left: 3px solid var(--border2); opacity: .55; }
+@keyframes wfPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); } 50% { box-shadow: 0 0 12px 2px rgba(201,168,76,.2); } }
+
+.wf-node-title { font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.wf-node-agent { font-size: 9px; color: var(--text3); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+.wf-node-agent-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.wf-node-status { position: absolute; top: 6px; right: 8px; font-size: 10px; }
+.wf-node-priority { display: inline-block; font-size: 8px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; margin-top: 4px; }
+.wf-prio-critical { background: rgba(248,113,113,.15); color: var(--red); }
+.wf-prio-high { background: rgba(251,191,36,.12); color: #fbbf24; }
+.wf-prio-normal { background: rgba(255,255,255,.05); color: var(--text3); }
+
+/* Summary bar */
+.wf-summary { display: flex; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
+.wf-stat { text-align: center; }
+.wf-stat-val { font-size: 20px; font-weight: 700; font-family: var(--mono); }
+.wf-stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+.wf-progress-ring { display: inline-block; position: relative; width: 48px; height: 48px; }
+.wf-progress-ring svg { transform: rotate(-90deg); }
+.wf-progress-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; font-family: var(--mono); color: var(--gold); }
+.wf-init-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
+@keyframes wfFadeIn { from { opacity: 0; transform: translateY(8px) translateZ(-10px); } to { opacity: 1; transform: none; } }
+.wf-node.completed { opacity: 1 !important; }
+.wf-node.in_progress { opacity: 1 !important; }
+.wf-node.selected { border-color: var(--gold) !important; box-shadow: 0 0 16px rgba(201,168,76,.3); transform: translateZ(20px) scale(1.04); opacity: 1 !important; }
+
+/* Milestone detail panel */
+.wf-detail { background: var(--bg2); border-top: 1px solid var(--border2); padding: 20px 24px; animation: wfSlideUp .25s ease; }
+@keyframes wfSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.wf-detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.wf-detail-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.wf-detail-stage { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.wf-detail-close { background: none; border: none; color: var(--text3); font-size: 18px; cursor: pointer; padding: 2px 6px; }
+.wf-detail-close:hover { color: var(--text); }
+.wf-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.wf-detail-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.wf-detail-cell-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3px; }
+.wf-detail-cell-val { font-size: 14px; font-weight: 600; }
+.wf-detail-desc { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; padding: 10px 14px; background: var(--surface); border-radius: 8px; border: 1px solid var(--border); }
+.wf-detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.wf-status-btn { padding: 6px 14px; font-size: 11px; font-weight: 600; border: 1px solid var(--border2); border-radius: 6px; cursor: pointer; transition: all .15s; background: var(--surface); color: var(--text2); font-family: var(--font); }
+.wf-status-btn:hover { border-color: var(--border3); color: var(--text); }
+.wf-status-btn.active { border-width: 2px; }
+.wf-status-btn.s-pending.active { border-color: var(--border3); color: var(--text); background: rgba(255,255,255,.05); }
+.wf-status-btn.s-in_progress.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.wf-status-btn.s-completed.active { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.wf-status-btn.s-blocked.active { border-color: var(--red); color: var(--red); background: var(--red-dim); }
 </style>
 </head>
 <body>
@@ -80,6 +163,8 @@
     <div style="display:flex;gap:8px">
       <span class="badge badge-gold">4 Active Deals</span>
       <a href="command.html" class="btn btn-outline" style="font-size:12px;padding:7px 14px">Brief Vesper Thorne →</a>
+      <button class="btn btn-outline" style="font-size:12px;padding:7px 14px" onclick="exportPipelineCSV()">⬇ Export CSV</button>
+      <button class="btn btn-outline" style="font-size:12px;padding:7px 14px" onclick="exportPipelinePDF()">⬇ Export PDF</button>
     </div>
   </div>
 
@@ -124,23 +209,29 @@
   </div>
 </div>
 
-<!-- DEAL MODAL -->
+<!-- DEAL WORKFLOW MODAL -->
 <div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
+  <div class="modal" style="max-width:960px">
     <div class="modal-header">
       <div>
         <div style="font-size:18px;font-weight:700" id="modalTitle">Deal Name</div>
         <div style="font-size:12px;color:var(--text3);margin-top:3px" id="modalSub">SaaS · UK</div>
       </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-outline" style="font-size:11px;padding:5px 12px" onclick="toggleView()">
+          <span id="viewToggleLabel">Workflow Tree</span>
+        </button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
     </div>
     <div class="modal-body" id="modalBody"></div>
+    <div class="modal-body" id="workflowBody" style="display:none;padding:0"></div>
   </div>
 </div>
 
 
 
-<script src="app.js?v=27"></script>
+<script src="app.js?v=34"></script>
 <script>
 Chart.defaults.color='#9896a8';Chart.defaults.borderColor='rgba(255,255,255,0.06)';Chart.defaults.font.family='Inter,system-ui,sans-serif';Chart.defaults.font.size=11;
 
@@ -192,8 +283,8 @@ function renderBoard() {
     if (!stageDeals.length) colHTML += '<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:11px">No deals</div>';
     stageDeals.forEach(function(d) {
       var prog = Math.round((d.stage / 5) * 100);
-      var idAttr = JSON.stringify(String(d.id));
-      colHTML += '<div class="deal-card" style="border-left-color:' + STAGE_COLORS[si] + '" onclick="openDeal(' + idAttr + ')">'
+      var safeId = String(d.id).replace(/'/g, "\\'");
+      colHTML += '<div class="deal-card" style="border-left-color:' + STAGE_COLORS[si] + '" onclick="openDeal(\'' + safeId + '\')">'
         + '<div class="deal-name">' + d.name + '</div>'
         + '<div class="deal-meta">' + d.sector + ' · SIC ' + d.sic + '</div>'
         + '<div class="deal-tags"><span class="deal-tag" style="background:rgba(201,168,76,.12);color:var(--gold)">' + d.ebitda + ' EBITDA</span>'
@@ -210,6 +301,11 @@ function renderBoard() {
 function openDeal(id) {
   var d = DEALS.find(function(x) { return String(x.id) === String(id); });
   if (!d) return;
+  currentDealId = String(id);
+  currentDealView = 'detail';
+  document.getElementById('modalBody').style.display = '';
+  document.getElementById('workflowBody').style.display = 'none';
+  document.getElementById('viewToggleLabel').textContent = 'Workflow Tree';
   document.getElementById('modalTitle').textContent = d.name;
   document.getElementById('modalSub').textContent = d.sector + ' · SIC ' + d.sic + ' · Stage: ' + STAGES[d.stage];
   var tlHTML = (d.timeline || []).map(function(t) {
@@ -244,8 +340,266 @@ function openDeal(id) {
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); currentDealView='detail'; document.getElementById('modalBody').style.display=''; document.getElementById('workflowBody').style.display='none'; document.getElementById('viewToggleLabel').textContent='Workflow Tree'; }
 document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+var currentDealView = 'detail';
+var currentDealId = null;
+var currentMilestones = [];
+
+function toggleView() {
+  if (currentDealView === 'detail') {
+    currentDealView = 'workflow';
+    document.getElementById('modalBody').style.display = 'none';
+    document.getElementById('workflowBody').style.display = '';
+    document.getElementById('viewToggleLabel').textContent = 'Deal Details';
+    loadWorkflowTree(currentDealId);
+  } else {
+    currentDealView = 'detail';
+    document.getElementById('modalBody').style.display = '';
+    document.getElementById('workflowBody').style.display = 'none';
+    document.getElementById('viewToggleLabel').textContent = 'Workflow Tree';
+  }
+}
+
+var STAGE_KEYS = ['sourcing','approach','loi','due_diligence','spa','exchanged'];
+var AGENT_COLORS = {S1:'#c9a84c',S2:'#60a5fa',S3:'#a78bfa',S4:'#2dd4bf',S5:'#fbbf24',S6:'#f87171',S7:'#4ade80',S8:'#fb923c',S9:'#e879f9',S10:'#38bdf8',S11:'#a3e635',S12:'#f472b6',S13:'#818cf8',S14:'#34d399',S15:'#fbbf24',S16:'#f87171',S17:'#60a5fa',S18:'#a78bfa',S19:'#2dd4bf',S20:'#e879f9',S21:'#c9a84c'};
+var STATUS_ICONS = {completed:'✓',in_progress:'◉',blocked:'✗',pending:'○'};
+
+var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function loadWorkflowTree(dealId) {
+  var wb = document.getElementById('workflowBody');
+
+  // Demo deals don't have real UUIDs — show demo workflow
+  if (!dealId || !UUID_RE.test(dealId)) {
+    loadDemoWorkflow(wb);
+    return;
+  }
+
+  wb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)"><div class="spinner" style="margin:0 auto 12px"></div>Loading workflow...</div>';
+
+  var result = await API.milestones.list(dealId);
+  if (!result || !result.data) {
+    wb.innerHTML = '<div class="wf-init-btn"><div style="font-size:40px;margin-bottom:12px;opacity:.3">⬡</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">No Workflow Initialized</div><div style="font-size:12px;color:var(--text3);margin-bottom:16px;max-width:300px">Initialize the standard NMD M&A workflow template to track milestones, deliverables, and agent assignments.</div><button class="btn btn-primary" style="font-size:13px" onclick="initWorkflow()">Initialize NMD Workflow →</button></div>';
+    return;
+  }
+  currentMilestones = result.data;
+  if (currentMilestones.length === 0) {
+    wb.innerHTML = '<div class="wf-init-btn"><div style="font-size:40px;margin-bottom:12px;opacity:.3">⬡</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">No Workflow Initialized</div><div style="font-size:12px;color:var(--text3);margin-bottom:16px;max-width:300px">Initialize the standard NMD M&A workflow template to track milestones, deliverables, and agent assignments.</div><button class="btn btn-primary" style="font-size:13px" onclick="initWorkflow()">Initialize NMD Workflow →</button></div>';
+    return;
+  }
+  renderWorkflowTree();
+}
+
+function loadDemoWorkflow(wb) {
+  // Generate demo milestones from the DEMO_DEALS template data
+  var d = DEALS.find(function(x){return String(x.id)===currentDealId});
+  var demoStages = ['sourcing','approach','loi','due_diligence','spa','exchanged'];
+  var demoMilestones = [
+    {id:'dm-1',stage:'sourcing',title:'Target Identification',agent_seat:'S2',agent_name:'Silas Vane',status:'completed',priority:'high',sort_order:1},
+    {id:'dm-2',stage:'sourcing',title:'Companies House Filing Review',agent_seat:'S3',agent_name:'Kira Nyx',status:'completed',priority:'high',sort_order:2},
+    {id:'dm-3',stage:'sourcing',title:'Web & Social Intelligence',agent_seat:'S4',agent_name:'Echo Varn',status:'completed',priority:'normal',sort_order:3},
+    {id:'dm-4',stage:'sourcing',title:'Initial Scoring & Fit Assessment',agent_seat:'S5',agent_name:'Vesper Thorne',status:'completed',priority:'high',sort_order:4},
+    {id:'dm-5',stage:'sourcing',title:'Seller Signal Analysis',agent_seat:'S2',agent_name:'Silas Vane',status:'completed',priority:'normal',sort_order:5},
+    {id:'dm-6',stage:'approach',title:'Outreach Strategy',agent_seat:'S2',agent_name:'Silas Vane',status:'completed',priority:'high',sort_order:1},
+    {id:'dm-7',stage:'approach',title:'First Contact Execution',agent_seat:'S6',agent_name:'Rhea Vance',status:'completed',priority:'high',sort_order:2},
+    {id:'dm-8',stage:'approach',title:'Discovery Call',agent_seat:'S1',agent_name:'Orion Hale',status:'completed',priority:'critical',sort_order:3},
+    {id:'dm-9',stage:'approach',title:'NDA Exchange',agent_seat:'S7',agent_name:'Sloane Haze',status:'completed',priority:'high',sort_order:4},
+    {id:'dm-10',stage:'approach',title:'Information Memorandum Request',agent_seat:'S5',agent_name:'Vesper Thorne',status:'completed',priority:'normal',sort_order:5},
+    {id:'dm-11',stage:'loi',title:'Valuation Model',agent_seat:'S5',agent_name:'Vesper Thorne',status:'completed',priority:'critical',sort_order:1},
+    {id:'dm-12',stage:'loi',title:'NMD Structure Design',agent_seat:'S9',agent_name:'Kaelen Voss',status:'completed',priority:'critical',sort_order:2},
+    {id:'dm-13',stage:'loi',title:'Heads of Terms Draft',agent_seat:'S7',agent_name:'Sloane Haze',status:'in_progress',priority:'critical',sort_order:3},
+    {id:'dm-14',stage:'loi',title:'Board / Advisor Review',agent_seat:'S1',agent_name:'Orion Hale',status:'pending',priority:'high',sort_order:4},
+    {id:'dm-15',stage:'loi',title:'LOI Execution',agent_seat:'S7',agent_name:'Sloane Haze',status:'pending',priority:'high',sort_order:5},
+    {id:'dm-16',stage:'due_diligence',title:'Financial DD',agent_seat:'S5',agent_name:'Vesper Thorne',status:'pending',priority:'critical',sort_order:1},
+    {id:'dm-17',stage:'due_diligence',title:'Legal DD',agent_seat:'S7',agent_name:'Sloane Haze',status:'pending',priority:'critical',sort_order:2},
+    {id:'dm-18',stage:'due_diligence',title:'Technical DD',agent_seat:'S3',agent_name:'Kira Nyx',status:'pending',priority:'high',sort_order:3},
+    {id:'dm-19',stage:'due_diligence',title:'Commercial DD',agent_seat:'S4',agent_name:'Echo Varn',status:'pending',priority:'high',sort_order:4},
+    {id:'dm-20',stage:'due_diligence',title:'Risk Assessment',agent_seat:'S1',agent_name:'Orion Hale',status:'pending',priority:'critical',sort_order:5},
+    {id:'dm-21',stage:'spa',title:'SPA First Draft',agent_seat:'S7',agent_name:'Sloane Haze',status:'pending',priority:'critical',sort_order:1},
+    {id:'dm-22',stage:'spa',title:'W&I Schedule',agent_seat:'S7',agent_name:'Sloane Haze',status:'pending',priority:'high',sort_order:2},
+    {id:'dm-23',stage:'spa',title:'Funding Confirmation',agent_seat:'S9',agent_name:'Kaelen Voss',status:'pending',priority:'critical',sort_order:3},
+    {id:'dm-24',stage:'exchanged',title:'Exchange & Completion',agent_seat:'S7',agent_name:'Sloane Haze',status:'pending',priority:'critical',sort_order:1},
+    {id:'dm-25',stage:'exchanged',title:'Day-1 Integration Plan',agent_seat:'S1',agent_name:'Orion Hale',status:'pending',priority:'high',sort_order:2},
+  ];
+  // Adjust statuses based on deal stage
+  if (d) {
+    var dealStageIdx = d.stage;
+    demoMilestones.forEach(function(m) {
+      var msi = demoStages.indexOf(m.stage);
+      if (msi < dealStageIdx) m.status = 'completed';
+      else if (msi === dealStageIdx && m.sort_order <= 2) m.status = 'in_progress';
+      else if (msi === dealStageIdx) m.status = 'pending';
+    });
+  }
+  currentMilestones = demoMilestones;
+  renderWorkflowTree();
+}
+
+async function initWorkflow() {
+  if (!currentDealId) return;
+  if (!UUID_RE.test(currentDealId)) { Toast.show('Add this deal to the database first to initialize a workflow', 'warn', 3000); return; }
+  var wb = document.getElementById('workflowBody');
+  wb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)"><div class="spinner" style="margin:0 auto 12px"></div>Initializing workflow...</div>';
+  var result = await API.milestones.init(currentDealId);
+  if (result && result.data) {
+    Toast.show('Workflow initialized — ' + result.count + ' milestones created', 'ok', 3000);
+    currentMilestones = result.data;
+    renderWorkflowTree();
+  } else {
+    wb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--red)">Failed to initialize workflow</div>';
+  }
+}
+
+function renderWorkflowTree() {
+  var wb = document.getElementById('workflowBody');
+  var ms = currentMilestones;
+
+  // Stats
+  var total = ms.length;
+  var completed = ms.filter(function(m){return m.status==='completed'}).length;
+  var inProgress = ms.filter(function(m){return m.status==='in_progress'}).length;
+  var blocked = ms.filter(function(m){return m.status==='blocked'}).length;
+  var pct = total > 0 ? Math.round((completed/total)*100) : 0;
+  var circumference = 2 * Math.PI * 19;
+  var offset = circumference - (pct/100) * circumference;
+
+  var html = '<div class="wf-summary">'
+    + '<div class="wf-progress-ring"><svg width="48" height="48"><circle cx="24" cy="24" r="19" stroke="rgba(255,255,255,.08)" stroke-width="3" fill="none"/><circle cx="24" cy="24" r="19" stroke="' + (pct===100?'var(--green)':'var(--gold)') + '" stroke-width="3" fill="none" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + offset + '" stroke-linecap="round" style="transition:stroke-dashoffset .8s ease"/></svg><div class="wf-progress-pct">' + pct + '%</div></div>'
+    + '<div class="wf-stat"><div class="wf-stat-val" style="color:var(--green)">' + completed + '</div><div class="wf-stat-label">Completed</div></div>'
+    + '<div class="wf-stat"><div class="wf-stat-val" style="color:var(--gold)">' + inProgress + '</div><div class="wf-stat-label">In Progress</div></div>'
+    + '<div class="wf-stat"><div class="wf-stat-val" style="color:var(--red)">' + blocked + '</div><div class="wf-stat-label">Blocked</div></div>'
+    + '<div class="wf-stat"><div class="wf-stat-val" style="color:var(--text3)">' + (total - completed - inProgress - blocked) + '</div><div class="wf-stat-label">Pending</div></div>'
+    + '<div class="wf-stat"><div class="wf-stat-val">' + total + '</div><div class="wf-stat-label">Total</div></div>'
+    + '<div style="margin-left:auto;display:flex;gap:6px">'
+    + '<button class="btn btn-outline" style="font-size:10px;padding:5px 10px" onclick="exportWorkflowCSV()">⬇ CSV</button>'
+    + '<button class="btn btn-outline" style="font-size:10px;padding:5px 10px" onclick="exportWorkflowPDF()">⬇ PDF</button>'
+    + '</div>'
+    + '</div>';
+
+  // 3D Tree
+  html += '<div class="wf-scene"><div class="wf-track">';
+
+  STAGE_KEYS.forEach(function(sk, si) {
+    var stageMs = ms.filter(function(m){return m.stage === sk});
+    var stageCompleted = stageMs.filter(function(m){return m.status==='completed'}).length;
+    var stagePct = stageMs.length > 0 ? Math.round((stageCompleted/stageMs.length)*100) : 0;
+    var isLast = si === STAGE_KEYS.length - 1;
+
+    html += '<div class="wf-stage">';
+    html += '<div class="wf-stage-header">';
+    html += '<div class="wf-stage-label" style="background:' + STAGE_COLORS[si] + '20;color:' + STAGE_COLORS[si] + ';border:1px solid ' + STAGE_COLORS[si] + '40">' + STAGES[si] + '</div>';
+    html += '<div class="wf-stage-progress">' + stageCompleted + '/' + stageMs.length + ' · ' + stagePct + '%</div>';
+    if (!isLast) html += '<div class="wf-connector" style="--clr:' + STAGE_COLORS[si] + '"><div class="wf-connector-line"></div></div>';
+    html += '</div>';
+    html += '<div class="wf-nodes">';
+
+    stageMs.forEach(function(m, mi) {
+      var agentClr = AGENT_COLORS[m.agent_seat] || '#888';
+      var prioClass = m.priority === 'critical' ? 'wf-prio-critical' : m.priority === 'high' ? 'wf-prio-high' : 'wf-prio-normal';
+      var safeNodeId = m.id.replace(/'/g, "\\'");
+      html += '<div class="wf-node ' + m.status + (selectedMilestone===m.id?' selected':'') + '" onclick="selectMilestone(\'' + safeNodeId + '\')" style="animation-delay:' + (si*150 + mi*80) + 'ms;opacity:0;animation:wfFadeIn .4s ease forwards ' + (si*0.15 + mi*0.08) + 's">';
+      html += '<div class="wf-node-status">' + STATUS_ICONS[m.status] + '</div>';
+      html += '<div class="wf-node-title">' + m.title + '</div>';
+      html += '<div class="wf-node-agent"><span class="wf-node-agent-dot" style="background:' + agentClr + '"></span>' + (m.agent_seat || '') + ' ' + (m.agent_name || '') + '</div>';
+      if (m.priority !== 'normal') html += '<div class="wf-node-priority ' + prioClass + '">' + m.priority + '</div>';
+      html += '</div>';
+    });
+
+    if (!stageMs.length) html += '<div style="text-align:center;padding:16px 0;color:var(--text3);font-size:10px;opacity:.5">No milestones</div>';
+
+    html += '</div></div>';
+  });
+
+  html += '</div></div>';
+
+  // Detail panel for selected milestone
+  if (selectedMilestone) {
+    var sm = ms.find(function(x){return x.id===selectedMilestone});
+    if (sm) {
+      var smStageIdx = STAGE_KEYS.indexOf(sm.stage);
+      var smColor = STAGE_COLORS[smStageIdx] || '#c9a84c';
+      var smAgentClr = AGENT_COLORS[sm.agent_seat] || '#888';
+      var STATUS_LABELS = {pending:'Pending',in_progress:'In Progress',completed:'Completed',blocked:'Blocked'};
+      var STATUS_COLORS_MAP = {pending:'var(--text3)',in_progress:'var(--gold)',completed:'var(--green)',blocked:'var(--red)'};
+
+      html += '<div class="wf-detail">';
+      html += '<div class="wf-detail-header"><div>'
+        + '<div class="wf-detail-title">' + sm.title + '</div>'
+        + '<div class="wf-detail-stage" style="color:' + smColor + '">' + STAGES[smStageIdx] + ' · ' + (sm.agent_seat||'') + ' ' + (sm.agent_name||'') + '</div>'
+        + '</div><button class="wf-detail-close" onclick="deselectMilestone()">✕</button></div>';
+
+      if (sm.description) html += '<div class="wf-detail-desc">' + sm.description + '</div>';
+
+      html += '<div class="wf-detail-grid">'
+        + '<div class="wf-detail-cell"><div class="wf-detail-cell-label">Status</div><div class="wf-detail-cell-val" style="color:' + STATUS_COLORS_MAP[sm.status] + '">' + STATUS_ICONS[sm.status] + ' ' + STATUS_LABELS[sm.status] + '</div></div>'
+        + '<div class="wf-detail-cell"><div class="wf-detail-cell-label">Priority</div><div class="wf-detail-cell-val" style="color:' + (sm.priority==='critical'?'var(--red)':sm.priority==='high'?'#fbbf24':'var(--text2)') + '">' + (sm.priority||'normal') + '</div></div>'
+        + '<div class="wf-detail-cell"><div class="wf-detail-cell-label">Agent</div><div class="wf-detail-cell-val" style="font-size:12px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + smAgentClr + ';margin-right:4px"></span>' + (sm.agent_seat||'') + ' ' + (sm.agent_name||'') + '</div></div>'
+        + '<div class="wf-detail-cell"><div class="wf-detail-cell-label">Stage</div><div class="wf-detail-cell-val" style="font-size:12px;color:' + smColor + '">' + STAGES[smStageIdx] + '</div></div>';
+      if (sm.started_at) html += '<div class="wf-detail-cell"><div class="wf-detail-cell-label">Started</div><div class="wf-detail-cell-val" style="font-size:11px">' + new Date(sm.started_at).toLocaleDateString('en-GB') + '</div></div>';
+      if (sm.completed_at) html += '<div class="wf-detail-cell"><div class="wf-detail-cell-label">Completed</div><div class="wf-detail-cell-val" style="font-size:11px;color:var(--green)">' + new Date(sm.completed_at).toLocaleDateString('en-GB') + '</div></div>';
+      html += '</div>';
+
+      // Status action buttons
+      html += '<div style="margin-bottom:12px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Set Status</div>';
+      html += '<div class="wf-detail-actions">';
+      ['pending','in_progress','completed','blocked'].forEach(function(st) {
+        var isActive = sm.status === st;
+        var safeId = sm.id.replace(/'/g, "\\'");
+        html += '<button class="wf-status-btn s-' + st + (isActive?' active':'') + '" onclick="setMilestoneStatus(\'' + safeId + '\',\'' + st + '\')">' + STATUS_ICONS[st] + ' ' + STATUS_LABELS[st] + '</button>';
+      });
+      html += '</div></div>';
+
+      // Brief agent button
+      html += '<div class="wf-detail-actions">'
+        + '<a href="command.html" class="btn btn-primary" style="font-size:11px;padding:6px 14px">Brief ' + (sm.agent_name||'Agent') + ' →</a>'
+        + '</div>';
+
+      html += '</div>';
+    }
+  }
+
+  wb.innerHTML = html;
+}
+
+var selectedMilestone = null;
+
+function selectMilestone(id) {
+  selectedMilestone = selectedMilestone === id ? null : id;
+  renderWorkflowTree();
+  // Scroll detail into view
+  if (selectedMilestone) {
+    setTimeout(function(){ var el = document.querySelector('.wf-detail'); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 50);
+  }
+}
+
+function deselectMilestone() {
+  selectedMilestone = null;
+  renderWorkflowTree();
+}
+
+async function setMilestoneStatus(milestoneId, newStatus) {
+  var m = currentMilestones.find(function(x){return x.id === milestoneId});
+  if (!m || m.status === newStatus) return;
+  var oldStatus = m.status;
+  var updates = { status: newStatus };
+  if (newStatus === 'in_progress' && !m.started_at) updates.started_at = new Date().toISOString();
+  if (newStatus === 'completed') updates.completed_at = new Date().toISOString();
+  m.status = newStatus;
+  if (updates.started_at) m.started_at = updates.started_at;
+  if (updates.completed_at) m.completed_at = updates.completed_at;
+  renderWorkflowTree();
+  Toast.show(m.title + ' → ' + newStatus.replace('_',' '), 'ok', 2000);
+  // Demo milestones — no API call needed
+  if (!UUID_RE.test(milestoneId)) return;
+  var result = await API.milestones.update(milestoneId, updates);
+  if (!result || !result.data) {
+    Toast.show('Failed to save — reverting', 'err');
+    m.status = oldStatus;
+    renderWorkflowTree();
+  }
+}
 
 // ── Single auth:ready handler — renders board exactly once ──
 window.addEventListener('auth:ready', async function(e) {
@@ -286,6 +640,147 @@ window.addEventListener('auth:ready', async function(e) {
 
   renderBoard();
 });
+
+// ── EXPORT FUNCTIONS ─────────────────────────────────────────────
+
+function downloadFile(filename, content, mime) {
+  var blob = new Blob([content], {type: mime});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  Toast.show('Downloaded ' + filename, 'ok', 2000);
+}
+
+function escCSV(v) {
+  var s = String(v == null ? '' : v);
+  return s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0 ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+// ── Pipeline CSV Export ──
+function exportPipelineCSV() {
+  var rows = [['Company','Stage','Score','EBITDA','ARR','Rec Revenue','Signal','NMD Structure','Deferred %']];
+  DEALS.forEach(function(d) {
+    rows.push([d.name, STAGES[d.stage], d.score, d.ebitda, d.arr, d.rev, d.signal, d.nmd, d.deferredPct + '%']);
+  });
+  var csv = rows.map(function(r) { return r.map(escCSV).join(','); }).join('\n');
+  downloadFile('sovereign-pipeline-' + new Date().toISOString().slice(0,10) + '.csv', csv, 'text/csv');
+}
+
+// ── Pipeline PDF Export ──
+function exportPipelinePDF() {
+  var d = DEALS;
+  var date = new Date().toLocaleDateString('en-GB', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var stageRows = '';
+  STAGES.forEach(function(s,i) {
+    var sd = d.filter(function(x){return x.stage===i});
+    sd.forEach(function(deal) {
+      stageRows += '<tr><td style="padding:6px 10px;border-bottom:1px solid #ddd">' + deal.name + '</td>'
+        + '<td style="padding:6px 10px;border-bottom:1px solid #ddd;color:' + STAGE_COLORS[i] + '">' + s + '</td>'
+        + '<td style="padding:6px 10px;border-bottom:1px solid #ddd;text-align:center">' + deal.score + '</td>'
+        + '<td style="padding:6px 10px;border-bottom:1px solid #ddd;text-align:right">' + deal.ebitda + '</td>'
+        + '<td style="padding:6px 10px;border-bottom:1px solid #ddd;text-align:right">' + deal.arr + '</td>'
+        + '<td style="padding:6px 10px;border-bottom:1px solid #ddd">' + deal.nmd + '</td></tr>';
+    });
+  });
+  var html = '<!DOCTYPE html><html><head><title>Sovereign Pipeline Report</title>'
+    + '<style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:40px;color:#1a1a2e}'
+    + 'h1{font-size:22px;color:#1a1a2e;border-bottom:3px solid #c9a84c;padding-bottom:10px}'
+    + 'h2{font-size:14px;color:#666;margin-top:0}'
+    + 'table{width:100%;border-collapse:collapse;font-size:12px;margin-top:20px}'
+    + 'th{background:#1a1a2e;color:#fff;padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em}'
+    + '.summary{display:flex;gap:20px;margin:20px 0}'
+    + '.stat{background:#f4f4f8;border-radius:8px;padding:16px 20px;text-align:center;flex:1}'
+    + '.stat-val{font-size:24px;font-weight:700;color:#1a1a2e}'
+    + '.stat-label{font-size:10px;color:#888;text-transform:uppercase;margin-top:4px}'
+    + '@media print{body{margin:20px}}</style></head><body>'
+    + '<h1>⬡ SOVEREIGN — Pipeline Report</h1>'
+    + '<h2>' + date + ' · ' + d.length + ' active deals · Confidential</h2>'
+    + '<div class="summary">'
+    + '<div class="stat"><div class="stat-val">' + d.length + '</div><div class="stat-label">Total Deals</div></div>'
+    + '<div class="stat"><div class="stat-val">' + d.filter(function(x){return x.stage>=3}).length + '</div><div class="stat-label">In DD+</div></div>'
+    + '<div class="stat"><div class="stat-val">' + (d.length>0?Math.round(d.reduce(function(a,b){return a+b.score},0)/d.length):0) + '</div><div class="stat-label">Avg Score</div></div>'
+    + '</div>'
+    + '<table><thead><tr><th>Company</th><th>Stage</th><th style="text-align:center">Score</th><th style="text-align:right">EBITDA</th><th style="text-align:right">ARR</th><th>NMD Structure</th></tr></thead><tbody>'
+    + stageRows + '</tbody></table>'
+    + '<div style="margin-top:30px;font-size:10px;color:#aaa;border-top:1px solid #ddd;padding-top:10px">Generated by Sovereign Command Engine · sovereigncmd.xyz · ' + new Date().toISOString() + '</div>'
+    + '</body></html>';
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(function() { win.print(); }, 500);
+}
+
+// ── Workflow CSV Export ──
+function exportWorkflowCSV() {
+  var d = DEALS.find(function(x){return String(x.id)===currentDealId});
+  var dealName = d ? d.name : 'Deal';
+  var rows = [['Stage','Milestone','Agent Seat','Agent Name','Status','Priority','Description']];
+  currentMilestones.forEach(function(m) {
+    var si = STAGE_KEYS.indexOf(m.stage);
+    rows.push([STAGES[si]||m.stage, m.title, m.agent_seat||'', m.agent_name||'', m.status, m.priority||'normal', m.description||'']);
+  });
+  var csv = rows.map(function(r){return r.map(escCSV).join(',')}).join('\n');
+  downloadFile('sovereign-workflow-' + dealName.replace(/[^a-zA-Z0-9]/g,'-') + '-' + new Date().toISOString().slice(0,10) + '.csv', csv, 'text/csv');
+}
+
+// ── Workflow PDF Export ──
+function exportWorkflowPDF() {
+  var d = DEALS.find(function(x){return String(x.id)===currentDealId});
+  var dealName = d ? d.name : 'Deal';
+  var date = new Date().toLocaleDateString('en-GB', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var ms = currentMilestones;
+  var total = ms.length, completed = ms.filter(function(m){return m.status==='completed'}).length;
+  var pct = total > 0 ? Math.round((completed/total)*100) : 0;
+
+  var stageBlocks = '';
+  STAGE_KEYS.forEach(function(sk,si) {
+    var stageMs = ms.filter(function(m){return m.stage===sk});
+    if (!stageMs.length) return;
+    var sc = stageMs.filter(function(m){return m.status==='completed'}).length;
+    stageBlocks += '<div style="margin-bottom:20px">'
+      + '<div style="font-size:13px;font-weight:700;color:' + STAGE_COLORS[si] + ';margin-bottom:6px;border-left:3px solid ' + STAGE_COLORS[si] + ';padding-left:8px">' + STAGES[si] + ' <span style="font-weight:400;color:#888">(' + sc + '/' + stageMs.length + ')</span></div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:4px">'
+      + '<tr style="background:#f4f4f8"><th style="padding:5px 8px;text-align:left">Milestone</th><th style="padding:5px 8px;text-align:left">Agent</th><th style="padding:5px 8px;text-align:center">Status</th><th style="padding:5px 8px;text-align:center">Priority</th></tr>';
+    stageMs.forEach(function(m) {
+      var statusColor = m.status==='completed'?'#16a34a':m.status==='in_progress'?'#ca8a04':m.status==='blocked'?'#dc2626':'#888';
+      stageBlocks += '<tr><td style="padding:4px 8px;border-bottom:1px solid #eee">' + m.title + '</td>'
+        + '<td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">' + (m.agent_seat||'') + ' ' + (m.agent_name||'') + '</td>'
+        + '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center;color:' + statusColor + ';font-weight:600">' + m.status.replace('_',' ') + '</td>'
+        + '<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center">' + (m.priority||'normal') + '</td></tr>';
+    });
+    stageBlocks += '</table></div>';
+  });
+
+  var html = '<!DOCTYPE html><html><head><title>Sovereign Workflow — ' + dealName + '</title>'
+    + '<style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:40px;color:#1a1a2e}'
+    + 'h1{font-size:22px;color:#1a1a2e;border-bottom:3px solid #c9a84c;padding-bottom:10px}'
+    + 'h2{font-size:14px;color:#666;margin-top:0}'
+    + '.bar{display:flex;gap:16px;margin:16px 0}'
+    + '.bar-item{background:#f4f4f8;border-radius:8px;padding:12px 16px;text-align:center;flex:1}'
+    + '.bar-val{font-size:20px;font-weight:700}'
+    + '.bar-label{font-size:9px;color:#888;text-transform:uppercase;margin-top:2px}'
+    + '@media print{body{margin:20px}}</style></head><body>'
+    + '<h1>⬡ SOVEREIGN — Workflow Report</h1>'
+    + '<h2>' + dealName + ' · ' + date + ' · Confidential</h2>'
+    + '<div class="bar">'
+    + '<div class="bar-item"><div class="bar-val">' + pct + '%</div><div class="bar-label">Complete</div></div>'
+    + '<div class="bar-item"><div class="bar-val" style="color:#16a34a">' + completed + '</div><div class="bar-label">Done</div></div>'
+    + '<div class="bar-item"><div class="bar-val" style="color:#ca8a04">' + ms.filter(function(m){return m.status==='in_progress'}).length + '</div><div class="bar-label">In Progress</div></div>'
+    + '<div class="bar-item"><div class="bar-val" style="color:#dc2626">' + ms.filter(function(m){return m.status==='blocked'}).length + '</div><div class="bar-label">Blocked</div></div>'
+    + '<div class="bar-item"><div class="bar-val">' + total + '</div><div class="bar-label">Total</div></div>'
+    + '</div>'
+    + stageBlocks
+    + '<div style="margin-top:30px;font-size:10px;color:#aaa;border-top:1px solid #ddd;padding-top:10px">Generated by Sovereign Command Engine · sovereigncmd.xyz · ' + new Date().toISOString() + '</div>'
+    + '</body></html>';
+  var win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(function() { win.print(); }, 500);
+}
 
 </script>
 </body>

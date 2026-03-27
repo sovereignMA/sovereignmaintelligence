@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0f"/>
+      <stop offset="100%" stop-color="#12121a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c9a84c"/>
+      <stop offset="100%" stop-color="#dfc06a"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Border -->
+  <rect x="2" y="2" width="1196" height="626" rx="12" fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.3"/>
+  <!-- Grid pattern -->
+  <g opacity="0.04" stroke="#c9a84c" stroke-width="1">
+    <line x1="0" y1="0" x2="1200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+  </g>
+  <!-- Glow -->
+  <ellipse cx="600" cy="200" rx="400" ry="200" fill="url(#shine)"/>
+  <!-- Pentagon icon -->
+  <path d="M600 100 L680 160 L660 260 L540 260 L520 160 Z" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linejoin="round" opacity="0.8"/>
+  <circle cx="600" cy="190" r="16" fill="url(#gold)" opacity="0.7"/>
+  <line x1="600" y1="206" x2="600" y2="255" stroke="url(#gold)" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  <!-- Title -->
+  <text x="600" y="340" text-anchor="middle" font-family="Inter,system-ui,-apple-system,sans-serif" font-weight="800" font-size="64" fill="#ffffff" letter-spacing="-1">Project Sovereign</text>
+  <!-- Subtitle -->
+  <text x="600" y="395" text-anchor="middle" font-family="Inter,system-ui,-apple-system,sans-serif" font-weight="400" font-size="28" fill="#c9a84c">UK SaaS M&amp;A Command Engine</text>
+  <!-- Stats row -->
+  <g font-family="JetBrains Mono,monospace" text-anchor="middle">
+    <text x="240" y="480" font-size="36" font-weight="700" fill="#c9a84c">21</text>
+    <text x="240" y="505" font-size="14" fill="#6b6b80">AI AGENTS</text>
+    <text x="440" y="480" font-size="36" font-weight="700" fill="#2dd4bf">4-8×</text>
+    <text x="440" y="505" font-size="14" fill="#6b6b80">ENTRY EBITDA</text>
+    <text x="640" y="480" font-size="36" font-weight="700" fill="#a78bfa">15-30×</text>
+    <text x="640" y="505" font-size="14" fill="#6b6b80">EXIT MULTIPLE</text>
+    <text x="840" y="480" font-size="36" font-weight="700" fill="#4ade80">£0</text>
+    <text x="840" y="505" font-size="14" fill="#6b6b80">PERSONAL CAPITAL</text>
+    <text x="1000" y="480" font-size="36" font-weight="700" fill="#fbbf24">£0</text>
+    <text x="1000" y="505" font-size="14" fill="#6b6b80">PERSONAL GUARANTEES</text>
+  </g>
+  <!-- Domain -->
+  <text x="600" y="580" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="16" fill="#4a4a5c">sovereigncmd.xyz</text>
+</svg>

@@ -11,14 +11,14 @@ const CORS = {
 
 // Registered cron jobs and their schedules (mirrors vercel.json crons)
 const CRON_REGISTRY = [
-  { id: 'deal-score-refresh', name: 'Deal Score Refresh',    schedule: '0 6 * * *',   description: 'Re-scores all active deals using latest company intel' },
+  { id: 'deal-score-refresh', name: 'Deal Score Refresh',    schedule: '0 6 * * *',   description: 'Re-scores all active deals; emails on significant changes (±10+)' },
   { id: 'self-improve',       name: 'Self Improve (S21)',    schedule: '0 7 * * *',   description: 'S21 Archivist extracts AI patterns from audit trail' },
-  { id: 'pipeline-health',    name: 'Pipeline Health',       schedule: '0 8 * * *',   description: 'Alerts on stalled or overdue deals' },
-  { id: 'health-check',       name: 'Health Check',          schedule: '0 */6 * * *', description: 'Pings database and Anthropic API every 6 hours' },
+  { id: 'pipeline-health',    name: 'Pipeline Health',       schedule: '0 8 * * *',   description: 'Detects overdue & stale deals; emails daily alert via Resend' },
+  { id: 'health-check',       name: 'Health Check',          schedule: '0 */6 * * *', description: 'Pings DB + Anthropic API; emails on failure via Resend' },
   { id: 'intel-refresh',      name: 'Intel Refresh',         schedule: '0 9 * * 1',  description: 'Refreshes company intelligence (Mondays)' },
   { id: 'data-retention',     name: 'Data Retention (GDPR)', schedule: '0 23 * * *',  description: 'Enforces UK GDPR data retention (audit 90d, analytics 365d)' },
-  { id: 'weekly-briefing',    name: 'Weekly Briefing',       schedule: '0 17 * * 5',  description: 'Sends Howard a weekly M&A pipeline SMS via Twilio' },
-  { id: 'compliance-check',   name: 'Compliance Check',      schedule: '0 0 1 * *',  description: 'Logs monthly GDPR/AML/FCA compliance checks' },
+  { id: 'weekly-briefing',    name: 'Weekly Briefing',       schedule: '0 17 * * 5',  description: 'AI-generated weekly pipeline briefing email via Resend' },
+  { id: 'compliance-check',   name: 'Compliance Check',      schedule: '0 0 1 * *',  description: 'Monthly GDPR/AML/FCA compliance checks + email confirmation' },
 ];
 
 serve(async (req) => {

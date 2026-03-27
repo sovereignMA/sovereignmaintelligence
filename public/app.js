@@ -99,6 +99,13 @@ const _Auth = {
     const {data,error} = await window._sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:location.origin+'/login.html'}});
     if(error){Toast.show(error.message,'err');return null;}
     Toast.show('Account created — check your email','ok',6000);
+    // Track referral if someone signed up via a referral link
+    const refCode = localStorage.getItem('sv_ref');
+    if(refCode && data?.user) {
+      setTimeout(async()=>{
+        try { await API.referral.track(refCode); localStorage.removeItem('sv_ref'); } catch(_){}
+      }, 2000);
+    }
     return data;
   },
 
@@ -266,6 +273,8 @@ const API = {
     save: p          => API._call('sovereign-api',{action:'docs:save',payload:p}),
   },
   convs: {
+    list: ()         => API._call('sovereign-api',{action:'conv:list'}),
+    load: id         => API._call('sovereign-api',{action:'conv:load',payload:{id}}),
     save: (conv,msgs)=> API._call('sovereign-api',{action:'conv:save',payload:{conversation:conv,messages:msgs}}),
   },
   gmail: {
@@ -288,22 +297,36 @@ window.API = API;
    ══════════════════════════════════════ */
 (function injectNav(){
   const page = location.pathname.split('/').pop() || 'index.html';
-  const links = [
-    {href:'index.html',      label:'Home',         icon:'⌂'},
-    {href:'command.html',    label:'Command',      icon:'⌘'},
-    {href:'intelligence.html',label:'Intel',       icon:'◎'},
-    {href:'pipeline.html',   label:'Pipeline',     icon:'▤'},
-    {href:'comms.html',      label:'Comms',        icon:'✉'},
-    {href:'analytics.html',  label:'Analytics',    icon:'◈'},
-    {href:'vault.html',      label:'Vault',        icon:'◆'},
-    {href:'security.html',   label:'Security',     icon:'⬡'},
-    {href:'resources.html',  label:'Resources',    icon:'◉'},
-    {href:'legal.html',      label:'Legal',        icon:'⚖'},
-    {href:'admin.html',      label:'Admin',        icon:'⚙'},
+  const PUBLIC_PAGES = new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','']);
+  const isPublicPage = PUBLIC_PAGES.has(page);
+
+  const PUBLIC_LINKS = [
+    {href:'index.html',    label:'Home',    icon:'⌂'},
+    {href:'upgrade.html',  label:'Pricing', icon:'◈'},
+    {href:'resources.html',label:'Guide',   icon:'◉'},
+    {href:'legal.html',    label:'Legal',   icon:'⚖'},
   ];
+  const APP_LINKS = [
+    {href:'command.html',     label:'Command',   icon:'⌘'},
+    {href:'pipeline.html',    label:'Pipeline',  icon:'▤'},
+    {href:'intelligence.html',label:'Intel',     icon:'◎'},
+    {href:'mail.html',        label:'Mail',      icon:'✉'},
+    {href:'comms.html',       label:'Comms',     icon:'☎'},
+    {href:'analytics.html',   label:'Analytics', icon:'◈'},
+    {href:'vault.html',       label:'Vault',     icon:'◆'},
+  ];
+  const ADMIN_LINK = {href:'admin.html', label:'Admin', icon:'⚙'};
+
   function isActive(h){return h===page||(h==='index.html'&&(page===''||page==='index.html'));}
-  const navLinks = links.map(l=>`<a href="${l.href}" class="nav-link${isActive(l.href)?' active':''}">${l.label}</a>`).join('');
-  const mobLinks = links.map(l=>`<a href="${l.href}" class="mob-link${isActive(l.href)?' active':''}"><span class="mob-icon">${l.icon}</span>${l.label}</a>`).join('');
+  function renderLinks(links){
+    return {
+      nav: links.map(l=>`<a href="${l.href}" class="nav-link${isActive(l.href)?' active':''}">${l.label}</a>`).join(''),
+      mob: links.map(l=>`<a href="${l.href}" class="mob-link${isActive(l.href)?' active':''}"><span class="mob-icon">${l.icon}</span>${l.label}</a>`).join('')
+    };
+  }
+
+  const initLinks = isPublicPage ? PUBLIC_LINKS : APP_LINKS;
+  const {nav: navLinks, mob: mobLinks} = renderLinks(initLinks);
 
   const html = `
 <nav class="nav" id="mainNav">
@@ -352,26 +375,102 @@ window.API = API;
   drawer?.querySelectorAll('.mob-link').forEach(a=>a.addEventListener('click',()=>toggleDrawer(false)));
 
   // Inject auth button after supabase loads
-  window.addEventListener('auth:ready', e=>{
+  window.addEventListener('auth:ready', async e=>{
     const user = e.detail?.user;
     const actions = document.getElementById('navActions');
     if(!actions) return;
-    const existing = actions.querySelector('.nav-user-btn');
-    if(existing) existing.remove();
+    const existingWrap = actions.querySelector('.nav-user-wrap');
+    if(existingWrap) existingWrap.remove();
+    const existingBtn = actions.querySelector('.nav-user-btn');
+    if(existingBtn) existingBtn.remove();
+
     if(user){
+      // Fetch role from profile
+      let isAdmin = false;
+      try {
+        const {data:p} = await window._sb.from('user_profiles').select('role').eq('id',user.id).single();
+        isAdmin = p?.role === 'admin' || p?.role === 'superadmin';
+        window._userRole = p?.role || 'user';
+      } catch(_){}
+
+      // Admin page guard — redirect non-admins away from admin.html
+      if(page === 'admin.html' && !isAdmin){
+        window.location.href = 'command.html';
+        return;
+      }
+
+      // Update nav with role-appropriate links
+      if(!isPublicPage){
+        const roleLinks = [...APP_LINKS, ...(isAdmin ? [ADMIN_LINK] : [])];
+        const {nav,mob} = renderLinks(roleLinks);
+        const nl = document.getElementById('navLinks');
+        const ml = document.querySelector('.mob-links');
+        if(nl) nl.innerHTML = nav;
+        if(ml) ml.innerHTML = mob;
+      }
+
       const initial = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
-      const btn = document.createElement('button');
-      btn.className = 'nav-user-btn';
-      btn.innerHTML = initial;
-      btn.title = user.email;
-      btn.onclick = ()=>{ if(confirm(`Sign out of Sovereign?\n${user.email}`)) _Auth.signOut(); };
-      actions.insertBefore(btn, actions.querySelector('.nav-cta'));
-    } else if(page !== 'login.html' && page !== 'index.html'){
-      const a = document.createElement('a');
-      a.href = 'login.html';
-      a.className = 'btn btn-ghost btn-sm';
-      a.textContent = 'Sign In';
-      actions.insertBefore(a, actions.querySelector('.nav-cta'));
+      const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      const wrap = document.createElement('div');
+      wrap.className = 'nav-user-wrap';
+      wrap.innerHTML = `<button class="nav-user-btn" title="${user.email}">${initial}</button>`
+        +`<div class="nav-user-dd" id="userDropdown">`
+        +`<div class="udd-header">`
+        +`<div class="udd-avatar">${initial}</div>`
+        +`<div class="udd-info"><div class="udd-name">${name}</div>`
+        +`<div class="udd-email">${user.email}</div></div>`
+        +`</div>`
+        +`<div class="udd-sep"></div>`
+        +(isAdmin ? `<a class="udd-item" href="admin.html"><span class="udd-icon">⚙</span>Admin Dashboard</a>` : '')
+        +`<a class="udd-item" href="security.html"><span class="udd-icon">⬡</span>Security & Privacy</a>`
+        +`<a class="udd-item" href="resources.html"><span class="udd-icon">◉</span>Help & Support</a>`
+        +`<a class="udd-item" href="upgrade.html"><span class="udd-icon">◈</span>Upgrade Plan</a>`
+        +`<button class="udd-item udd-referral" id="uddReferral"><span class="udd-icon">◆</span>Invite & Earn</button>`
+        +`<button class="udd-item" id="uddBilling"><span class="udd-icon">◎</span>Manage Subscription</button>`
+        +`<div class="udd-sep"></div>`
+        +`<button class="udd-item udd-signout" id="uddSignout"><span class="udd-icon">⏻</span>Sign Out</button>`
+        +`</div>`;
+      const hamBtn = actions.querySelector('.nav-ham');
+      actions.insertBefore(wrap, hamBtn);
+      wrap.querySelector('.nav-user-btn').onclick = (e)=>{
+        e.stopPropagation();
+        document.getElementById('userDropdown').classList.toggle('open');
+      };
+      wrap.querySelector('#uddSignout').onclick = ()=>{ _Auth.signOut(); };
+      wrap.querySelector('#uddReferral').onclick = ()=>{ document.getElementById('userDropdown').classList.remove('open'); ReferralModal.open(); };
+      wrap.querySelector('#uddBilling').onclick = async ()=>{
+        document.getElementById('userDropdown').classList.remove('open');
+        Toast.show('Opening billing portal…','info',2000);
+        try {
+          const r = await fetch('/api/stripe/portal', {
+            method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+_Auth.token()}
+          });
+          const d = await r.json();
+          if(d.url) window.location.href = d.url;
+          else Toast.show(d.error||'No active subscription found','warn');
+        } catch(_){ Toast.show('Could not open billing portal','err'); }
+      };
+      document.addEventListener('click', (e)=>{
+        const dd=document.getElementById('userDropdown');
+        if(dd && !wrap.contains(e.target)) dd.classList.remove('open');
+      });
+    } else {
+      // Logged-out: ensure public nav is shown
+      const {nav,mob} = renderLinks(PUBLIC_LINKS);
+      const nl = document.getElementById('navLinks');
+      const ml = document.querySelector('.mob-links');
+      if(nl) nl.innerHTML = nav;
+      if(ml) ml.innerHTML = mob;
+      // Hide Command CTA on public pages, show Sign In
+      const cta = actions.querySelector('.nav-cta');
+      if(cta && isPublicPage) cta.style.display = 'none';
+      if(page !== 'login.html'){
+        const a = document.createElement('a');
+        a.href = 'login.html';
+        a.className = 'btn btn-ghost btn-sm';
+        a.textContent = 'Sign In';
+        actions.insertBefore(a, cta || actions.querySelector('.nav-ham'));
+      }
     }
   });
 })();
@@ -505,6 +604,12 @@ window.addEventListener('sb:ready', () => _Analytics.init());
    ══════════════════════════════════════ */
 // Extend existing API object
 Object.assign(API, {
+  milestones: {
+    list:      (deal_id)        => API._call('sovereign-api',{action:'milestones:list', deal_id}),
+    update:    (id, payload)    => API._call('sovereign-api',{action:'milestones:update', payload:{id,...payload}}),
+    init:      (deal_id, tpl)   => API._call('sovereign-api',{action:'milestones:init', deal_id, payload:{template:tpl||'nmd_standard'}}),
+    templates: ()               => API._call('sovereign-api',{action:'milestones:templates'}),
+  },
   scraper: {
     companiesHouse: (company_name, deal_id) => API._call('scraper', {action:'scrape:companies_house', company_name, deal_id}),
     web:            (website_url, deal_id)  => API._call('scraper', {action:'scrape:web',             website_url, deal_id}),
@@ -582,6 +687,40 @@ Object.assign(API, {
     list:     ()        => API._call('sovereign-api',{action:'intel:list'}),
     queueAdd: (deal_id, company_name, website_url) => API._call('sovereign-api',{action:'scrape:queue:add', deal_id, payload:{company_name,website_url}}),
   },
+
+  // ── billing ──────────────────────────────────────────────────
+  billing: {
+    status: () => API._call('sovereign-api', {action:'billing:status'}),
+  },
+
+  // ── referrals ────────────────────────────────────────────────
+  referral: {
+    get:   ()     => API._call('sovereign-api',{action:'referral:get'}),
+    track: (code) => API._call('sovereign-api',{action:'referral:track', payload:{code}}),
+  },
+
+  // ── email system ────────────────────────────────────────────
+  mail: {
+    list:      (folder,category,search,limit,offset) => API._call('email-send',{action:'list',    payload:{folder,category,search,limit,offset}}),
+    get:       (id)                                   => API._call('email-send',{action:'get',     payload:{id}}),
+    thread:    (thread_id)                             => API._call('email-send',{action:'thread',  payload:{thread_id}}),
+    send:      (p)                                     => API._call('email-send',{action:'send',    payload:p}),
+    update:    (ids,updates)                           => API._call('email-send',{action:'update',  payload:{ids,...updates}}),
+    delete:    (ids,permanent)                         => API._call('email-send',{action:'delete',  payload:{ids,permanent}}),
+    counts:    ()                                      => API._call('email-send',{action:'counts'}),
+    draftSave: (p)                                     => API._call('email-send',{action:'draft:save', payload:p}),
+    rules:     ()                                      => API._call('email-send',{action:'rules:list'}),
+    ruleCreate:(p)                                     => API._call('email-send',{action:'rules:create',payload:p}),
+    ruleDelete:(id)                                    => API._call('email-send',{action:'rules:delete',payload:{id}}),
+  },
+  aliases: {
+    list:     ()  => API._call('email-alias',{action:'alias:list'}),
+    create:   (p) => API._call('email-alias',{action:'alias:create', payload:p}),
+    update:   (p) => API._call('email-alias',{action:'alias:update', payload:p}),
+    delete:   (id)=> API._call('email-alias',{action:'alias:delete', payload:{id}}),
+    domains:  ()  => API._call('email-alias',{action:'domains:list'}),
+    dnsCheck: (d) => API._call('email-alias',{action:'domain:check', payload:{domain:d}}),
+  },
 });
 
 /* ══════════════════════════════════════
@@ -633,3 +772,262 @@ window.Crypto256 = {
     return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
   }
 };
+
+/* ══════════════════════════════════════
+   REFERRAL CAPTURE — ?ref= on page load
+   ══════════════════════════════════════ */
+(function captureRef(){
+  const p = new URLSearchParams(location.search);
+  const ref = p.get('ref');
+  if(ref && /^[A-Z0-9]{6,12}$/i.test(ref)) {
+    localStorage.setItem('sv_ref', ref.toUpperCase());
+  }
+})();
+
+/* ══════════════════════════════════════
+   REFERRAL MODAL
+   ══════════════════════════════════════ */
+const ReferralModal = {
+  _loaded: false,
+
+  open() {
+    if(!_Auth.user){ Toast.show('Sign in to view your referral link','warn'); return; }
+    this._inject();
+    const modal = document.getElementById('referral-modal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    this._load();
+  },
+
+  close() {
+    const modal = document.getElementById('referral-modal');
+    if(modal){ modal.style.display = 'none'; document.body.style.overflow = ''; }
+  },
+
+  _inject() {
+    if(document.getElementById('referral-modal')) return;
+    const el = document.createElement('div');
+    el.id = 'referral-modal';
+    el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);padding:20px';
+    el.innerHTML = `
+<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+  <div style="padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">Referral Programme</div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">Invite & Earn</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px;line-height:1.5">Refer another dealmaker. When they subscribe, you both get <strong style="color:var(--gold2)">30 days free</strong>.</div>
+    </div>
+    <button id="ref-modal-close" style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;width:32px;height:32px;cursor:pointer;color:var(--text2);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:12px">✕</button>
+  </div>
+
+  <div style="padding:20px 24px">
+    <!-- Referral link -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Your referral link</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="ref-link-display" style="flex:1;font-family:var(--mono);font-size:12px;color:var(--gold2);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Loading…</div>
+        <button id="ref-copy-btn" style="background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s">Copy</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px" id="ref-stats">
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center">
+        <div id="ref-stat-signups" style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--teal)">—</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.08em">Signed Up</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center">
+        <div id="ref-stat-subscribed" style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--gold2)">—</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.08em">Subscribed</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center">
+        <div id="ref-stat-credits" style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--gold)">—</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.08em">Days Credit</div>
+      </div>
+    </div>
+
+    <!-- Share buttons -->
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Share via</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="ref-share-twitter" style="flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(29,161,242,.5)';this.style.color='#1da1f2'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">𝕏 Twitter</button>
+      <button id="ref-share-linkedin" style="flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,119,181,.5)';this.style.color='#0077b5'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">LinkedIn</button>
+      <button id="ref-share-whatsapp" style="flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(37,211,102,.5)';this.style.color='#25d366'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">WhatsApp</button>
+      <button id="ref-share-email" style="flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border3)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Email</button>
+    </div>
+
+    <div style="margin-top:14px;padding:12px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.5">
+      <strong style="color:var(--gold2)">How it works:</strong> Share your link. When someone signs up and subscribes, you both receive 30 days of free access. Credits are applied automatically to your next billing cycle.
+    </div>
+  </div>
+</div>`;
+    document.body.appendChild(el);
+
+    document.getElementById('ref-modal-close').onclick = ()=>this.close();
+    el.addEventListener('click', e=>{ if(e.target===el) this.close(); });
+
+    document.getElementById('ref-copy-btn').onclick = ()=>{
+      const link = document.getElementById('ref-link-display').textContent;
+      if(link && link !== 'Loading…') {
+        navigator.clipboard.writeText(link).then(()=>{ Toast.show('Referral link copied!','ok',2000); }).catch(()=>{
+          const ta = document.createElement('textarea');
+          ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+          Toast.show('Referral link copied!','ok',2000);
+        });
+      }
+    };
+
+    document.getElementById('ref-share-twitter').onclick = ()=>{
+      const link = document.getElementById('ref-link-display').textContent;
+      const text = encodeURIComponent(`I'm using Sovereign — the deal flow command centre built for acquirers. Track targets, score deals, manage broker relationships, and close faster. Join me:`);
+      const url = encodeURIComponent(link);
+      window.open(`https://twitter.com/intent/tweet?text=${text}%20${url}`, '_blank', 'width=600,height=400');
+    };
+
+    document.getElementById('ref-share-linkedin').onclick = ()=>{
+      const link = encodeURIComponent(document.getElementById('ref-link-display').textContent);
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${link}`, '_blank', 'width=600,height=500');
+    };
+
+    document.getElementById('ref-share-whatsapp').onclick = ()=>{
+      const link = document.getElementById('ref-link-display').textContent;
+      const text = encodeURIComponent(`I'm using Sovereign for acquisition deal flow — AI agents that track targets, score deals, and manage broker relationships. Check it out: ${link}`);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    };
+
+    document.getElementById('ref-share-email').onclick = ()=>{
+      const link = document.getElementById('ref-link-display').textContent;
+      const subject = encodeURIComponent('Sovereign — deal flow command centre for acquirers');
+      const body = encodeURIComponent(`Hey,\n\nI've been using Sovereign to manage my acquisition pipeline — AI agents that track targets, score deals, manage broker relationships, and keep everything moving from first contact to completion.\n\nThought you'd find it useful. Here's my referral link — you'll get 30 days free when you sign up:\n\n${link}\n\nLet me know what you think.`);
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    };
+  },
+
+  async _load() {
+    const linkEl = document.getElementById('ref-link-display');
+    const signupsEl = document.getElementById('ref-stat-signups');
+    const subscribedEl = document.getElementById('ref-stat-subscribed');
+    const creditsEl = document.getElementById('ref-stat-credits');
+    if(!linkEl) return;
+
+    try {
+      const res = await API.referral.get();
+      if(!res?.data) { if(linkEl) linkEl.textContent = 'Error loading referral data'; return; }
+      const { referral_code, credits, stats } = res.data;
+      const baseUrl = location.origin;
+      const link = `${baseUrl}/?ref=${referral_code}`;
+      linkEl.textContent = link;
+      signupsEl.textContent = (stats.signed_up || 0).toString();
+      subscribedEl.textContent = (stats.subscribed || 0).toString();
+      creditsEl.textContent = (credits || 0).toString();
+    } catch(e) {
+      if(linkEl) linkEl.textContent = 'Error loading referral data';
+    }
+  }
+};
+window.ReferralModal = ReferralModal;
+
+/* ══════════════════════════════════════
+   TRIAL BANNER + BILLING GATE
+   ══════════════════════════════════════ */
+const TrialGuard = {
+  _status: null,
+  _SKIP_PAGES: new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','']),
+
+  async init() {
+    const page = location.pathname.split('/').pop() || '';
+    if(this._SKIP_PAGES.has(page)) return;
+
+    // Wait for auth
+    const onReady = (e) => {
+      if(!e.detail?.user) return;
+      this._check();
+    };
+    window.addEventListener('auth:ready', onReady, {once:true});
+  },
+
+  async _check() {
+    try {
+      const res = await API.billing.status();
+      if(!res?.data) return;
+      this._status = res.data;
+      const { subscription_status, trial_days_left, trial_expired, plan } = res.data;
+
+      // Active subscriber — no banner needed
+      if(subscription_status === 'active' || plan === 'enterprise') return;
+
+      // Trial expired → hard gate
+      if(trial_expired) {
+        this._showExpiredGate();
+        return;
+      }
+
+      // Trial warning — show banner at ≤7 days
+      if(subscription_status === 'trialing' && trial_days_left <= 7) {
+        this._showBanner(trial_days_left);
+      }
+
+      // Day 14 (7 days left) trigger handled above
+      // Day 19 (2 days left) — more urgent styling handled by _showBanner
+    } catch(_) {}
+  },
+
+  _showBanner(daysLeft) {
+    if(document.getElementById('trial-banner')) return;
+    const urgent = daysLeft <= 2;
+    const banner = document.createElement('div');
+    banner.id = 'trial-banner';
+    banner.style.cssText = `position:fixed;bottom:0;left:0;right:0;z-index:9998;padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:16px;font-size:13px;background:${urgent ? 'rgba(220,53,69,.95)' : 'rgba(201,168,76,.12)'};border-top:1px solid ${urgent ? 'rgba(220,53,69,.6)' : 'rgba(201,168,76,.3)'};backdrop-filter:blur(8px)`;
+    banner.innerHTML = `
+      <span style="color:${urgent ? '#fff' : 'var(--gold2)'}">
+        ${urgent
+          ? `<strong>⚠ ${daysLeft === 0 ? 'Trial expires today' : `${daysLeft} day${daysLeft===1?'':'s'} left`}</strong> — your deal pipeline will be locked when it ends.`
+          : `<strong>${daysLeft} days</strong> remaining on your free trial.`
+        }
+      </span>
+      <a href="upgrade.html" style="background:${urgent ? '#fff' : 'var(--gold)'};color:${urgent ? '#dc3545' : '#0a0a0f'};border-radius:6px;padding:6px 16px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Upgrade Now</a>
+      <button onclick="document.getElementById('trial-banner').remove()" style="background:none;border:none;color:${urgent ? 'rgba(255,255,255,.6)' : 'var(--text3)'};cursor:pointer;font-size:16px;padding:0 4px;line-height:1">✕</button>`;
+    document.body.appendChild(banner);
+    // Push nav up if present
+    const nav = document.getElementById('mainNav');
+    if(nav) nav.style.marginBottom = '0';
+  },
+
+  _showExpiredGate() {
+    // Dim the page and show a blocking modal
+    const gate = document.createElement('div');
+    gate.id = 'trial-gate';
+    gate.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,10,15,.96);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px';
+    gate.innerHTML = `
+<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:480px;padding:36px;text-align:center">
+  <div style="width:56px;height:56px;background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px">⏳</div>
+  <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Trial Ended</div>
+  <h2 style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:12px">Your 21-day trial has expired</h2>
+  <p style="font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:28px">Your deal pipeline, targets, and all data are safe — upgrade to regain full access. No data will be deleted.</p>
+  <a href="upgrade.html" style="display:block;background:var(--gold);color:#0a0a0f;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Choose a Plan — from £149/mo</a>
+  <button onclick="document.getElementById('trial-gate').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;text-decoration:underline">Continue in read-only mode</button>
+</div>`;
+    document.body.appendChild(gate);
+  }
+};
+window.TrialGuard = TrialGuard;
+
+// Auto-init
+window.addEventListener('sb:ready', () => TrialGuard.init());
+
+/* ══════════════════════════════════════
+   CHECKOUT SUCCESS HANDLER
+   ══════════════════════════════════════ */
+(function(){
+  const p = new URLSearchParams(location.search);
+  if(p.get('checkout') === 'success') {
+    // Clean URL
+    history.replaceState({}, '', location.pathname);
+    // Wait for auth then show success
+    window.addEventListener('auth:ready', function handler(e){
+      window.removeEventListener('auth:ready', handler);
+      setTimeout(()=>{
+        Toast.show('Payment confirmed — welcome to Sovereign! Your subscription is now active.','ok',6000);
+      }, 800);
+    }, {once:true});
+  }
+})();

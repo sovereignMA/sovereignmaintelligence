@@ -108,6 +108,36 @@ a:hover { color: var(--gold2); }
   font-weight: 700; cursor: pointer; transition: all var(--transition);
 }
 .nav-user-btn:hover { background: rgba(201,168,76,.2); }
+.nav-user-wrap { position: relative; }
+.nav-user-dd {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 240px; z-index: 999;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04);
+  padding: 4px 0; backdrop-filter: blur(20px);
+  animation: uddFadeIn .15s ease;
+}
+@keyframes uddFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.nav-user-dd.open { display: block; }
+.udd-header { padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.udd-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--gold-dim);
+  border: 1px solid rgba(201,168,76,.35); color: var(--gold); font-size: 13px;
+  font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.udd-info { min-width: 0; }
+.udd-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.udd-email { font-size: 11px; color: var(--text3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.udd-sep { height: 1px; background: var(--border); margin: 4px 8px; }
+.udd-icon { display: inline-block; width: 20px; text-align: center; font-size: 11px; opacity: .6; }
+.udd-item {
+  display: flex; align-items: center; width: 100%; padding: 8px 14px; font-size: 12.5px; color: var(--text2);
+  text-decoration: none; border: none; background: none; cursor: pointer;
+  text-align: left; font-family: var(--font); transition: all .12s; border-radius: 0;
+  gap: 4px;
+}
+.udd-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.udd-signout { color: var(--red); }
+.udd-signout:hover { background: var(--red-dim); color: var(--red); }
 .nav-ham {
   display: none; flex-direction: column; gap: 4px; background: none;
   border: none; cursor: pointer; padding: 6px; flex-shrink: 0;

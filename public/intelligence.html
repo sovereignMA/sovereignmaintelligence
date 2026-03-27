@@ -4,10 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Project Sovereign">
+<meta property="og:title" content="Intelligence — Project Sovereign">
+<meta property="og:description" content="21 AI agents. Zero capital. Acquire UK SaaS at 4-8x EBITDA.">
+<meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Intelligence%20-%20Project%20Sovereign">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Intelligence — Project Sovereign">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Intelligence%20-%20Project%20Sovereign">
 <title>Intelligence — Project Sovereign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=34">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
@@ -46,15 +59,47 @@
 .sector-val { font-size: 18px; font-weight: 700; font-family: var(--mono); color: var(--gold2); }
 .sector-sub { font-size: 10px; color: var(--text3); }
 /* Live feed */
-.feed-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.feed-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; border-radius: 6px; margin: 0 -6px; padding-left: 6px; padding-right: 6px; }
+.feed-item:hover { background: rgba(255,255,255,.03); }
 .feed-item:last-child { border: none; }
 .feed-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
 .feed-body { flex: 1; min-width: 0; }
-.feed-title { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.feed-title { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; line-height: 1.4; }
+.feed-title a { color: inherit; text-decoration: none; }
+.feed-title a:hover { color: var(--gold); text-decoration: underline; }
 .feed-meta { font-size: 10px; color: var(--text3); }
+.feed-source { font-size: 9px; color: var(--text3); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feed-source a { color: var(--blue); text-decoration: none; }
+.feed-source a:hover { text-decoration: underline; }
+.feed-loading { text-align: center; padding: 20px; color: var(--text3); font-size: 12px; }
+.feed-refresh { background: none; border: 1px solid var(--border2); color: var(--text3); font-size: 10px; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-family: var(--font); }
+.feed-refresh:hover { color: var(--text); border-color: var(--border3); }
 .filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .filter-tab { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border2); color: var(--text2); background: none; font-family: var(--font); transition: all .15s; }
 .filter-tab.active { background: var(--gold-dim); border-color: rgba(201,168,76,.4); color: var(--gold); }
+/* Target row click */
+.target-table tr[data-company] { cursor: pointer; transition: background .15s; }
+.target-table tr[data-company]:hover td { background: var(--surface2); }
+.target-table tr[data-company].selected td { background: rgba(201,168,76,.08); border-color: rgba(201,168,76,.2); }
+/* Target detail panel */
+.target-detail { display:none; background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 20px; margin-top: 12px; animation: fadeIn .2s; }
+.target-detail.visible { display: block; }
+.target-detail h3 { font-size: 15px; font-weight: 600; margin: 0 0 4px; color: var(--text); }
+.target-detail .td-sub { font-size: 11px; color: var(--text3); margin-bottom: 14px; }
+.target-detail .td-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+.target-detail .td-stat { background: var(--surface2); border-radius: 6px; padding: 10px; }
+.target-detail .td-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); margin-bottom: 2px; }
+.target-detail .td-stat-value { font-size: 16px; font-weight: 700; font-family: var(--mono); }
+.target-detail .td-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.target-detail .td-actions a, .target-detail .td-actions button { font-size: 11px; padding: 6px 14px; border-radius: 6px; font-family: var(--font); cursor: pointer; text-decoration: none; font-weight: 500; transition: all .15s; }
+.target-detail .td-btn-primary { background: var(--gold); color: #000; border: none; }
+.target-detail .td-btn-primary:hover { filter: brightness(1.1); }
+.target-detail .td-btn-outline { background: none; border: 1px solid var(--border2); color: var(--text2); }
+.target-detail .td-btn-outline:hover { border-color: var(--text3); color: var(--text); }
+/* Sector cell click */
+.sector-cell { cursor: pointer; transition: all .15s; }
+.sector-cell:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
 </style>
 </head>
 <body>
@@ -153,11 +198,17 @@
         </thead>
         <tbody id="targetTableBody"></tbody>
       </table>
+      <div id="targetDetail" class="target-detail"></div>
     </div>
     <div class="chart-card">
-      <div class="chart-title">Intelligence Feed</div>
-      <div class="chart-sub">Signals and sector developments</div>
-      <div id="feedItems"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="chart-title">Intelligence Feed</div>
+          <div class="chart-sub">Live signals from UK M&A, SaaS, and tech sectors</div>
+        </div>
+        <button class="feed-refresh" onclick="loadLiveFeed(true)">↻ Refresh</button>
+      </div>
+      <div id="feedItems"><div class="feed-loading"><div class="spinner" style="margin:0 auto 8px"></div>Loading live intelligence…</div></div>
     </div>
   </div>
 
@@ -171,7 +222,7 @@
 
 
 
-<script src="app.js?v=27"></script>
+<script src="app.js?v=34"></script>
 <script>
 Chart.defaults.color = '#9896a8';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
@@ -272,74 +323,276 @@ new Chart(document.getElementById('motivationChart'), {
   }
 });
 
-// Target table
+// Target table with categories and interactivity
 var targets=[
-  {name:'CloudData.io',sic:'62010',ebitda:'£2.1M',type:'ARR 82%',signal:'Retirement',score:91},
-  {name:'NexusSaaS Ltd',sic:'62020',ebitda:'£1.8M',type:'ARR 74%',signal:'Plateau',score:84},
-  {name:'DataVault UK',sic:'62010',ebitda:'£3.4M',type:'ARR 68%',signal:'Partner Exit',score:78},
-  {name:'OptiFlow Systems',sic:'62020',ebitda:'£1.2M',type:'ARR 91%',signal:'Retirement',score:88},
-  {name:'MeshAnalytics',sic:'62010',ebitda:'£2.8M',type:'ARR 76%',signal:'Succession',score:71},
-  {name:'PrismData Ltd',sic:'62020',ebitda:'£1.5M',type:'ARR 83%',signal:'Health',score:65},
+  {name:'CloudData.io',sic:'62010',ebitda:'£2.1M',ebitda_num:2.1,type:'ARR 82%',arr_pct:82,signal:'Retirement',score:91,cat:'Data',employees:45,founded:2016,revenue:'£2.6M',website:'clouddata.io',location:'Manchester',desc:'Cloud-based data analytics platform for mid-market enterprises. Strong recurring revenue with 130+ enterprise clients.'},
+  {name:'NexusSaaS Ltd',sic:'62020',ebitda:'£1.8M',ebitda_num:1.8,type:'ARR 74%',arr_pct:74,signal:'Plateau',score:84,cat:'SaaS',employees:32,founded:2018,revenue:'£3.2M',website:'nexussaas.co.uk',location:'London',desc:'B2B SaaS workflow automation. Growth has plateaued but strong product-market fit in UK mid-market.'},
+  {name:'DataVault UK',sic:'62010',ebitda:'£3.4M',ebitda_num:3.4,type:'ARR 68%',arr_pct:68,signal:'Partner Exit',score:78,cat:'Data',employees:68,founded:2014,revenue:'£5.1M',website:'datavault.co.uk',location:'Edinburgh',desc:'Enterprise data warehousing and compliance platform. One of two co-founders looking to exit.'},
+  {name:'OptiFlow Systems',sic:'62020',ebitda:'£1.2M',ebitda_num:1.2,type:'ARR 91%',arr_pct:91,signal:'Retirement',score:88,cat:'SaaS',employees:22,founded:2015,revenue:'£1.9M',website:'optiflow.io',location:'Bristol',desc:'Supply-chain SaaS for UK manufacturers. Founder approaching retirement with no succession plan.'},
+  {name:'MeshAnalytics',sic:'62010',ebitda:'£2.8M',ebitda_num:2.8,type:'ARR 76%',arr_pct:76,signal:'Succession',score:71,cat:'Data',employees:54,founded:2013,revenue:'£4.2M',website:'meshanalytics.co.uk',location:'Leeds',desc:'Data processing and analytics for financial services. Board seeking management buyout or trade sale.'},
+  {name:'PrismData Ltd',sic:'62020',ebitda:'£1.5M',ebitda_num:1.5,type:'ARR 83%',arr_pct:83,signal:'Health',score:65,cat:'HealthTech',employees:28,founded:2017,revenue:'£2.3M',website:'prismdata.health',location:'Cambridge',desc:'Health data analytics for NHS trusts and private clinics. CEO health-driven exit timeline.'},
+  {name:'PayGate UK',sic:'64110',ebitda:'£4.2M',ebitda_num:4.2,type:'ARR 88%',arr_pct:88,signal:'Plateau',score:82,cat:'Fintech',employees:71,founded:2015,revenue:'£7.8M',website:'paygate.co.uk',location:'London',desc:'Payment processing SaaS for UK SMEs. Rapid early growth has levelled off — PE target.'},
+  {name:'LedgerStack',sic:'64209',ebitda:'£2.3M',ebitda_num:2.3,type:'ARR 79%',arr_pct:79,signal:'Partner Exit',score:76,cat:'Fintech',employees:38,founded:2016,revenue:'£3.8M',website:'ledgerstack.io',location:'Birmingham',desc:'Accounting automation for UK accountancy firms. One partner seeking full exit.'},
+  {name:'VitalSign AI',sic:'86900',ebitda:'£1.9M',ebitda_num:1.9,type:'ARR 86%',arr_pct:86,signal:'Succession',score:73,cat:'HealthTech',employees:35,founded:2017,revenue:'£3.1M',website:'vitalsign.ai',location:'Oxford',desc:'AI-driven patient monitoring SaaS for private hospitals. Founder transition to advisory role.'},
 ];
-var tbody=document.getElementById('targetTableBody');
-targets.forEach(function(t){
-  var row=document.createElement('tr');
-  var sig=t.signal==='Retirement'?'badge-red':t.signal==='Plateau'?'badge-gold':'badge-blue';
-  row.innerHTML='<td style="font-weight:500;color:var(--text)">'+t.name+'</td>'
-    +'<td><span class="badge" style="font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text2);border:1px solid var(--border2)">'+t.sic+'</span></td>'
-    +'<td style="color:var(--gold2);font-family:var(--mono)">'+t.ebitda+'</td>'
-    +'<td style="color:var(--teal)">'+t.type+'</td>'
-    +'<td><span class="badge '+sig+'">'+t.signal+'</span></td>'
-    +'<td><div class="score-bar"><div class="score-fill" style="width:'+t.score+'px;max-width:'+t.score+'px"></div><span style="font-family:var(--mono);font-size:11px;color:var(--text)">'+t.score+'</span></div></td>';
-  tbody.appendChild(row);
-});
+var currentFilter='All';
+var selectedTarget=null;
 
-// Filter tabs
-document.querySelectorAll('.filter-tab').forEach(function(tab){
-  tab.addEventListener('click',function(){
-    document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('active')});
+function renderTargets(filter) {
+  var tbody = document.getElementById('targetTableBody');
+  tbody.innerHTML = '';
+  var filtered = filter === 'All' ? targets : targets.filter(function(t) { return t.cat === filter; });
+  filtered.sort(function(a,b) { return b.score - a.score; });
+  filtered.forEach(function(t, i) {
+    var row = document.createElement('tr');
+    row.setAttribute('data-company', t.name);
+    row.setAttribute('data-index', String(targets.indexOf(t)));
+    var sig = t.signal==='Retirement'?'badge-red':t.signal==='Plateau'?'badge-gold':'badge-blue';
+    if (selectedTarget && selectedTarget.name === t.name) row.classList.add('selected');
+    row.innerHTML='<td style="font-weight:500;color:var(--text)">'+t.name+'</td>'
+      +'<td><span class="badge" style="font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text2);border:1px solid var(--border2)">'+t.sic+'</span></td>'
+      +'<td style="color:var(--gold2);font-family:var(--mono)">'+t.ebitda+'</td>'
+      +'<td style="color:var(--teal)">'+t.type+'</td>'
+      +'<td><span class="badge '+sig+'">'+t.signal+'</span></td>'
+      +'<td><div class="score-bar"><div class="score-fill" style="width:'+t.score+'px;max-width:'+t.score+'px"></div><span style="font-family:var(--mono);font-size:11px;color:var(--text)">'+t.score+'</span></div></td>';
+    row.addEventListener('click', function() { selectTarget(t); });
+    tbody.appendChild(row);
+  });
+}
+
+function selectTarget(t) {
+  selectedTarget = (selectedTarget && selectedTarget.name === t.name) ? null : t;
+  // Update row highlighting
+  document.querySelectorAll('.target-table tr[data-company]').forEach(function(r) {
+    r.classList.toggle('selected', selectedTarget && r.getAttribute('data-company') === selectedTarget.name);
+  });
+  var panel = document.getElementById('targetDetail');
+  if (!selectedTarget) { panel.classList.remove('visible'); return; }
+  var scoreColor = t.score >= 85 ? 'var(--green)' : t.score >= 70 ? 'var(--gold)' : 'var(--amber)';
+  var sigColor = t.signal==='Retirement'?'var(--red)':t.signal==='Plateau'?'var(--amber)':t.signal==='Health'?'var(--red)':'var(--blue)';
+  panel.innerHTML = '<h3>' + t.name + '</h3>'
+    + '<div class="td-sub">' + t.location + ' · Founded ' + t.founded + ' · ' + t.employees + ' employees · ' + t.cat + '</div>'
+    + '<p style="font-size:12px;color:var(--text2);margin:0 0 14px;line-height:1.5">' + t.desc + '</p>'
+    + '<div class="td-grid">'
+    + '<div class="td-stat"><div class="td-stat-label">EBITDA</div><div class="td-stat-value" style="color:var(--gold2)">' + t.ebitda + '</div></div>'
+    + '<div class="td-stat"><div class="td-stat-label">Revenue</div><div class="td-stat-value" style="color:var(--teal)">' + t.revenue + '</div></div>'
+    + '<div class="td-stat"><div class="td-stat-label">Score</div><div class="td-stat-value" style="color:' + scoreColor + '">' + t.score + '/100</div></div>'
+    + '<div class="td-stat"><div class="td-stat-label">ARR %</div><div class="td-stat-value" style="color:var(--teal)">' + t.arr_pct + '%</div></div>'
+    + '<div class="td-stat"><div class="td-stat-label">SIC Code</div><div class="td-stat-value" style="color:var(--purple)">' + t.sic + '</div></div>'
+    + '<div class="td-stat"><div class="td-stat-label">Signal</div><div class="td-stat-value" style="color:' + sigColor + ';font-size:13px">' + t.signal + '</div></div>'
+    + '</div>'
+    + '<div class="td-actions">'
+    + '<button class="td-btn-primary" onclick="addTargetAsDeal(\'' + t.name.replace(/'/g, "\\'") + '\')">+ Add to Pipeline</button>'
+    + '<button class="td-btn-outline" onclick="briefAgentOnTarget(\'' + t.name.replace(/'/g, "\\'") + '\')">Brief Agent</button>'
+    + '<a class="td-btn-outline" href="https://find-and-update.company-information.service.gov.uk/search?q=' + encodeURIComponent(t.name) + '" target="_blank" rel="noopener">Companies House ↗</a>'
+    + '<button class="td-btn-outline" onclick="researchTarget(\'' + t.name.replace(/'/g, "\\'") + '\')">Run Intel Scrape</button>'
+    + '</div>';
+  panel.classList.add('visible');
+}
+
+function addTargetAsDeal(name) {
+  var t = targets.find(function(x) { return x.name === name; });
+  if (!t) return;
+  API.deals.create({
+    company_name: t.name, stage: 'Prospect', score: t.score,
+    revenue: t.revenue, ebitda: t.ebitda, notes: t.desc + ' | Signal: ' + t.signal + ' | SIC: ' + t.sic
+  }).then(function(res) {
+    if (res && res.data) {
+      Toast.show(t.name + ' added to pipeline', 'ok', 2000);
+    } else {
+      Toast.show('Failed to add — ' + ((res && res.error) || 'unknown error'), 'error', 3000);
+    }
+  }).catch(function() { Toast.show('Error adding to pipeline', 'error', 2000); });
+}
+
+function briefAgentOnTarget(name) {
+  window.location.href = 'command.html?brief=' + encodeURIComponent('Research target acquisition: ' + name);
+}
+
+function researchTarget(name) {
+  var t = targets.find(function(x) { return x.name === name; });
+  if (!t) return;
+  Toast.show('Queuing intel scrape for ' + name + '…', 'ok', 2000);
+  API.scraper.news(name).then(function(res) {
+    if (res && res.results && res.results.length) {
+      Toast.show('Found ' + res.results.length + ' results for ' + name, 'ok', 3000);
+    } else {
+      Toast.show('No results found for ' + name, 'warn', 2000);
+    }
+  }).catch(function() { Toast.show('Scrape failed', 'error', 2000); });
+}
+
+// Initial render
+renderTargets('All');
+
+// Filter tabs — actual filtering
+document.querySelectorAll('.filter-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
     tab.classList.add('active');
+    currentFilter = tab.textContent.trim();
+    selectedTarget = null;
+    document.getElementById('targetDetail').classList.remove('visible');
+    renderTargets(currentFilter);
   });
 });
 
-// Feed
-var feed=[
-  {icon:'📊',bg:'rgba(96,165,250,.1)',title:'PE Activity: Three UK data firms acquired in Q1 2025 at 20–26x',meta:'Lyra Belacqua · 2h ago · Market Sentiment'},
-  {icon:'⚖️',bg:'rgba(74,222,128,.1)',title:'Legal: HMRC confirms SIC 63110 reclassification pathway via R&D evidence',meta:'Sloane Haze · 4h ago · Legal & Tax'},
-  {icon:'🎯',bg:'rgba(201,168,76,.1)',title:'Sourcing: 3 new motivated sellers identified in Yorkshire tech cluster',meta:'Silas Vane · 6h ago · Sourcing'},
-  {icon:'💰',bg:'rgba(251,191,36,.1)',title:'Lending: Shawbrook Bank launches SaaS-backed acquisition debt product',meta:'Caspian Frost · 8h ago · Lender Liaison'},
-  {icon:'🤖',bg:'rgba(167,139,250,.1)',title:'AI Value: GPT-powered CS automation cuts headcount 40% in pilot target',meta:'Dr. Aris Thorne · 12h ago · AI Science'},
-  {icon:'⚠️',bg:'rgba(248,113,113,.1)',title:'Risk Alert: Two deferred consideration structures challenged in court',meta:'Rhea Vance · 1d ago · Risk'},
+// ── Live Intelligence Feed ──
+var FEED_QUERIES = [
+  { q: 'UK SaaS acquisition M&A 2025 2026', category: 'M&A Activity', icon: '📊', bg: 'rgba(96,165,250,.1)', agent: 'Lyra Belacqua' },
+  { q: 'UK tech company acquisition private equity SaaS', category: 'PE Activity', icon: '💰', bg: 'rgba(251,191,36,.1)', agent: 'Caspian Frost' },
+  { q: 'UK startup funding round SaaS B2B', category: 'Funding', icon: '🚀', bg: 'rgba(167,139,250,.1)', agent: 'Vesper Thorne' },
+  { q: 'HMRC tax UK company acquisition deferred consideration', category: 'Legal & Tax', icon: '⚖️', bg: 'rgba(74,222,128,.1)', agent: 'Sloane Haze' },
+  { q: 'UK SaaS valuation multiples revenue EBITDA', category: 'Valuations', icon: '🎯', bg: 'rgba(201,168,76,.1)', agent: 'Silas Vane' },
 ];
-var feedDiv=document.getElementById('feedItems');
-var feedHTML='';
-feed.forEach(function(f){
-  feedHTML+='<div class="feed-item">'
-    +'<div class="feed-icon" style="background:'+f.bg+'">'+f.icon+'</div>'
-    +'<div class="feed-body"><div class="feed-title">'+f.title+'</div><div class="feed-meta">'+f.meta+'</div></div>'
-    +'</div>';
-});
-feedDiv.innerHTML=feedHTML;
+var FEED_CACHE_KEY = 'sv_intel_feed';
+var FEED_CACHE_TTL = 30 * 60 * 1000; // 30 min
 
-// Sectors
+function timeAgo(dateStr) {
+  var d = new Date(dateStr);
+  var now = Date.now();
+  var diff = now - d.getTime();
+  if (diff < 3600000) return Math.max(1, Math.floor(diff / 60000)) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+  return Math.floor(diff / 86400000) + 'd ago';
+}
+
+function domainOf(url) {
+  try { return new URL(url).hostname.replace('www.', ''); } catch { return ''; }
+}
+
+function renderFeed(items) {
+  var feedDiv = document.getElementById('feedItems');
+  if (!items || !items.length) {
+    feedDiv.innerHTML = '<div class="feed-loading">No intelligence available. Click refresh to try again.</div>';
+    return;
+  }
+  var html = '';
+  items.forEach(function(f) {
+    var domain = domainOf(f.url || '');
+    html += '<div class="feed-item" onclick="' + (f.url ? "window.open('" + f.url.replace(/'/g, "\\'") + "','_blank')" : '') + '">'
+      + '<div class="feed-icon" style="background:' + f.bg + '">' + f.icon + '</div>'
+      + '<div class="feed-body">'
+      + '<div class="feed-title">' + (f.url ? '<a href="' + f.url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + f.title + '</a>' : f.title) + '</div>'
+      + '<div class="feed-meta">' + f.agent + ' · ' + f.time + ' · ' + f.category + '</div>'
+      + (domain ? '<div class="feed-source"><a href="' + f.url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + domain + '</a></div>' : '')
+      + '</div></div>';
+  });
+  feedDiv.innerHTML = html;
+}
+
+async function loadLiveFeed(forceRefresh) {
+  var feedDiv = document.getElementById('feedItems');
+
+  // Check cache first
+  if (!forceRefresh) {
+    try {
+      var cached = JSON.parse(localStorage.getItem(FEED_CACHE_KEY) || 'null');
+      if (cached && (Date.now() - cached.ts) < FEED_CACHE_TTL) {
+        // Recalculate time-ago from cached timestamps
+        cached.items.forEach(function(f) { if (f.published) f.time = timeAgo(f.published); });
+        renderFeed(cached.items);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  feedDiv.innerHTML = '<div class="feed-loading"><div class="spinner" style="margin:0 auto 8px"></div>Fetching live intelligence…</div>';
+
+  var allItems = [];
+  // Fetch all queries in parallel via scraper
+  var results = await Promise.allSettled(
+    FEED_QUERIES.map(function(fq) {
+      return API.scraper.news(fq.q).then(function(res) {
+        return { query: fq, results: (res && res.results) || [] };
+      });
+    })
+  );
+
+  results.forEach(function(r) {
+    if (r.status !== 'fulfilled' || !r.value) return;
+    var fq = r.value.query;
+    var items = r.value.results;
+    items.forEach(function(item) {
+      allItems.push({
+        title: item.title || '',
+        url: item.url || '',
+        content: (item.content || '').slice(0, 200),
+        published: item.published_date || new Date().toISOString(),
+        time: item.published_date ? timeAgo(item.published_date) : 'now',
+        icon: fq.icon,
+        bg: fq.bg,
+        category: fq.category,
+        agent: fq.agent,
+        score: item.score || 0,
+      });
+    });
+  });
+
+  // Deduplicate by URL, sort by relevance score then date
+  var seen = {};
+  allItems = allItems.filter(function(a) {
+    if (!a.url || seen[a.url]) return false;
+    seen[a.url] = true;
+    return true;
+  });
+  allItems.sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
+  allItems = allItems.slice(0, 15);
+
+  if (allItems.length === 0) {
+    // Fallback to static items if API fails
+    allItems = [
+      {icon:'📊',bg:'rgba(96,165,250,.1)',title:'UK SaaS M&A activity — check back when intelligence feed loads',time:'now',category:'M&A Activity',agent:'Lyra Belacqua',url:''},
+    ];
+  }
+
+  // Cache results
+  try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify({ ts: Date.now(), items: allItems })); } catch(e) {}
+
+  renderFeed(allItems);
+  if (allItems.length > 1) Toast.show('Intelligence feed updated — ' + allItems.length + ' live signals', 'ok', 2000);
+}
+
+// Load on auth:ready (moved below)
+
+// Sectors — clickable with search
 var sectors=[
-  {name:'HR/People Tech',multiple:'9.2x',deals:'18',trend:'↑'},
-  {name:'Fintech SaaS',multiple:'11.4x',deals:'24',trend:'↑'},
-  {name:'Data & Analytics',multiple:'22.1x',deals:'31',trend:'↑↑'},
-  {name:'Legal Tech',multiple:'8.7x',deals:'12',trend:'→'},
-  {name:'HealthTech',multiple:'13.5x',deals:'19',trend:'↑'},
-  {name:'PropTech',multiple:'7.3x',deals:'9',trend:'↓'},
+  {name:'HR/People Tech',multiple:'9.2x',deals:'18',trend:'↑',query:'UK HR SaaS acquisition'},
+  {name:'Fintech SaaS',multiple:'11.4x',deals:'24',trend:'↑',query:'UK fintech SaaS acquisition 2025 2026'},
+  {name:'Data & Analytics',multiple:'22.1x',deals:'31',trend:'↑↑',query:'UK data analytics company acquisition'},
+  {name:'Legal Tech',multiple:'8.7x',deals:'12',trend:'→',query:'UK legal tech SaaS acquisition'},
+  {name:'HealthTech',multiple:'13.5x',deals:'19',trend:'↑',query:'UK healthtech SaaS acquisition'},
+  {name:'PropTech',multiple:'7.3x',deals:'9',trend:'↓',query:'UK proptech SaaS acquisition'},
 ];
 var sgHTML='';
-sectors.forEach(function(s){
+sectors.forEach(function(s, i){
   var trendColor=s.trend==='↑↑'?'var(--gold)':s.trend==='↑'?'var(--green)':s.trend==='↓'?'var(--red)':'var(--text3)';
-  sgHTML+='<div class="sector-cell">'
+  sgHTML+='<div class="sector-cell" onclick="drillSector('+i+')" title="Click to search '+s.name+' deals">'
     +'<div class="sector-name">'+s.name+'</div>'
     +'<div class="sector-val">'+s.multiple+'</div>'
     +'<div class="sector-sub">'+s.deals+' deals · <span style="color:'+trendColor+'">'+s.trend+'</span></div>'
     +'</div>';
 });
 document.getElementById('sectorGrid').innerHTML=sgHTML;
+
+function drillSector(idx) {
+  var s = sectors[idx];
+  Toast.show('Searching ' + s.name + ' deals…', 'ok', 2000);
+  API.scraper.news(s.query).then(function(res) {
+    if (res && res.results && res.results.length) {
+      // Show results in feed
+      var items = res.results.slice(0, 8).map(function(r) {
+        return { title: r.title||'', url: r.url||'', icon: '🔍', bg:'rgba(201,168,76,.1)', category: s.name, agent: 'Sector Drill-Down', time: 'now', score: r.score||0 };
+      });
+      renderFeed(items);
+      Toast.show(res.results.length + ' results for ' + s.name, 'ok', 2000);
+      // Scroll to feed
+      document.getElementById('feedItems').scrollIntoView({ behavior:'smooth', block:'center' });
+    } else {
+      Toast.show('No results for ' + s.name, 'warn', 2000);
+    }
+  }).catch(function() { Toast.show('Search failed', 'error', 2000); });
+}
 
 // Responsive bottom grid
 function checkGrid(){
@@ -354,7 +607,10 @@ window.addEventListener('auth:ready', function(e) {
   if(!e.detail?.user){
     Toast.show('Sign in to access this page', 'warn', 3000);
     setTimeout(function(){ window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname.split('/').pop()); }, 1500);
+    return;
   }
+  // Load live intelligence feed
+  loadLiveFeed(false);
 });
 
 </script>

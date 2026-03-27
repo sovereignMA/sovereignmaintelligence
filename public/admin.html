@@ -2,9 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Project Sovereign">
+<meta property="og:title" content="Admin — Project Sovereign">
+<meta property="og:description" content="21 AI agents. Zero capital. Acquire UK SaaS at 4-8x EBITDA.">
+<meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Admin%20-%20Project%20Sovereign">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Admin — Project Sovereign">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Admin%20-%20Project%20Sovereign">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Admin — Project Sovereign</title>
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=34">
 <style>
 .admin-shell{display:flex;height:calc(100vh - var(--nav-h));overflow:hidden}
 .admin-sb{width:190px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
@@ -104,6 +117,8 @@
   <button class="ani" onclick="S('stress')"    id="n-stress"><span>⚙</span><span>Stress</span></button>
   <button class="ani" onclick="S('users')"     id="n-users"><span>👤</span><span>Users</span></button>
   <button class="ani" onclick="S('audit')"     id="n-audit"><span>📋</span><span>Audit</span></button>
+  <div class="anlabel">Commercial</div>
+  <button class="ani" onclick="S('billing')"   id="n-billing"><span>💳</span><span>Billing</span></button>
   <div class="anlabel">Docs</div>
   <button class="ani" onclick="S('kb')"        id="n-kb"><span>📚</span><span>Knowledge Base</span></button>
 </nav>
@@ -255,9 +270,9 @@
   <div class="g2" style="gap:20px">
     <div class="card">
       <div style="font-size:13px;font-weight:600;margin-bottom:14px">Full Intel Scrape</div>
-      <div class="field"><label>Company Name</label><input id="scrapeCompany" type="text" placeholder="e.g. CloudData Ltd"></div>
-      <div class="field"><label>Website URL (optional)</label><input id="scrapeUrl" type="text" placeholder="https://clouddata.io"></div>
-      <div class="field"><label>Deal ID (optional — links intel to deal)</label><input id="scrapeDealId" type="text" placeholder="UUID from pipeline"></div>
+      <div class="field"><label>Company Name</label><input id="scrapeCompany" type="text" autocomplete="off" placeholder="e.g. CloudData Ltd"></div>
+      <div class="field"><label>Website URL (optional)</label><input id="scrapeUrl" type="text" autocomplete="off" placeholder="https://clouddata.io"></div>
+      <div class="field"><label>Deal ID (optional — links intel to deal)</label><input id="scrapeDealId" type="text" autocomplete="off" placeholder="UUID from pipeline"></div>
       <button class="btn btn-primary" id="scrapeBtn" onclick="runScrape()">🔍 Scrape Company Intelligence</button>
       <div id="scrapeResult" style="margin-top:14px;display:none"></div>
     </div>
@@ -345,7 +360,7 @@
       </div>
       <hr style="margin:16px 0">
       <div style="font-size:13px;font-weight:600;margin-bottom:12px">Encrypt / Decrypt</div>
-      <div class="field"><label>Key (base64)</label><input type="password" id="encKey" placeholder="Paste AES-256 key here"></div>
+      <div class="field"><label>Key (base64)</label><input type="password" id="encKey" autocomplete="off" placeholder="Paste AES-256 key here"></div>
       <div class="field"><label>Plaintext</label><textarea id="encPlain" style="height:60px" placeholder="Text to encrypt"></textarea></div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <button class="btn btn-primary" style="flex:1" onclick="doEnc()">Encrypt →</button>
@@ -395,8 +410,8 @@
   <div class="g2" style="gap:20px">
     <div class="card">
       <div style="font-size:13px;font-weight:600;margin-bottom:14px">Configure Test</div>
-      <div class="field"><label>Concurrent requests (1–20)</label><input type="number" id="stressConc" value="5" min="1" max="20"></div>
-      <div class="field"><label>Duration in ms (1000–5000)</label><input type="number" id="stressDur" value="3000" min="1000" max="5000"></div>
+      <div class="field"><label>Concurrent requests (1–20)</label><input type="number" id="stressConc" autocomplete="off" value="5" min="1" max="20"></div>
+      <div class="field"><label>Duration in ms (1000–5000)</label><input type="number" id="stressDur" autocomplete="off" value="3000" min="1000" max="5000"></div>
       <button class="btn btn-primary" id="stressBtn" onclick="runStress()">⚙ Run Stress Test</button>
       <div id="stressResult" style="margin-top:14px;display:none"></div>
     </div>
@@ -426,6 +441,49 @@
   <div class="card"><div id="auditFull"></div></div>
 </section>
 
+<!-- ═══ BILLING ═══ -->
+<section class="asec" id="s-billing">
+  <div class="page-hdr">
+    <div><div class="label">Commercial</div><h1>Billing & Revenue</h1><p>Subscription metrics, plan distribution, trial conversions, and referral programme performance.</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadBilling()">↻ Refresh</button></div>
+  </div>
+
+  <!-- MRR / KEY METRICS -->
+  <div class="mtg" id="billingMetrics" style="margin-bottom:16px"><div class="skeleton" style="height:80px;border-radius:10px;grid-column:1/-1"></div></div>
+
+  <div class="g2" style="gap:16px;margin-bottom:16px">
+    <!-- PLAN BREAKDOWN -->
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Plan Distribution</div>
+      <div id="planBreakdown"></div>
+    </div>
+    <!-- SUBSCRIPTION STATUS -->
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Subscription Status</div>
+      <div id="statusBreakdown"></div>
+    </div>
+  </div>
+
+  <div class="g2" style="gap:16px;margin-bottom:16px">
+    <!-- TRIAL PIPELINE -->
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Trial Pipeline</div>
+      <div id="trialPipeline"></div>
+    </div>
+    <!-- REFERRAL STATS -->
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Referral Programme</div>
+      <div id="referralStats"></div>
+    </div>
+  </div>
+
+  <!-- RECENT SIGNUPS -->
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Recent Signups <span style="font-size:11px;color:var(--text3);font-weight:400">— last 30 days</span></div>
+    <div id="recentSignups"></div>
+  </div>
+</section>
+
 <!-- ═══ KNOWLEDGE BASE ═══ -->
 <section class="asec" id="s-kb">
   <div class="page-hdr">
@@ -435,7 +493,7 @@
       <p>Glossary · platform reasoning · feature guide · agent directory — everything you need to operate Sovereign.</p>
     </div>
     <div class="page-hdr-r">
-      <input id="kbSearch" type="search" placeholder="Search knowledge base…" oninput="kbFilter()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;width:200px">
+      <input id="kbSearch" type="search" autocomplete="off" placeholder="Search knowledge base…" oninput="kbFilter()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:7px 12px;border-radius:8px;font-size:12px;width:200px">
     </div>
   </div>
 
@@ -459,7 +517,7 @@
   <div class="modal-box" style="max-width:460px">
     <div class="modal-head"><h2>New Workflow</h2><button class="btn-icon btn" onclick="Modal.close('wf-modal')">✕</button></div>
     <div class="modal-body">
-      <div class="field"><label>Name</label><input id="wfName" type="text" placeholder="e.g. Daily Deal Sourcing Scrape"></div>
+      <div class="field"><label>Name</label><input id="wfName" type="text" autocomplete="off" placeholder="e.g. Daily Deal Sourcing Scrape"></div>
       <div class="field"><label>Trigger</label>
         <select id="wfTrigger"><option value="manual">Manual</option><option value="schedule">Scheduled</option><option value="event">Event-based</option><option value="ai_signal">AI Signal</option><option value="webhook">Webhook</option></select>
       </div>
@@ -484,16 +542,16 @@
     <div class="modal-head"><h2>Add Compliance Entry</h2><button class="btn-icon btn" onclick="Modal.close('comp-modal')">✕</button></div>
     <div class="modal-body">
       <div class="field"><label>Framework</label><select id="cFw"><option>UK_GDPR</option><option>GDPR</option><option>FCA</option><option>ICO</option><option>Companies_Act</option><option>AML</option><option>KYC</option><option>PECR</option></select></div>
-      <div class="field"><label>Event Type</label><input id="cEv" type="text" placeholder="e.g. data_subject_request"></div>
+      <div class="field"><label>Event Type</label><input id="cEv" type="text" autocomplete="off" placeholder="e.g. data_subject_request"></div>
       <div class="field"><label>Description</label><textarea id="cDesc" style="height:60px"></textarea></div>
-      <div class="field"><label>Lawful Basis</label><input id="cBasis" type="text" placeholder="e.g. Legitimate Interest"></div>
+      <div class="field"><label>Lawful Basis</label><input id="cBasis" type="text" autocomplete="off" placeholder="e.g. Legitimate Interest"></div>
       <div class="field"><label>Status</label><select id="cSt"><option value="compliant">Compliant</option><option value="review">Under Review</option><option value="breach">Breach</option></select></div>
     </div>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="Modal.close('comp-modal')">Cancel</button><button class="btn btn-primary" onclick="addComp()">Save Entry</button></div>
   </div>
 </div>
 
-<script src="app.js?v=27"></script>
+<script src="app.js?v=34"></script>
 <script>
 'use strict';
 const COLORS=['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#f87171','#4ade80','#fbbf24','#e879f9','#34d399','#fb923c','#38bdf8','#c084fc','#f472b6','#4ade80','#22d3ee','#a3e635','#facc15','#f87171','#818cf8','#2dd4bf','#c9a84c'];
@@ -509,7 +567,8 @@ function S(id){
   if(!_loaded[id]){_loaded[id]=true;({
     overview:loadOverview,agents:loadAgents,workflows:loadWorkflows,
     comms:loadCommsLog,analytics:loadAnalytics,pentest:loadPentest,
-    compliance:loadCompliance,users:loadUsers,audit:loadAudit,kb:loadKb
+    compliance:loadCompliance,users:loadUsers,audit:loadAudit,kb:loadKb,
+    billing:loadBilling
   })[id]?.();}
 }
 
@@ -677,13 +736,137 @@ async function loadUsers(){
     </div>
     <div class="card">
       <div style="font-size:13px;font-weight:600;margin-bottom:12px">User Profiles (${profiles.length})</div>
-      ${profiles.slice(0,10).map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="flex:1;color:var(--text)">${esc(p.full_name||'—')}</div><span class="badge badge-ghost">${esc(p.role)}</span><span class="badge badge-${p.onboarded?'green':'ghost'}">${p.onboarded?'Onboarded':'Pending'}</span><div style="color:var(--text3)">${new Date(p.created_at).toLocaleDateString('en-GB')}</div></div>`).join('')}
+      <div style="display:grid;grid-template-columns:1fr 60px 70px 70px 55px 80px;gap:8px;padding:4px 0 8px;font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border2)">
+        <div>Name / Email</div><div>Role</div><div>Plan</div><div>Status</div><div style="text-align:center">Trial</div><div>Joined</div>
+      </div>
+      ${profiles.slice(0,25).map(p=>{
+        const planBadge={solo:'gold',team:'teal',fund:'gold',enterprise:'gold',trial:'ghost',cancelled:'red'}[p.plan]||'ghost';
+        const statusBadge={active:'green',trialing:'amber',past_due:'red',cancelled:'red',paused:'ghost'}[p.subscription_status]||'ghost';
+        const trialLeft=p.trial_ends_at?Math.max(0,Math.ceil((new Date(p.trial_ends_at)-Date.now())/(864e5))):null;
+        return `<div style="display:grid;grid-template-columns:1fr 60px 70px 70px 55px 80px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+          <div><div style="color:var(--text);font-weight:500">${esc(p.full_name||'—')}</div><div style="color:var(--text3);font-size:11px">${esc(p.email||'')}</div></div>
+          <span class="badge badge-ghost">${esc(p.role||'—')}</span>
+          <span class="badge badge-${planBadge}" style="text-transform:capitalize">${esc(p.plan||'trial')}</span>
+          <span class="badge badge-${statusBadge}" style="text-transform:capitalize;font-size:9px">${esc((p.subscription_status||'trialing').replace('_',' '))}</span>
+          <div style="color:var(--text3);font-size:11px;text-align:center">${trialLeft!==null?trialLeft+'d':'—'}</div>
+          <div style="color:var(--text3)">${new Date(p.created_at).toLocaleDateString('en-GB')}</div>
+        </div>`;
+      }).join('')}
     </div>`;
 }
 
 async function loadAudit(){
   await sb();
   document.getElementById('auditFull').innerHTML=rows((await API.admin.overview())?.data?.audit?.recent||[]);
+}
+
+// ── BILLING ─────────────────────────────────────────────────────────────────
+async function loadBilling(){
+  await sb();
+  const {data:profiles} = await window._sb.from('user_profiles')
+    .select('plan,subscription_status,trial_ends_at,created_at,referral_credits,referral_code,referred_by')
+    .order('created_at',{ascending:false});
+  const rows = profiles || [];
+  const now = Date.now();
+  const thirtyDaysAgo = now - 30*864e5;
+
+  // Compute metrics
+  const active   = rows.filter(p=>p.subscription_status==='active').length;
+  const trialing = rows.filter(p=>p.subscription_status==='trialing'||p.plan==='trial').length;
+  const expired  = rows.filter(p=>p.trial_ends_at && new Date(p.trial_ends_at)<now && p.subscription_status==='trialing').length;
+  const cancelled= rows.filter(p=>p.subscription_status==='cancelled').length;
+  const pastDue  = rows.filter(p=>p.subscription_status==='past_due').length;
+  const newLast30= rows.filter(p=>new Date(p.created_at)>thirtyDaysAgo).length;
+  const referred = rows.filter(p=>p.referred_by).length;
+
+  // MRR estimate
+  const MRR_MAP={solo:149,team:399,fund:1200,enterprise:1200};
+  const mrr = rows.filter(p=>p.subscription_status==='active')
+    .reduce((s,p)=>s+(MRR_MAP[p.plan]||0),0);
+
+  // Plan distribution
+  const planCounts={};
+  rows.forEach(p=>{const k=p.plan||'trial';planCounts[k]=(planCounts[k]||0)+1;});
+
+  // Status distribution
+  const statusCounts={};
+  rows.forEach(p=>{const k=p.subscription_status||'trialing';statusCounts[k]=(statusCounts[k]||0)+1;});
+
+  // Render metrics tiles
+  document.getElementById('billingMetrics').innerHTML=[
+    {l:'Est. MRR',v:'£'+mrr.toLocaleString(),c:'var(--gold)'},
+    {l:'Active Subs',v:active,c:'var(--green)'},
+    {l:'Trialing',v:trialing,c:'var(--amber)'},
+    {l:'Trial Expired',v:expired,c:'var(--red)'},
+    {l:'Cancelled',v:cancelled,c:'var(--text3)'},
+    {l:'New (30d)',v:newLast30,c:'var(--teal)'},
+    {l:'Total Users',v:rows.length,c:'var(--text)'},
+    {l:'Referred',v:referred,c:'var(--blue)'},
+  ].map(m=>`<div class="mt"><div class="mtl">${m.l}</div><div class="mtv" style="color:${m.c}">${m.v}</div></div>`).join('');
+
+  // Plan breakdown bars
+  const planOrder=['solo','team','fund','enterprise','trial','cancelled','paused'];
+  const planColor={solo:'var(--gold)',team:'var(--teal)',fund:'var(--blue)',enterprise:'var(--blue)',trial:'var(--text3)',cancelled:'var(--red)',paused:'var(--amber)'};
+  const maxPlan=Math.max(...Object.values(planCounts),1);
+  document.getElementById('planBreakdown').innerHTML=planOrder
+    .filter(k=>planCounts[k])
+    .map(k=>`<div class="br"><div class="bl" style="text-transform:capitalize">${k}</div><div class="bt"><div class="bf" style="width:${(planCounts[k]/maxPlan*100).toFixed(0)}%;background:${planColor[k]||'var(--text3)'}"></div></div><div class="bv">${planCounts[k]}</div></div>`)
+    .join('') || '<div style="font-size:12px;color:var(--text3);padding:8px">No data</div>';
+
+  // Status breakdown
+  const statusColor={active:'var(--green)',trialing:'var(--amber)',past_due:'var(--red)',cancelled:'var(--red)',paused:'var(--text3)'};
+  const maxStatus=Math.max(...Object.values(statusCounts),1);
+  document.getElementById('statusBreakdown').innerHTML=Object.entries(statusCounts)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>`<div class="br"><div class="bl" style="text-transform:capitalize">${k.replace('_',' ')}</div><div class="bt"><div class="bf" style="width:${(v/maxStatus*100).toFixed(0)}%;background:${statusColor[k]||'var(--text3)'}"></div></div><div class="bv">${v}</div></div>`)
+    .join('') || '<div style="font-size:12px;color:var(--text3);padding:8px">No data</div>';
+
+  // Trial pipeline
+  const expiringSoon = rows.filter(p=>p.trial_ends_at&&p.subscription_status==='trialing'&&new Date(p.trial_ends_at)>now);
+  const avg_days = expiringSoon.length ? (expiringSoon.reduce((s,p)=>s+Math.ceil((new Date(p.trial_ends_at)-now)/864e5),0)/expiringSoon.length).toFixed(1) : '—';
+  document.getElementById('trialPipeline').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="mt amber"><div class="mtl">Active Trials</div><div class="mtv">${trialing}</div></div>
+      <div class="mt red"><div class="mtl">Expired</div><div class="mtv">${expired}</div></div>
+      <div class="mt teal"><div class="mtl">Avg Days Left</div><div class="mtv">${avg_days}</div></div>
+      <div class="mt green"><div class="mtl">Converted</div><div class="mtv">${active}</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text3)">Conversion rate: <strong style="color:var(--text)">${rows.length?((active/(rows.length||1))*100).toFixed(1)+'%':'—'}</strong></div>`;
+
+  // Referral stats
+  const {data:referrals} = await window._sb.from('referrals').select('status').then(r=>r).catch(()=>({data:[]}));
+  const refRows = referrals||[];
+  const refSignedUp  = refRows.filter(r=>r.status==='signed_up').length;
+  const refSubscribed= refRows.filter(r=>r.status==='subscribed').length;
+  const totalCredits = rows.reduce((s,p)=>s+(p.referral_credits||0),0);
+  document.getElementById('referralStats').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="mt teal"><div class="mtl">Referred Users</div><div class="mtv">${referred}</div></div>
+      <div class="mt green"><div class="mtl">Converted</div><div class="mtv">${refSubscribed}</div></div>
+      <div class="mt gold"><div class="mtl">Signed Up</div><div class="mtv">${refSignedUp}</div></div>
+      <div class="mt amber"><div class="mtl">Total Credits (days)</div><div class="mtv">${totalCredits}</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text3)">Referral conversion: <strong style="color:var(--text)">${refSignedUp?((refSubscribed/refSignedUp)*100).toFixed(0)+'%':'—'}</strong></div>`;
+
+  // Recent signups
+  const recent=rows.filter(p=>new Date(p.created_at)>thirtyDaysAgo).slice(0,15);
+  document.getElementById('recentSignups').innerHTML=recent.length?`
+    <div style="display:grid;grid-template-columns:1fr 70px 80px 55px 80px;gap:8px;padding:4px 0 8px;font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border2)">
+      <div>Email / Name</div><div>Plan</div><div>Status</div><div>Trial</div><div>Joined</div>
+    </div>`
+    +recent.map(p=>{
+      const planBadge={solo:'gold',team:'teal',fund:'gold',trial:'ghost',cancelled:'red'}[p.plan]||'ghost';
+      const statusBadge={active:'green',trialing:'amber',past_due:'red',cancelled:'red'}[p.subscription_status]||'ghost';
+      const trialLeft=p.trial_ends_at?Math.max(0,Math.ceil((new Date(p.trial_ends_at)-now)/864e5)):null;
+      return `<div style="display:grid;grid-template-columns:1fr 70px 80px 55px 80px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <div style="color:var(--text)">${esc(p.email||'—')}</div>
+        <span class="badge badge-${planBadge}" style="text-transform:capitalize;font-size:9px">${esc(p.plan||'trial')}</span>
+        <span class="badge badge-${statusBadge}" style="text-transform:capitalize;font-size:9px">${esc((p.subscription_status||'trialing').replace('_',' '))}</span>
+        <div style="color:var(--text3);text-align:center">${trialLeft!==null?trialLeft+'d':'—'}</div>
+        <div style="color:var(--text3)">${new Date(p.created_at).toLocaleDateString('en-GB')}</div>
+      </div>`;
+    }).join('')
+  :'<div style="font-size:12px;color:var(--text3);padding:16px;text-align:center">No signups in last 30 days</div>';
 }
 
 // ── KNOWLEDGE BASE ──────────────────────────────────────────────────────────
