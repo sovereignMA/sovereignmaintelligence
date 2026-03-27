@@ -66,10 +66,18 @@ export default async function handler(req, res) {
 
     const appUrl = process.env.APP_URL || 'https://sovereigncmd.xyz';
 
-    // Apply referral credit as a free trial extension if credits > 0
-    const trialDays = (profile?.referral_credits || 0) > 0
-      ? Math.min(profile.referral_credits, 90) // cap at 90 extra trial days
-      : undefined;
+    // Compute trial days: sync with existing DB trial + any referral credits
+    let trialDays = 0;
+    if (profile?.trial_ends_at) {
+      const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+      if (daysLeft > 0) trialDays = daysLeft;
+    }
+    // Add referral credits on top, cap at 90
+    if ((profile?.referral_credits || 0) > 0) {
+      trialDays = Math.min(trialDays + profile.referral_credits, 90);
+    }
+    // Default 21-day trial for first-time subscribers with no trial record
+    if (trialDays === 0 && !profile?.trial_ends_at) trialDays = 21;
 
     const sessionParams = {
       customer: customerId,
@@ -78,10 +86,11 @@ export default async function handler(req, res) {
       success_url: `${appUrl}/command?checkout=success`,
       cancel_url: `${appUrl}/upgrade`,
       allow_promotion_codes: true,
+      payment_method_collection: trialDays > 0 ? 'if_required' : 'always',
       metadata: { supabase_user_id: user.id, plan, billing },
       subscription_data: {
         metadata: { supabase_user_id: user.id, plan, billing },
-        ...(trialDays ? { trial_period_days: trialDays } : {}),
+        ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
       },
       customer_update: { address: 'auto' },
       automatic_tax: { enabled: true },

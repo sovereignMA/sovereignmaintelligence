@@ -270,7 +270,7 @@ async function selectPlan(plan) {
   }
 }
 
-// Show trial status if logged in
+// Show trial status + update CTAs based on subscription state
 window.addEventListener('auth:ready', async function(e) {
   if(!e.detail?.user) return;
   try {
@@ -279,16 +279,20 @@ window.addEventListener('auth:ready', async function(e) {
     var d = res.data;
     var bar = document.getElementById('trial-status-bar');
     var txt = document.getElementById('trial-status-text');
+    var ctaBtns = document.querySelectorAll('.plan-cta[onclick*="selectPlan"]');
     if(d.subscription_status === 'active') {
-      txt.textContent = 'You\'re on the ' + (d.plan || 'active') + ' plan. Thank you!';
+      txt.textContent = 'You\'re on the ' + (d.plan || 'active') + ' plan. Manage your subscription from the account menu.';
       txt.style.color = 'var(--teal)';
       bar.style.display = 'flex';
-    } else if(d.subscription_status === 'trialing') {
+      ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund')") { b.textContent = 'Change Plan'; } });
+    } else if(d.subscription_status === 'trialing' || d.subscription_status === 'trial') {
       if(d.trial_expired) {
-        txt.textContent = 'Your trial has expired. Upgrade to restore full access.';
+        txt.textContent = 'Your trial has expired. Subscribe now to restore full access.';
         txt.style.color = 'var(--red, #dc3545)';
+        ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund')") { b.textContent = 'Subscribe Now'; } });
       } else {
-        txt.textContent = d.trial_days_left + ' day' + (d.trial_days_left === 1 ? '' : 's') + ' remaining on your free trial.';
+        txt.textContent = (d.trial_days_left || 0) + ' day' + (d.trial_days_left === 1 ? '' : 's') + ' left on your free trial — subscribe to keep access.';
+        ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund')") { b.textContent = 'Subscribe — ' + (d.trial_days_left || 0) + ' days free'; } });
       }
       bar.style.display = 'flex';
     }

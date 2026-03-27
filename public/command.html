@@ -737,6 +737,11 @@ window.addEventListener('auth:ready', function(e){
     },1800);
   } else {
     loadConvList();
+    // Handle Stripe checkout return
+    if(new URLSearchParams(location.search).get('checkout') === 'success'){
+      Toast.show('Subscription activated — welcome aboard!','ok',5000);
+      history.replaceState(null,'',location.pathname);
+    }
   }
 });
 </script>
