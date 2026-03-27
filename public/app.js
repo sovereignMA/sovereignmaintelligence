@@ -391,11 +391,12 @@ window.API = API;
 
     if(user){
       // Fetch role from profile
-      let isAdmin = false;
+      let isAdmin = false, hasActiveSub = false;
       try {
-        const {data:p} = await window._sb.from('user_profiles').select('role').eq('id',user.id).single();
+        const {data:p} = await window._sb.from('user_profiles').select('role,subscription_status,stripe_customer_id').eq('id',user.id).single();
         isAdmin = p?.role === 'admin' || p?.role === 'superadmin';
         window._userRole = p?.role || 'user';
+        hasActiveSub = !!p?.stripe_customer_id && ['active','past_due'].includes(p?.subscription_status);
       } catch(_){}
 
       // Admin page guard — redirect non-admins away from admin.html
@@ -432,7 +433,7 @@ window.API = API;
         +`<a class="udd-item" href="resources.html"><span class="udd-icon">◉</span>Help & Support</a>`
         +`<a class="udd-item" href="upgrade.html"><span class="udd-icon">◈</span>Upgrade Plan</a>`
         +`<button class="udd-item udd-referral" id="uddReferral"><span class="udd-icon">◆</span>Invite & Earn</button>`
-        +`<button class="udd-item" id="uddBilling"><span class="udd-icon">◎</span>Manage Subscription</button>`
+        +`<button class="udd-item" id="uddBilling"><span class="udd-icon">◎</span>${hasActiveSub ? 'Manage Subscription' : 'Subscribe Now'}</button>`
         +`<div class="udd-sep"></div>`
         +`<button class="udd-item udd-signout" id="uddSignout"><span class="udd-icon">⏻</span>Sign Out</button>`
         +`</div>`;
@@ -446,7 +447,6 @@ window.API = API;
       wrap.querySelector('#uddReferral').onclick = ()=>{ document.getElementById('userDropdown').classList.remove('open'); ReferralModal.open(); };
       wrap.querySelector('#uddBilling').onclick = async ()=>{
         document.getElementById('userDropdown').classList.remove('open');
-        Toast.show('Opening billing portal…','info',2000);
         try {
           let tok = _Auth.token();
           let r = await fetch('/api/stripe/portal', {
@@ -459,9 +459,10 @@ window.API = API;
               method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}
             });
           }
+          if(r.status === 400) { window.location.href = 'upgrade.html'; return; }
           const d = await r.json();
-          if(d.url) window.location.href = d.url;
-          else Toast.show(d.error||'No active subscription found','warn');
+          if(d.url) { Toast.show('Opening billing portal…','info',2000); window.location.href = d.url; }
+          else { window.location.href = 'upgrade.html'; }
         } catch(_){ Toast.show('Could not open billing portal','err'); }
       };
       document.addEventListener('click', (e)=>{
