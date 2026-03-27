@@ -26,6 +26,17 @@ async function improvmx(method: string, path: string, body?: unknown) {
   return data;
 }
 
+// Gateway already verified signature (verify_jwt: true), safe to decode payload directly
+function decodeJwt(jwt: string): { sub: string; role?: string } | null {
+  try {
+    const parts = jwt.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.sub || payload.role !== 'authenticated') return null;
+    return payload;
+  } catch { return null; }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -33,16 +44,16 @@ serve(async (req) => {
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!auth) return json({ error: 'Unauthorized' }, 401);
-    const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-    if (authErr) return json({ error: 'Auth service unavailable' }, 503);
-    if (!user) return json({ error: 'Unauthorized' }, 401);
+    const jwtPayload = decodeJwt(auth);
+    if (!jwtPayload) return json({ error: 'Unauthorized' }, 401);
+    const userId = jwtPayload.sub;
 
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
     const { action, payload } = body;
 
     if (action === 'alias:list') {
-      const { data, error } = await sb.from('email_aliases').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+      const { data, error } = await sb.from('email_aliases').select('*').eq('user_id', userId).order('created_at', { ascending: false });
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
@@ -63,7 +74,7 @@ serve(async (req) => {
         }
       }
       const { data, error } = await sb.from('email_aliases').upsert({
-        user_id: user.id, alias, domain, forward_to, is_active: true,
+        user_id: userId, alias, domain, forward_to, is_active: true,
       }, { onConflict: 'alias,domain' }).select().single();
       if (error) return json({ error: error.message }, 500);
       return json({ data });
@@ -72,7 +83,7 @@ serve(async (req) => {
     if (action === 'alias:update') {
       const id = String(payload?.id || '');
       if (!id) return json({ error: 'id required' }, 400);
-      const { data: existing } = await sb.from('email_aliases').select('*').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await sb.from('email_aliases').select('*').eq('id', id).eq('user_id', userId).single();
       if (!existing) return json({ error: 'Alias not found' }, 404);
       const forward_to = payload?.forward_to ? String(payload.forward_to) : existing.forward_to;
       const is_active = payload?.is_active !== undefined ? Boolean(payload.is_active) : existing.is_active;
@@ -85,7 +96,7 @@ serve(async (req) => {
       } catch (e) { console.error('ImprovMX update error:', e.message); }
       const { data, error } = await sb.from('email_aliases').update({
         forward_to, is_active, updated_at: new Date().toISOString()
-      }).eq('id', id).eq('user_id', user.id).select().single();
+      }).eq('id', id).eq('user_id', userId).select().single();
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
@@ -93,10 +104,10 @@ serve(async (req) => {
     if (action === 'alias:delete') {
       const id = String(payload?.id || '');
       if (!id) return json({ error: 'id required' }, 400);
-      const { data: existing } = await sb.from('email_aliases').select('*').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await sb.from('email_aliases').select('*').eq('id', id).eq('user_id', userId).single();
       if (!existing) return json({ error: 'Alias not found' }, 404);
       try { await improvmx('DELETE', `/domains/${existing.domain}/aliases/${existing.alias}`); } catch (e) { console.error('ImprovMX delete error:', e.message); }
-      const { error } = await sb.from('email_aliases').delete().eq('id', id).eq('user_id', user.id);
+      const { error } = await sb.from('email_aliases').delete().eq('id', id).eq('user_id', userId);
       if (error) return json({ error: error.message }, 500);
       return json({ ok: true });
     }

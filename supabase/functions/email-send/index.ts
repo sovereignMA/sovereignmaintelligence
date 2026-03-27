@@ -20,6 +20,17 @@ async function resendSend(p: { from: string; to: string[]; cc?: string[]; bcc?: 
   return data;
 }
 
+// Gateway already verified signature (verify_jwt: true), safe to decode payload directly
+function decodeJwt(jwt: string): { sub: string; role?: string } | null {
+  try {
+    const parts = jwt.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.sub || payload.role !== 'authenticated') return null;
+    return payload;
+  } catch { return null; }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -27,9 +38,9 @@ serve(async (req) => {
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!auth) return json({ error: 'Unauthorized' }, 401);
-    const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-    if (authErr) return json({ error: 'Auth service unavailable' }, 503);
-    if (!user) return json({ error: 'Unauthorized' }, 401);
+    const jwtPayload = decodeJwt(auth);
+    if (!jwtPayload) return json({ error: 'Unauthorized' }, 401);
+    const userId = jwtPayload.sub;
 
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
@@ -52,7 +63,7 @@ serve(async (req) => {
 
       let fromAddr = defaultFrom;
       if (fromAlias) {
-        const { data: alias } = await sb.from('email_aliases').select('*').eq('user_id', user.id).eq('alias', fromAlias).eq('is_active', true).single();
+        const { data: alias } = await sb.from('email_aliases').select('*').eq('user_id', userId).eq('alias', fromAlias).eq('is_active', true).single();
         if (alias) fromAddr = `${fromAlias}@${alias.domain}`;
       }
 
@@ -62,7 +73,7 @@ serve(async (req) => {
       const result = await resendSend({ from: fromAddr, to, cc, bcc, subject, html: bodyHtml, text: bodyText, headers });
 
       const { data: email, error } = await sb.from('emails').insert({
-        user_id: user.id, alias: fromAlias || 'notifications', message_id: result.id,
+        user_id: userId, alias: fromAlias || 'notifications', message_id: result.id,
         from_address: fromAddr, from_name: 'You', to_addresses: to, cc, bcc,
         subject, body_html: bodyHtml, body_text: bodyText, snippet: bodyText.slice(0, 200),
         folder: 'sent', category: 'primary', is_read: true,
@@ -72,7 +83,7 @@ serve(async (req) => {
       if (error) return json({ error: error.message }, 500);
 
       if (payload?.draft_id) {
-        await sb.from('emails').delete().eq('id', payload.draft_id).eq('user_id', user.id).eq('is_draft', true);
+        await sb.from('emails').delete().eq('id', payload.draft_id).eq('user_id', userId).eq('is_draft', true);
       }
       return json({ data: email, resend_id: result.id });
     }
@@ -81,7 +92,7 @@ serve(async (req) => {
     if (action === 'draft:save') {
       const draftId = payload?.id ? String(payload.id) : undefined;
       const row = {
-        user_id: user.id, alias: String(payload?.from_alias || 'notifications'),
+        user_id: userId, alias: String(payload?.from_alias || 'notifications'),
         from_address: defaultFrom, from_name: 'You',
         to_addresses: (payload?.to as string[] || []),
         cc: (payload?.cc as string[] || []), bcc: (payload?.bcc as string[] || []),
@@ -93,7 +104,7 @@ serve(async (req) => {
         in_reply_to: payload?.in_reply_to ? String(payload.in_reply_to) : undefined,
       };
       if (draftId) {
-        const { data, error } = await sb.from('emails').update(row).eq('id', draftId).eq('user_id', user.id).select().single();
+        const { data, error } = await sb.from('emails').update(row).eq('id', draftId).eq('user_id', userId).select().single();
         if (error) return json({ error: error.message }, 500);
         return json({ data });
       } else {
@@ -111,7 +122,7 @@ serve(async (req) => {
       const limit = Math.min(Number(payload?.limit || 50), 100);
       const offset = Number(payload?.offset || 0);
 
-      let q = sb.from('emails').select('id,from_address,from_name,to_addresses,subject,snippet,folder,category,labels,is_read,is_starred,is_draft,is_archived,thread_id,deal_id,attachments,received_at,sent_at,created_at', { count: 'exact' }).eq('user_id', user.id);
+      let q = sb.from('emails').select('id,from_address,from_name,to_addresses,subject,snippet,folder,category,labels,is_read,is_starred,is_draft,is_archived,thread_id,deal_id,attachments,received_at,sent_at,created_at', { count: 'exact' }).eq('user_id', userId);
       if (folder === 'starred') {
         q = q.eq('is_starred', true).neq('folder', 'trash');
       } else {
@@ -131,7 +142,7 @@ serve(async (req) => {
     if (action === 'get') {
       const id = String(payload?.id || '');
       if (!id) return json({ error: 'id required' }, 400);
-      const { data, error } = await sb.from('emails').select('*').eq('id', id).eq('user_id', user.id).single();
+      const { data, error } = await sb.from('emails').select('*').eq('id', id).eq('user_id', userId).single();
       if (error) return json({ error: error.message }, 500);
       if (data && !data.is_read) await sb.from('emails').update({ is_read: true }).eq('id', id);
       return json({ data });
@@ -141,7 +152,7 @@ serve(async (req) => {
     if (action === 'thread') {
       const threadId = String(payload?.thread_id || '');
       if (!threadId) return json({ error: 'thread_id required' }, 400);
-      const { data, error } = await sb.from('emails').select('*').eq('user_id', user.id).eq('thread_id', threadId).order('created_at', { ascending: true });
+      const { data, error } = await sb.from('emails').select('*').eq('user_id', userId).eq('thread_id', threadId).order('created_at', { ascending: true });
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
@@ -161,7 +172,7 @@ serve(async (req) => {
         if (payload.is_archived) updates.folder = 'archive';
       }
       if (!Object.keys(updates).length) return json({ error: 'No updates provided' }, 400);
-      const { data, error } = await sb.from('emails').update(updates).eq('user_id', user.id).in('id', ids).select();
+      const { data, error } = await sb.from('emails').update(updates).eq('user_id', userId).in('id', ids).select();
       if (error) return json({ error: error.message }, 500);
       return json({ data, count: data.length });
     }
@@ -172,10 +183,10 @@ serve(async (req) => {
       const permanent = Boolean(payload?.permanent);
       if (!ids.length) return json({ error: 'id(s) required' }, 400);
       if (permanent) {
-        const { error } = await sb.from('emails').delete().eq('user_id', user.id).in('id', ids);
+        const { error } = await sb.from('emails').delete().eq('user_id', userId).in('id', ids);
         if (error) return json({ error: error.message }, 500);
       } else {
-        const { error } = await sb.from('emails').update({ folder: 'trash' }).eq('user_id', user.id).in('id', ids);
+        const { error } = await sb.from('emails').update({ folder: 'trash' }).eq('user_id', userId).in('id', ids);
         if (error) return json({ error: error.message }, 500);
       }
       return json({ ok: true });
@@ -186,29 +197,29 @@ serve(async (req) => {
       const folders = ['inbox','sent','drafts','trash','spam','archive'];
       const counts: Record<string, number> = {};
       for (const f of folders) {
-        const { count } = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('folder', f);
+        const { count } = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('folder', f);
         counts[f] = count || 0;
       }
-      const { count: starred } = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_starred', true).neq('folder', 'trash');
+      const { count: starred } = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_starred', true).neq('folder', 'trash');
       counts.starred = starred || 0;
-      const { count: unread } = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('folder', 'inbox').eq('is_read', false);
+      const { count: unread } = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('folder', 'inbox').eq('is_read', false);
       counts.unread = unread || 0;
       return json({ data: counts });
     }
 
     // ── RULES ──
     if (action === 'rules:list') {
-      const { data, error } = await sb.from('email_rules').select('*').eq('user_id', user.id).order('priority', { ascending: false });
+      const { data, error } = await sb.from('email_rules').select('*').eq('user_id', userId).order('priority', { ascending: false });
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
     if (action === 'rules:create') {
-      const { data, error } = await sb.from('email_rules').insert({ ...payload, user_id: user.id }).select().single();
+      const { data, error } = await sb.from('email_rules').insert({ ...payload, user_id: userId }).select().single();
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
     if (action === 'rules:delete') {
-      const { error } = await sb.from('email_rules').delete().eq('id', payload?.id).eq('user_id', user.id);
+      const { error } = await sb.from('email_rules').delete().eq('id', payload?.id).eq('user_id', userId);
       if (error) return json({ error: error.message }, 500);
       return json({ ok: true });
     }
@@ -221,7 +232,7 @@ serve(async (req) => {
       if (payload?.body_html !== undefined) updates.body_html = String(payload.body_html);
       if (payload?.body_text !== undefined) updates.body_text = String(payload.body_text);
       if (payload?.snippet !== undefined) updates.snippet = String(payload.snippet);
-      const { data, error } = await sb.from('emails').update(updates).eq('id', id).eq('user_id', user.id).select().single();
+      const { data, error } = await sb.from('emails').update(updates).eq('id', id).eq('user_id', userId).select().single();
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }

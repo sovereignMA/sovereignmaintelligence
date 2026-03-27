@@ -55,14 +55,23 @@ const _Auth = {
   user: null, session: null,
 
   async init() {
-    // Register listener BEFORE getSession so TOKEN_REFRESHED events are never missed
+    let readyFired = false;
+    // Register listener BEFORE getSession so TOKEN_REFRESHED / SIGNED_IN events are never missed
     window._sb.auth.onAuthStateChange((_e, sess) => {
       this.session = sess; this.user = sess?.user ?? null;
       window.dispatchEvent(new CustomEvent('auth:changed', {detail:{user:this.user}}));
+      // Fire auth:ready for late-arriving sessions (OAuth redirect, token refresh on load)
+      if (!readyFired && sess?.user) {
+        readyFired = true;
+        window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
+      }
     });
     const {data:{session}} = await window._sb.auth.getSession();
     this.session = session; this.user = session?.user ?? null;
-    window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
+    if (!readyFired) {
+      readyFired = true;
+      window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
+    }
   },
 
   token() { return this.session?.access_token ?? null; },
@@ -142,46 +151,36 @@ const API = {
     try {
       let r = await _req(token);
 
-      // 401 = possibly stale token — refresh once and retry
+      // 401 = stale/invalid token — force a server-side refresh and retry
       if (r.status === 401) {
         // Coalesce concurrent refresh attempts to avoid thundering herd
         if (!this._refreshLock) {
           this._refreshLock = (async () => {
-            // Brief pause — edge function may return 401 on a valid token if Supabase auth
-            // hasn't propagated the session yet (common right after OAuth sign-in)
-            await new Promise(ok => setTimeout(ok, 800));
-            let { data: { session: s } } = await window._sb.auth.getSession();
-            if (!s?.access_token || s.access_token === token) {
-              const { data: { session: refreshed } } = await window._sb.auth.refreshSession();
-              s = refreshed;
-            }
-            return s;
+            // Always call refreshSession() — contacts the server directly for a new token
+            // (getSession() only reads localStorage, so it may return the same bad token)
+            const { data: { session: refreshed } } = await window._sb.auth.refreshSession();
+            return refreshed;
           })();
         }
         let currentSession;
         try { currentSession = await this._refreshLock; } finally { this._refreshLock = null; }
 
         if (!currentSession?.access_token) {
-          // No valid refresh token — genuine session expiry
-          Toast.show('Session expired — signing you out', 'warn', 4000);
-          setTimeout(() => location.href = 'login.html', 2500);
+          // Refresh token also invalid — session is dead; sign out cleanly
+          await window._sb.auth.signOut();
+          Toast.show('Session expired — please sign in again', 'warn', 4000);
+          setTimeout(() => location.href = 'login.html', 2000);
           return null;
         }
         _Auth.session = currentSession;
         _Auth.user = currentSession.user;
         r = await _req(currentSession.access_token);
         if (r.status === 401) {
-          // One more retry after a short delay — covers propagation lag on fresh sign-in
-          await new Promise(ok => setTimeout(ok, 1500));
-          const { data: { session: s2 } } = await window._sb.auth.getSession();
-          if (s2?.access_token) {
-            _Auth.session = s2; _Auth.user = s2.user;
-            r = await _req(s2.access_token);
-          }
-          if (r.status === 401) {
-            Toast.show('Authentication error — please try again', 'warn', 3000);
-            return null;
-          }
+          // Fresh token still rejected — session unrecoverable, sign out
+          await window._sb.auth.signOut();
+          Toast.show('Session invalid — please sign in again', 'warn', 4000);
+          setTimeout(() => location.href = 'login.html', 2000);
+          return null;
         }
       }
 
@@ -937,12 +936,15 @@ const TrialGuard = {
     const page = location.pathname.split('/').pop() || '';
     if(this._SKIP_PAGES.has(page)) return;
 
-    // Wait for auth
-    const onReady = (e) => {
-      if(!e.detail?.user) return;
+    let checked = false;
+    const onAuth = (e) => {
+      if(!e.detail?.user || checked) return;
+      checked = true;
       this._check();
     };
-    window.addEventListener('auth:ready', onReady, {once:true});
+    window.addEventListener('auth:ready', onAuth, {once:true});
+    // Fallback: if auth:ready fires with null (OAuth redirect), re-check on auth:changed
+    window.addEventListener('auth:changed', onAuth);
   },
 
   async _check() {

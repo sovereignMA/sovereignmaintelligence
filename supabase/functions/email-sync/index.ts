@@ -23,6 +23,17 @@ async function nylas(method: string, path: string, body?: unknown) {
   return data;
 }
 
+// Gateway already verified signature (verify_jwt: true), safe to decode payload directly
+function decodeJwt(jwt: string): { sub: string; role?: string } | null {
+  try {
+    const parts = jwt.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.sub || payload.role !== 'authenticated') return null;
+    return payload;
+  } catch { return null; }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -30,9 +41,9 @@ serve(async (req) => {
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!auth) return json({ error: 'Unauthorized' }, 401);
-    const { data: { user }, error: authErr } = await sb.auth.getUser(auth);
-    if (authErr) return json({ error: 'Auth service unavailable' }, 503);
-    if (!user) return json({ error: 'Unauthorized' }, 401);
+    const jwtPayload = decodeJwt(auth);
+    if (!jwtPayload) return json({ error: 'Unauthorized' }, 401);
+    const userId = jwtPayload.sub;
 
     let body: { action?: string; payload?: Record<string, unknown> };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
@@ -66,7 +77,7 @@ serve(async (req) => {
       if (!tokenRes.ok) return json({ error: tokenData?.error || 'Token exchange failed' }, 500);
 
       const { data, error } = await sb.from('email_connections').upsert({
-        user_id: user.id, provider, nylas_grant_id: tokenData.grant_id,
+        user_id: userId, provider, nylas_grant_id: tokenData.grant_id,
         email_address: tokenData.email || '', sync_state: 'active',
         last_sync_at: new Date().toISOString(),
       }, { onConflict: 'user_id,email_address' }).select().single();
@@ -78,17 +89,17 @@ serve(async (req) => {
     if (action === 'sync:disconnect') {
       const id = String(payload?.id || '');
       if (!id) return json({ error: 'id required' }, 400);
-      const { data: conn } = await sb.from('email_connections').select('*').eq('id', id).eq('user_id', user.id).single();
+      const { data: conn } = await sb.from('email_connections').select('*').eq('id', id).eq('user_id', userId).single();
       if (!conn) return json({ error: 'Connection not found' }, 404);
       try { await nylas('DELETE', `/grants/${conn.nylas_grant_id}`); } catch(e) { console.error('Nylas revoke:', e); }
-      const { error } = await sb.from('email_connections').delete().eq('id', id).eq('user_id', user.id);
+      const { error } = await sb.from('email_connections').delete().eq('id', id).eq('user_id', userId);
       if (error) return json({ error: error.message }, 500);
       return json({ ok: true });
     }
 
     // ── STATUS ──
     if (action === 'sync:status') {
-      const { data, error } = await sb.from('email_connections').select('*').eq('user_id', user.id);
+      const { data, error } = await sb.from('email_connections').select('*').eq('user_id', userId);
       if (error) return json({ error: error.message }, 500);
       return json({ data });
     }
@@ -97,7 +108,7 @@ serve(async (req) => {
     if (action === 'sync:pull') {
       const connectionId = String(payload?.connection_id || '');
       const limit = Math.min(Number(payload?.limit || 25), 50);
-      let q = sb.from('email_connections').select('*').eq('user_id', user.id).eq('sync_state', 'active');
+      let q = sb.from('email_connections').select('*').eq('user_id', userId).eq('sync_state', 'active');
       if (connectionId) q = q.eq('id', connectionId);
       const { data: conn } = await q.limit(1).single();
       if (!conn || !conn.nylas_grant_id) return json({ error: 'No active connection' }, 404);
@@ -107,7 +118,7 @@ serve(async (req) => {
       let imported = 0;
 
       for (const msg of items) {
-        const { data: existing } = await sb.from('emails').select('id').eq('message_id', msg.id).eq('user_id', user.id).single();
+        const { data: existing } = await sb.from('emails').select('id').eq('message_id', msg.id).eq('user_id', userId).single();
         if (existing) continue;
 
         const fromAddr = msg.from?.[0]?.email || '';
@@ -117,12 +128,12 @@ serve(async (req) => {
         let dealId: string | null = null;
         const senderDomain = fromAddr.split('@')[1]?.toLowerCase();
         if (senderDomain) {
-          const { data: contact } = await sb.from('contacts').select('deal_id').eq('user_id', user.id).ilike('email', `%${senderDomain}%`).limit(1).single();
+          const { data: contact } = await sb.from('contacts').select('deal_id').eq('user_id', userId).ilike('email', `%${senderDomain}%`).limit(1).single();
           if (contact?.deal_id) dealId = contact.deal_id;
         }
 
         await sb.from('emails').insert({
-          user_id: user.id, message_id: msg.id,
+          user_id: userId, message_id: msg.id,
           from_address: fromAddr, from_name: fromName, to_addresses: toAddrs,
           subject: msg.subject || '(no subject)',
           body_text: msg.snippet || '', snippet: (msg.snippet || '').slice(0, 200),
