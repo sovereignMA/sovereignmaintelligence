@@ -14,7 +14,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "@vercel/speed-insights": "^2.0.0",
-    "stripe": "^16.0.0",
+    "stripe": "^16.0.0"
+  },
+  "devDependencies": {
     "vercel": "^50.37.1"
   }
 }
