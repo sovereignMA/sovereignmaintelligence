@@ -42,7 +42,8 @@ async function tavilySearch(query: string, opts: Record<string, unknown> = {}): 
 async function jinaRead(url: string): Promise<string> {
   try {
     const res = await fetch(`https://r.jina.ai/${url}`, {
-      headers: { 'Accept': 'text/plain' }
+      headers: { 'Accept': 'text/plain' },
+      signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) return '';
     const text = await res.text();

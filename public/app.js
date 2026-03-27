@@ -40,7 +40,8 @@ const Toast = {
     const icons  = {ok:'✓',err:'✕',warn:'⚠',info:'◆'};
     const el = document.createElement('div');
     el.style.cssText='background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:9px;pointer-events:all;cursor:pointer;animation:fadeUp .2s ease;box-shadow:0 4px 24px rgba(0,0,0,.5);border-left:3px solid '+(colors[type]||colors.info);
-    el.innerHTML=`<span style="color:${colors[type]||colors.info};font-size:12px;flex-shrink:0">${icons[type]||icons.info}</span><span style="flex:1;line-height:1.5">${msg}</span>`;
+    el.innerHTML=`<span style="color:${colors[type]||colors.info};font-size:12px;flex-shrink:0">${icons[type]||icons.info}</span><span style="flex:1;line-height:1.5"></span>`;
+    el.querySelector('span:last-child').textContent=msg;
     el.onclick=()=>el.remove();
     this._get().appendChild(el);
     setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='all .25s';setTimeout(()=>el.remove(),260)}, ms);
@@ -417,12 +418,13 @@ window.API = API;
       const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
       const wrap = document.createElement('div');
       wrap.className = 'nav-user-wrap';
-      wrap.innerHTML = `<button class="nav-user-btn" title="${user.email}">${initial}</button>`
+      const eInitial = escHtml(initial), eName = escHtml(name), eEmail = escHtml(user.email || '');
+      wrap.innerHTML = `<button class="nav-user-btn" title="${eEmail}">${eInitial}</button>`
         +`<div class="nav-user-dd" id="userDropdown">`
         +`<div class="udd-header">`
-        +`<div class="udd-avatar">${initial}</div>`
-        +`<div class="udd-info"><div class="udd-name">${name}</div>`
-        +`<div class="udd-email">${user.email}</div></div>`
+        +`<div class="udd-avatar">${eInitial}</div>`
+        +`<div class="udd-info"><div class="udd-name">${eName}</div>`
+        +`<div class="udd-email">${eEmail}</div></div>`
         +`</div>`
         +`<div class="udd-sep"></div>`
         +(isAdmin ? `<a class="udd-item" href="admin.html"><span class="udd-icon">⚙</span>Admin Dashboard</a>` : '')
@@ -551,6 +553,7 @@ const _Analytics = {
   },
   
   async track(event_name, props={}) {
+    if(localStorage.getItem('cookies') !== 'yes') return;
     const page = location.pathname.split('/').pop() || 'index.html';
     const device = /mobile|android|iphone|ipad/i.test(navigator.userAgent) ? 'mobile' :
                    /tablet|ipad/i.test(navigator.userAgent) ? 'tablet' : 'desktop';
@@ -580,6 +583,7 @@ const _Analytics = {
   },
   
   firePixels(event_name, props={}) {
+    if(localStorage.getItem('cookies') !== 'yes') return;
     // Meta Pixel (if configured)
     if(window.fbq) {
       const fbEvents = {page_view:'PageView',sign_up:'Lead',deal_created:'Purchase'};

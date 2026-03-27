@@ -135,7 +135,8 @@ async function doSignUp(){
   var data=await Auth.signUp(em,pw,nm);
   if(!data){showErr('Sign up failed. This email may already be registered.');setLoad('upBtn',false);}
   else {
-    document.querySelector('.auth-card').innerHTML='<div style="text-align:center;padding:28px 0"><div style="font-size:42px;margin-bottom:16px">✉️</div><div style="font-size:18px;font-weight:700;margin-bottom:10px">Check your email</div><p style="font-size:13px;color:var(--text2);line-height:1.7">We sent a confirmation link to <strong>'+em+'</strong>.<br>Click it to activate your account, then sign in.</p><a href="login.html" class="btn btn-primary" style="margin-top:20px;display:inline-flex">Back to Sign In</a></div>';
+    document.querySelector('.auth-card').innerHTML='<div style="text-align:center;padding:28px 0"><div style="font-size:42px;margin-bottom:16px">✉️</div><div style="font-size:18px;font-weight:700;margin-bottom:10px">Check your email</div><p style="font-size:13px;color:var(--text2);line-height:1.7">We sent a confirmation link to <strong id="_em_node"></strong>.<br>Click it to activate your account, then sign in.</p><a href="login.html" class="btn btn-primary" style="margin-top:20px;display:inline-flex">Back to Sign In</a></div>';
+    document.getElementById('_em_node').textContent=em;
   }
 }
 async function doGoogle(){ await waitSB(); await Auth.signInGoogle(); }

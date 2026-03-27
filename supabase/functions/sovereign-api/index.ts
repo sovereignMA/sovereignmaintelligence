@@ -53,73 +53,73 @@ serve(async (req) => {
 
     // ── DEALS ──────────────────────────────────────────────────
     if (action === 'deals:list') {
-      const { data, error } = await sb.from('deals').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-      if (error) return json({ error: error.message }, 500);
+      const { data, error } = await sb.from('deals').select('*').eq('user_id', userId).order('updated_at', { ascending: false }).limit(200);
+      if (error) { console.error('[sovereign-api] deals:list', error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'deals:create') {
       const { data, error } = await sb.from('deals').insert({ ...payload, user_id: userId }).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'deals:update') {
       const { data, error } = await sb.from('deals').update(payload).eq('id', deal_id).eq('user_id', userId).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'deals:delete') {
       const { error } = await sb.from('deals').delete().eq('id', deal_id).eq('user_id', userId);
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ ok: true });
     }
 
     // ── CONTACTS ────────────────────────────────────────────────
     if (action === 'contacts:list') {
-      const q = sb.from('contacts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+      const q = sb.from('contacts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(500);
       if (deal_id) q.eq('deal_id', deal_id);
       const { data, error } = await q;
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api] contacts:list', error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'contacts:create') {
       const { data, error } = await sb.from('contacts').insert({ ...payload, user_id: userId }).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'contacts:update') {
       const { data, error } = await sb.from('contacts').update(payload).eq('id', contact_id).eq('user_id', userId).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     // ── OUTREACH ────────────────────────────────────────────────
     if (action === 'outreach:log') {
       const { data, error } = await sb.from('outreach_log').insert({ ...payload, user_id: userId, contact_id }).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'outreach:list') {
       const { data, error } = await sb.from('outreach_log').select('*, contacts(full_name,email), deals(company_name)').eq('user_id', userId).order('created_at', { ascending: false }).limit(100);
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     // ── DOCUMENTS ───────────────────────────────────────────────
     if (action === 'docs:list') {
-      const { data, error } = await sb.from('documents').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-      if (error) return json({ error: error.message }, 500);
+      const { data, error } = await sb.from('documents').select('*').eq('user_id', userId).order('updated_at', { ascending: false }).limit(200);
+      if (error) { console.error('[sovereign-api] docs:list', error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'docs:save') {
       const { data, error } = await sb.from('documents').upsert({ ...payload, user_id: userId }).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -130,7 +130,7 @@ serve(async (req) => {
         .eq('user_id', userId)
         .order('updated_at', { ascending: false })
         .limit(50);
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -142,7 +142,7 @@ serve(async (req) => {
         .eq('id', id)
         .eq('user_id', userId)
         .single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -154,7 +154,7 @@ serve(async (req) => {
         messages,
         token_count: messages.reduce((n: number, m: { content: string }) => n + Math.ceil(m.content.length / 4), 0),
       }).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -162,20 +162,20 @@ serve(async (req) => {
     if (action === 'audit:log') {
       const { event, agent, details, status } = payload;
       const { error } = await sb.from('audit_trail').insert({ user_id: userId, event, agent, details, status, actor_id: userId });
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ ok: true });
     }
 
     // ── PROFILE ──────────────────────────────────────────────────
     if (action === 'profile:get') {
       const { data, error } = await sb.from('user_profiles').select('*').eq('id', userId).single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
     if (action === 'profile:update') {
       const { data, error } = await sb.from('user_profiles').upsert({ id: userId, ...payload }).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -185,7 +185,7 @@ serve(async (req) => {
       const { data: dealCheck } = await sb.from('deals').select('id').eq('id', deal_id).eq('user_id', userId).single();
       if (!dealCheck) return json({ error: 'Deal not found' }, 404);
       const { data, error } = await sb.from('company_intel').select('*').eq('deal_id', deal_id).single();
-      if (error && error.code !== 'PGRST116') return json({ error: error.message }, 500);
+      if (error && error.code !== 'PGRST116') { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data: data || null });
     }
 
@@ -193,8 +193,9 @@ serve(async (req) => {
       const { data, error } = await sb.from('company_intel')
         .select('*, deals!inner(id, company_name, stage, score, user_id)')
         .eq('deals.user_id', userId)
-        .order('updated_at', { ascending: false });
-      if (error) return json({ error: error.message }, 500);
+        .order('updated_at', { ascending: false })
+        .limit(200);
+      if (error) { console.error('[sovereign-api] intel:list', error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -209,7 +210,7 @@ serve(async (req) => {
         requested_by: userId,
         status: 'pending',
       }).select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -280,7 +281,7 @@ serve(async (req) => {
         .select('*')
         .eq('deal_id', deal_id)
         .order('stage').order('sort_order', { ascending: true });
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -294,7 +295,7 @@ serve(async (req) => {
         .update(updates)
         .eq('id', milestoneId)
         .select().single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 
@@ -325,13 +326,13 @@ serve(async (req) => {
         status: 'pending',
       }));
       const { data, error } = await sb.from('deal_milestones').insert(milestones).select();
-      if (error) return json({ error: error.message }, 500);
+      if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data, count: data.length });
     }
 
     if (action === 'milestones:templates') {
-      const { data, error } = await sb.from('workflow_templates').select('*').order('name').order('stage').order('sort_order');
-      if (error) return json({ error: error.message }, 500);
+      const { data, error } = await sb.from('workflow_templates').select('*').order('name').order('stage').order('sort_order').limit(500);
+      if (error) { console.error('[sovereign-api] milestones:templates', error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
 

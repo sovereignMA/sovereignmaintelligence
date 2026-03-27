@@ -92,6 +92,6 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error('[stripe/checkout]', e.message);
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: 'Checkout unavailable. Please try again.' });
   }
 }

@@ -27,7 +27,11 @@ serve(async (req) => {
 
     let body: { system?: string; messages?: unknown[]; max_tokens?: number; stream?: boolean; model?: string; agent_name?: string };
     try { body = await req.json(); } catch { return json({ error: 'Invalid JSON body' }, 400); }
-    const { system, messages, max_tokens = 1200, stream = false, model = 'claude-sonnet-4-20250514', agent_name = 'unknown' } = body;
+    const ALLOWED_MODELS = ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001', 'claude-opus-4-6'];
+    const MAX_TOKENS_CAP = 4096;
+    const { system, messages, stream = false, agent_name = 'unknown' } = body;
+    const model = ALLOWED_MODELS.includes(body.model ?? '') ? body.model! : 'claude-sonnet-4-20250514';
+    const max_tokens = Math.min(body.max_tokens ?? 1200, MAX_TOKENS_CAP);
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -76,7 +80,8 @@ serve(async (req) => {
     return json(data);
 
   } catch (e) {
-    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+    console.error('[ai-proxy] unhandled error:', e);
+    return json({ error: 'Internal server error' }, 500);
   }
 });
 

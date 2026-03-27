@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (e) {
     console.error('[webhook] Signature verification failed:', e.message);
-    return res.status(400).json({ error: `Webhook signature verification failed: ${e.message}` });
+    return res.status(400).json({ error: 'Webhook signature verification failed' });
   }
 
   const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -165,7 +165,7 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error('[webhook] Handler error:', e.message);
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: 'Webhook handler error' });
   }
 }
 
