@@ -57,11 +57,12 @@ const _Auth = {
   async init() {
     let readyFired = false;
     // Register listener BEFORE getSession so TOKEN_REFRESHED / SIGNED_IN events are never missed
-    window._sb.auth.onAuthStateChange((_e, sess) => {
+    window._sb.auth.onAuthStateChange((event, sess) => {
       this.session = sess; this.user = sess?.user ?? null;
       window.dispatchEvent(new CustomEvent('auth:changed', {detail:{user:this.user}}));
-      // Fire auth:ready for late-arriving sessions (OAuth redirect, token refresh on load)
-      if (!readyFired && sess?.user) {
+      // INITIAL_SESSION fires after PKCE code exchange — covers OAuth redirect flow where
+      // getSession() returns null before the exchange completes and would prematurely redirect
+      if (!readyFired && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
         readyFired = true;
         window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
       }
@@ -69,8 +70,14 @@ const _Auth = {
     const {data:{session}} = await window._sb.auth.getSession();
     this.session = session; this.user = session?.user ?? null;
     if (!readyFired) {
-      readyFired = true;
-      window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
+      // If auth params are in the URL, the PKCE code exchange is still pending.
+      // Don't fire auth:ready yet — onAuthStateChange INITIAL_SESSION will handle it.
+      const hasPendingAuth = location.search.includes('code=') ||
+                             location.hash.includes('access_token=');
+      if (!hasPendingAuth) {
+        readyFired = true;
+        window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
+      }
     }
   },
 
@@ -197,7 +204,7 @@ const API = {
     const _req = (tok) => fetch(`${FN_URL}/ai-proxy`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${tok}`},
-      body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-6',agent_name:opts.agent_name||'unknown'})
+      body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-20250514',agent_name:opts.agent_name||'unknown'})
     });
     let r = await _req(token);
     // 401 = possibly stale token — refresh once and retry (reuse coalesced refresh from _call)
