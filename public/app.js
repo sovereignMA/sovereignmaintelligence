@@ -446,9 +446,17 @@ window.API = API;
         document.getElementById('userDropdown').classList.remove('open');
         Toast.show('Opening billing portal…','info',2000);
         try {
-          const r = await fetch('/api/stripe/portal', {
-            method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+_Auth.token()}
+          let tok = _Auth.token();
+          let r = await fetch('/api/stripe/portal', {
+            method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}
           });
+          if (r.status === 401) {
+            const { data: { session } } = await window._sb.auth.refreshSession();
+            if (session?.access_token) { _Auth.session = session; _Auth.user = session.user; tok = session.access_token; }
+            r = await fetch('/api/stripe/portal', {
+              method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}
+            });
+          }
           const d = await r.json();
           if(d.url) window.location.href = d.url;
           else Toast.show(d.error||'No active subscription found','warn');

@@ -23,7 +23,8 @@ const CORS = {
 export default async function handler(req, res) {
   // CORS preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).setHeaders(CORS).end();
+    Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
+    return res.status(200).end();
   }
   Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
 
