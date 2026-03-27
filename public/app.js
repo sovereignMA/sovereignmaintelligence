@@ -56,12 +56,12 @@ const _Auth = {
 
   async init() {
     let readyFired = false;
-    // Register listener BEFORE getSession so TOKEN_REFRESHED / SIGNED_IN events are never missed
+    // Listener registered before getSession so INITIAL_SESSION / SIGNED_IN are never missed
     window._sb.auth.onAuthStateChange((event, sess) => {
       this.session = sess; this.user = sess?.user ?? null;
       window.dispatchEvent(new CustomEvent('auth:changed', {detail:{user:this.user}}));
-      // INITIAL_SESSION fires after PKCE code exchange — covers OAuth redirect flow where
-      // getSession() returns null before the exchange completes and would prematurely redirect
+      // INITIAL_SESSION fires after PKCE code exchange completes — prevents premature redirect
+      // when getSession() returns null before the exchange finishes
       if (!readyFired && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
         readyFired = true;
         window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
@@ -70,10 +70,8 @@ const _Auth = {
     const {data:{session}} = await window._sb.auth.getSession();
     this.session = session; this.user = session?.user ?? null;
     if (!readyFired) {
-      // If auth params are in the URL, the PKCE code exchange is still pending.
-      // Don't fire auth:ready yet — onAuthStateChange INITIAL_SESSION will handle it.
-      const hasPendingAuth = location.search.includes('code=') ||
-                             location.hash.includes('access_token=');
+      const p = new URLSearchParams(location.search);
+      const hasPendingAuth = p.has('code') || location.hash.includes('access_token=');
       if (!hasPendingAuth) {
         readyFired = true;
         window.dispatchEvent(new CustomEvent('auth:ready', {detail:{user:this.user}}));
