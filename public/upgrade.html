@@ -240,7 +240,7 @@ function setBilling(type) {
 }
 
 async function selectPlan(plan) {
-  if(!window._Auth || !_Auth.user) {
+  if(!window.Auth || !Auth.user) {
     window.location.href = 'login.html?next=upgrade.html';
     return;
   }
@@ -254,7 +254,7 @@ async function selectPlan(plan) {
   try {
     var r = await fetch('/api/stripe/checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _Auth.token() },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + Auth.token() },
       body: JSON.stringify({ plan: plan, billing: _billing })
     });
     var d = await r.json();
