@@ -24,6 +24,10 @@
       "schedule": "0 9 * * 1"
     },
     {
+      "path": "/api/cron/scout-targets",
+      "schedule": "0 7 * * 1"
+    },
+    {
       "path": "/api/cron/data-retention",
       "schedule": "0 23 * * *"
     },
@@ -40,6 +44,7 @@
     "api/cron/*.js": {
       "maxDuration": 60
     },
+    "api/cron/scout-targets.js": { "maxDuration": 60 },
     "api/stripe/checkout.js": {
       "maxDuration": 30
     },
@@ -70,6 +75,10 @@
     {
       "source": "/pipeline",
       "destination": "/pipeline.html"
+    },
+    {
+      "source": "/scout",
+      "destination": "/scout.html"
     },
     {
       "source": "/comms",
