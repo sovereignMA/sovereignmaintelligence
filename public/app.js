@@ -312,6 +312,7 @@ window.API = API;
     {href:'legal.html',    label:'Legal',   icon:'⚖'},
   ];
   const APP_LINKS = [
+    {href:'scout.html',       label:'Scout',     icon:'◉'},
     {href:'command.html',     label:'Command',   icon:'⌘'},
     {href:'pipeline.html',    label:'Pipeline',  icon:'▤'},
     {href:'intelligence.html',label:'Intel',     icon:'◎'},

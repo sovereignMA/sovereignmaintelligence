@@ -14,10 +14,13 @@ export const config = { api: { bodyParser: false } };
 
 // Map Stripe plan metadata to our plan names
 const PLAN_MAP = {
-  solo: 'solo',
-  team: 'team',
-  fund: 'fund',
-  enterprise: 'enterprise',
+  prospector: 'prospector',
+  dealmaker:  'dealmaker',
+  team:       'team',
+  fund:       'fund',
+  // legacy
+  solo:       'prospector',
+  enterprise: 'fund',
 };
 
 // Map Stripe subscription status to our status

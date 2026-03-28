@@ -1,6 +1,6 @@
 // api/stripe/checkout.js
 // Creates a Stripe Checkout Session for the selected plan + billing cycle
-// POST { plan: 'solo'|'team'|'fund', billing: 'monthly'|'annual' }
+// POST { plan: 'prospector'|'dealmaker'|'team'|'fund', billing: 'monthly'|'annual' }
 // Requires: Authorization: Bearer <supabase_jwt>
 
 import Stripe from 'stripe';
@@ -9,9 +9,10 @@ import { createClient } from '@supabase/supabase-js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
 const PRICE_IDS = {
-  solo:  { monthly: process.env.STRIPE_PRICE_SOLO_MONTHLY,  annual: process.env.STRIPE_PRICE_SOLO_ANNUAL  },
-  team:  { monthly: process.env.STRIPE_PRICE_TEAM_MONTHLY,  annual: process.env.STRIPE_PRICE_TEAM_ANNUAL  },
-  fund:  { monthly: process.env.STRIPE_PRICE_FUND_MONTHLY,  annual: process.env.STRIPE_PRICE_FUND_ANNUAL  },
+  prospector: { monthly: process.env.STRIPE_PRICE_PROSPECTOR_MONTHLY, annual: process.env.STRIPE_PRICE_PROSPECTOR_ANNUAL },
+  dealmaker:  { monthly: process.env.STRIPE_PRICE_DEALMAKER_MONTHLY,  annual: process.env.STRIPE_PRICE_DEALMAKER_ANNUAL  },
+  team:       { monthly: process.env.STRIPE_PRICE_TEAM_MONTHLY,       annual: process.env.STRIPE_PRICE_TEAM_ANNUAL       },
+  fund:       { monthly: process.env.STRIPE_PRICE_FUND_MONTHLY,       annual: process.env.STRIPE_PRICE_FUND_ANNUAL       },
 };
 
 const CORS = {

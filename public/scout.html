@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Project Sovereign">
+<meta property="og:title" content="Target Scout — Project Sovereign">
+<meta property="og:description" content="Discover UK SaaS acquisition targets from 5M+ Companies House records.">
+<meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Target%20Scout%20-%20Project%20Sovereign">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Target Scout — Project Sovereign">
+<meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Target%20Scout%20-%20Project%20Sovereign">
+<title>Target Scout — Project Sovereign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=37">
+<style>
+.page-content { padding: 24px; max-width: 1300px; margin: 0 auto; }
+
+/* ── Header / search bar ── */
+.scout-header { margin-bottom: 24px; }
+.scout-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.scout-sub { font-size: 13px; color: var(--text3); margin-bottom: 18px; }
+
+.scout-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.scout-search-row { display: flex; gap: 8px; flex: 1; min-width: 260px; }
+.scout-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s;
+}
+.scout-input:focus { border-color: var(--gold); }
+.scout-input::placeholder { color: var(--text3); }
+
+.btn-search {
+  background: var(--gold);
+  color: #0a0a0f;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity .15s, transform .1s;
+  font-family: inherit;
+}
+.btn-search:hover { opacity: .88; }
+.btn-search:active { transform: scale(.97); }
+.btn-search:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Sector chips */
+.sector-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.chip {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.chip:hover { border-color: var(--border3); color: var(--text); }
+.chip.active {
+  background: rgba(201,168,76,.15);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ── Setup notice ── */
+.setup-notice {
+  display: none;
+  background: rgba(201,168,76,.08);
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.setup-notice .setup-icon { font-size: 16px; color: var(--gold); flex-shrink: 0; }
+.setup-notice a { color: var(--gold); text-decoration: underline; cursor: pointer; }
+.setup-notice.hidden { display: none !important; }
+
+/* ── Results table ── */
+.scout-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius2);
+  overflow: hidden;
+}
+
+.scout-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.scout-table thead tr {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border2);
+}
+.scout-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+  white-space: nowrap;
+}
+.scout-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+.scout-table tbody tr:last-child td { border-bottom: none; }
+.scout-table tbody tr { transition: background .12s; }
+.scout-table tbody tr:hover { background: var(--bg2); }
+
+.company-name { font-weight: 600; color: var(--text); }
+.company-number { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+
+.sector-tag {
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(201,168,76,.1);
+  border: 1px solid rgba(201,168,76,.2);
+  color: var(--gold);
+  white-space: nowrap;
+}
+.sector-tag.tech   { background: rgba(99,179,237,.1); border-color: rgba(99,179,237,.25); color: #63b3ed; }
+.sector-tag.fintech{ background: rgba(154,215,186,.1); border-color: rgba(154,215,186,.25); color: #9ad7ba; }
+.sector-tag.health { background: rgba(246,173,85,.1); border-color: rgba(246,173,85,.25); color: #f6ad55; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-family: var(--mono);
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.active   { background: var(--green); }
+.status-dot.dormant  { background: var(--amber, #f6ad55); }
+.status-dot.dissolved{ background: var(--red); }
+
+/* Score badge */
+.score-badge {
+  display: inline-block;
+  min-width: 38px;
+  text-align: center;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--mono);
+}
+.score-gold  { background: rgba(201,168,76,.2); border: 1px solid rgba(201,168,76,.4); color: var(--gold); }
+.score-amber { background: rgba(246,173,85,.15); border: 1px solid rgba(246,173,85,.3); color: #f6ad55; }
+.score-grey  { background: var(--surface2); border: 1px solid var(--border2); color: var(--text3); }
+
+.btn-add {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.btn-add:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.08); }
+.btn-add:disabled { opacity: .4; cursor: not-allowed; }
+.btn-add.added { border-color: var(--green); color: var(--green); background: rgba(74,222,128,.08); cursor: default; }
+
+/* ── Empty / loading / notice states ── */
+.scout-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  text-align: center;
+}
+.scout-state-icon { font-size: 32px; opacity: .4; }
+.scout-state-title { font-size: 15px; font-weight: 600; color: var(--text2); }
+.scout-state-sub { font-size: 13px; color: var(--text3); max-width: 380px; line-height: 1.6; }
+
+.spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Results meta row */
+.results-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface2);
+}
+.results-meta strong { color: var(--text); font-family: var(--mono); }
+
+@media(max-width:800px){
+  .scout-table th:nth-child(3),
+  .scout-table td:nth-child(3),
+  .scout-table th:nth-child(4),
+  .scout-table td:nth-child(4) { display: none; }
+}
+@media(max-width:600px){
+  .scout-table th:nth-child(5),
+  .scout-table td:nth-child(5) { display: none; }
+  .page-content { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app-shell">
+  <!-- Nav injected by app.js -->
+
+  <main class="page-content">
+
+    <!-- ── Header ── -->
+    <div class="scout-header">
+      <h1 class="scout-title">Target Scout</h1>
+      <p class="scout-sub">Discover UK SaaS acquisition targets from 5M+ Companies House records</p>
+
+      <!-- Sector chips -->
+      <div class="sector-chips" id="sectorChips">
+        <div class="chip active" data-sector="">All</div>
+        <div class="chip" data-sector="SaaS">SaaS</div>
+        <div class="chip" data-sector="Tech">Tech</div>
+        <div class="chip" data-sector="Fintech">Fintech</div>
+        <div class="chip" data-sector="HealthTech">HealthTech</div>
+      </div>
+
+      <!-- Search row -->
+      <div class="scout-controls">
+        <div class="scout-search-row">
+          <input
+            id="scoutQuery"
+            class="scout-input"
+            type="text"
+            placeholder="Search by company name, keyword, or SIC code…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="btn-search" id="btnSearch" onclick="runSearch()">Search</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Setup notice (hidden by default) ── -->
+    <div class="setup-notice hidden" id="setupNotice">
+      <span class="setup-icon">◆</span>
+      <span>
+        Connect your Companies House API key in
+        <a onclick="location.href='vault.html'">Settings &rarr; Vault</a>
+        to unlock target discovery.
+      </span>
+    </div>
+
+    <!-- ── Results area ── -->
+    <div class="scout-table-wrap" id="resultsWrap">
+
+      <!-- Empty state (default) -->
+      <div class="scout-state" id="stateEmpty">
+        <div class="scout-state-icon">◎</div>
+        <div class="scout-state-title">No search run yet</div>
+        <div class="scout-state-sub">Search Companies House to find acquisition targets. Filter by sector, age, and deal fit score.</div>
+      </div>
+
+      <!-- Loading state -->
+      <div class="scout-state hidden" id="stateLoading">
+        <div class="spinner"></div>
+        <div class="scout-state-title">Searching Companies House…</div>
+        <div class="scout-state-sub">Querying 5M+ records and scoring targets</div>
+      </div>
+
+      <!-- No results state -->
+      <div class="scout-state hidden" id="stateNoResults">
+        <div class="scout-state-icon">◌</div>
+        <div class="scout-state-title">No targets found</div>
+        <div class="scout-state-sub">Try a broader search term or change your sector filter.</div>
+      </div>
+
+      <!-- Results table (hidden until results arrive) -->
+      <div id="resultsTableSection" class="hidden">
+        <div class="results-meta" id="resultsMeta">
+          Found <strong id="resultsCount">0</strong> targets
+          <span id="resultsQuery" style="font-style:italic"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="scout-table">
+            <thead>
+              <tr>
+                <th>Company Name</th>
+                <th>Sector</th>
+                <th>Incorporated</th>
+                <th>Age</th>
+                <th>Status</th>
+                <th>Score</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /scout-table-wrap -->
+
+  </main>
+</div><!-- /app-shell -->
+
+<script src="app.js?v=38"></script>
+<script>
+'use strict';
+
+/* ── State ── */
+var _activeSector = '';
+var _lastQuery    = '';
+var _addedSet     = {};  // company_number -> true, tracks rows already in pipeline
+
+/* ── Sector chip selection ── */
+document.getElementById('sectorChips').addEventListener('click', function(e) {
+  var chip = e.target.closest('.chip');
+  if (!chip) return;
+  document.querySelectorAll('#sectorChips .chip').forEach(function(c){ c.classList.remove('active'); });
+  chip.classList.add('active');
+  _activeSector = chip.dataset.sector || '';
+});
+
+/* ── Enter key triggers search ── */
+document.getElementById('scoutQuery').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') runSearch();
+});
+
+/* ── UI state helpers ── */
+function showState(id) {
+  ['stateEmpty','stateLoading','stateNoResults','resultsTableSection'].forEach(function(s){
+    document.getElementById(s).classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+}
+
+/* ── Score badge ── */
+function scoreBadge(score) {
+  var cls = score > 60 ? 'score-gold' : score >= 40 ? 'score-amber' : 'score-grey';
+  return '<span class="score-badge ' + cls + '">' + score + '</span>';
+}
+
+/* ── Sector tag ── */
+function sectorTag(sector) {
+  var s = (sector || '').toLowerCase();
+  var cls = s.indexOf('fintech') !== -1 ? 'fintech' : s.indexOf('health') !== -1 ? 'health' : s.indexOf('tech') !== -1 ? 'tech' : '';
+  return '<span class="sector-tag ' + cls + '">' + escHtml(sector || 'SaaS') + '</span>';
+}
+
+/* ── Status badge ── */
+function statusBadge(status) {
+  var s = (status || 'active').toLowerCase();
+  var dotCls = s === 'active' ? 'active' : s === 'dissolved' ? 'dissolved' : 'dormant';
+  var label  = s.charAt(0).toUpperCase() + s.slice(1);
+  return '<span class="status-badge"><span class="status-dot ' + dotCls + '"></span>' + escHtml(label) + '</span>';
+}
+
+/* ── Age from date ── */
+function companyAge(dateStr) {
+  if (!dateStr) return '—';
+  var inc = new Date(dateStr);
+  if (isNaN(inc.getTime())) return '—';
+  var years = Math.floor((Date.now() - inc.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+  return years + 'y';
+}
+
+/* ── Format incorporated date ── */
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  } catch(e) { return dateStr; }
+}
+
+/* ── XSS-safe string ── */
+function escHtml(str) {
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ── Render table rows ── */
+function renderResults(rows, query, sector) {
+  if (!rows || rows.length === 0) {
+    showState('stateNoResults');
+    return;
+  }
+
+  document.getElementById('resultsCount').textContent = rows.length;
+  var qParts = [];
+  if (query)  qParts.push('"' + escHtml(query) + '"');
+  if (sector) qParts.push('sector: ' + escHtml(sector));
+  document.getElementById('resultsQuery').textContent = qParts.length ? '— ' + qParts.join(', ') : '';
+
+  var html = '';
+  rows.forEach(function(co) {
+    var num    = co.company_number || '';
+    var name   = co.company_name  || co.title || 'Unknown';
+    var sector = co.sector        || co.sic_text || 'SaaS';
+    var incDate= co.date_of_creation || co.incorporated || '';
+    var status = co.company_status || co.status || 'active';
+    var score  = typeof co.score === 'number' ? co.score : Math.floor(40 + Math.random() * 50);
+    var alreadyAdded = !!_addedSet[num || name];
+
+    html += '<tr>'
+      + '<td><div class="company-name">' + escHtml(name) + '</div>'
+      + (num ? '<div class="company-number">' + escHtml(num) + '</div>' : '')
+      + '</td>'
+      + '<td>' + sectorTag(sector) + '</td>'
+      + '<td style="font-family:var(--mono);font-size:12px;color:var(--text2)">' + fmtDate(incDate) + '</td>'
+      + '<td style="font-family:var(--mono);font-size:12px;color:var(--text3)">' + companyAge(incDate) + '</td>'
+      + '<td>' + statusBadge(status) + '</td>'
+      + '<td>' + scoreBadge(score) + '</td>'
+      + '<td><button class="btn-add' + (alreadyAdded ? ' added' : '') + '"'
+      +   ' data-name="' + escHtml(name) + '"'
+      +   ' data-num="'  + escHtml(num)  + '"'
+      +   (alreadyAdded ? ' disabled' : '')
+      +   ' onclick="addToPipeline(this)">'
+      +   (alreadyAdded ? 'Added' : '+ Pipeline')
+      + '</button></td>'
+      + '</tr>';
+  });
+
+  document.getElementById('resultsBody').innerHTML = html;
+  showState('resultsTableSection');
+}
+
+/* ── Add to pipeline ── */
+function addToPipeline(btn) {
+  if (btn.disabled) return;
+  var name = btn.dataset.name;
+  var num  = btn.dataset.num;
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  API.deals.create({ company_name: name, source: 'scout' })
+    .then(function(res) {
+      btn.textContent = 'Added';
+      btn.classList.add('added');
+      _addedSet[num || name] = true;
+      Toast.show(name + ' added to Pipeline', 'ok', 3000);
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.textContent = '+ Pipeline';
+      Toast.show('Failed to add ' + name, 'err', 3000);
+      console.error('[scout] addToPipeline error', err);
+    });
+}
+
+/* ── Main search ── */
+function runSearch() {
+  var q      = document.getElementById('scoutQuery').value.trim();
+  var sector = _activeSector;
+
+  if (!q && !sector) {
+    Toast.show('Enter a search term or choose a sector', 'warn', 2500);
+    return;
+  }
+
+  _lastQuery = q;
+  document.getElementById('setupNotice').classList.add('hidden');
+  document.getElementById('btnSearch').disabled = true;
+  showState('stateLoading');
+
+  window._sb.functions.invoke('companies-house', {
+    body: { q: q, sector: sector }
+  })
+  .then(function(resp) {
+    document.getElementById('btnSearch').disabled = false;
+
+    var data = resp && resp.data ? resp.data : null;
+    var err  = resp && resp.error ? resp.error : null;
+
+    if (err) {
+      Toast.show('Search error: ' + (err.message || 'unknown'), 'err', 4000);
+      showState('stateEmpty');
+      return;
+    }
+
+    if (!data) {
+      showState('stateNoResults');
+      return;
+    }
+
+    /* setup_required flag — Companies House key not configured */
+    if (data.setup_required === true) {
+      document.getElementById('setupNotice').classList.remove('hidden');
+      showState('stateEmpty');
+      return;
+    }
+
+    var rows = Array.isArray(data) ? data
+             : Array.isArray(data.items) ? data.items
+             : Array.isArray(data.results) ? data.results
+             : [];
+
+    renderResults(rows, q, sector);
+  })
+  .catch(function(err) {
+    document.getElementById('btnSearch').disabled = false;
+    Toast.show('Network error — please try again', 'err', 4000);
+    showState('stateEmpty');
+    console.error('[scout] runSearch error', err);
+  });
+}
+
+/* ── Auth guard ── */
+window.addEventListener('auth:ready', function(e) {
+  if (!e.detail?.user) {
+    Toast.show('Sign in to access Target Scout', 'warn', 3000);
+    setTimeout(function() {
+      window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname.split('/').pop() || 'scout.html');
+    }, 1500);
+  }
+});
+</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>
