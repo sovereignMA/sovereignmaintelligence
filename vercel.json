@@ -44,7 +44,6 @@
     "api/cron/*.js": {
       "maxDuration": 60
     },
-    "api/cron/scout-targets.js": { "maxDuration": 60 },
     "api/stripe/checkout.js": {
       "maxDuration": 30
     },
