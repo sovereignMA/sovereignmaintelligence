@@ -1,6 +1,6 @@
 import { sendEmail } from '../lib/send-email.js';
 
-export const config = { runtime: 'nodejs' };
+export const config = { runtime: 'edge' };
 
 // SIC codes associated with SaaS / software businesses
 const TARGET_SIC_CODES = new Set([62012, 62020, 62090, 63110, 63120, 58290]);
@@ -14,7 +14,7 @@ const SEARCH_TERMS = [
 // ── Companies House helpers ────────────────────────────────────────────────────
 
 function chAuthHeader(apiKey) {
-  return 'Basic ' + Buffer.from(apiKey + ':').toString('base64');
+  return 'Basic ' + btoa(apiKey + ':');
 }
 
 async function searchCompaniesHouse(term, apiKey) {
