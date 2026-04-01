@@ -152,13 +152,25 @@ serve(async (req) => {
     if (authErr) return json({ error: 'Auth service unavailable' }, 503);
     if (!user) return json({ error: 'Unauthorized' }, 401);
 
-    // Parse query params
+    // Parse query params — also accept POST body (for window._sb.functions.invoke() callers)
     const url = new URL(req.url);
-    const q = url.searchParams.get('q') ?? '';
-    const sector = url.searchParams.get('sector') ?? 'all';
-    const minAge = parseFloat(url.searchParams.get('min_age') ?? '3');
-    const maxAge = parseFloat(url.searchParams.get('max_age') ?? '15');
-    const size = Math.min(parseInt(url.searchParams.get('size') ?? '20', 10), 100);
+    let q = url.searchParams.get('q') ?? '';
+    let sector = url.searchParams.get('sector') ?? 'all';
+    let minAge = parseFloat(url.searchParams.get('min_age') ?? '3');
+    let maxAge = parseFloat(url.searchParams.get('max_age') ?? '15');
+    let size = Math.min(parseInt(url.searchParams.get('size') ?? '20', 10), 100);
+
+    if (!q.trim() && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        if (!q && body.q) q = body.q;
+        if (!q && Array.isArray(body.terms) && body.terms.length > 0) q = body.terms.join(' ');
+        if (body.sector) sector = body.sector;
+        if (body.min_age != null) minAge = parseFloat(body.min_age);
+        if (body.max_age != null) maxAge = parseFloat(body.max_age);
+        if (body.limit != null) size = Math.min(parseInt(body.limit, 10), 100);
+      } catch { /* malformed body — fall through to q check below */ }
+    }
 
     if (!q.trim()) return json({ error: 'Query parameter `q` is required' }, 400);
 

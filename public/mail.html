@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -20,7 +23,7 @@
 <title>Mail — Project Sovereign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=37">
+<link rel="stylesheet" href="app.css?v=41">
 <style>
 /* ═══════════════════════════════════════════════════
    SOVEREIGN MAIL — MODERN UI v2
@@ -405,7 +408,7 @@
   </div>
 </div>
 
-<script src="app.js?v=37"></script>
+<script src="app.js?v=47"></script>
 <script>
 // ═══════════════════════════════════════════════════
 // SOVEREIGN MAIL — ENGINE v2
@@ -679,8 +682,7 @@ async function openEmail(id) {
     if (bodyHtml) {
       var safeHtml = sanitizeEmailHtml(bodyHtml);
       var emailStyles = 'body{font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.6;color:#333;padding:20px;margin:0;background:#fff}img{max-width:100%}a{color:#1a73e8}pre,code{background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:13px}';
-      var srcdocContent = '<!DOCTYPE html><html><head><style>' + emailStyles + '</style></head><body>' + safeHtml + '<script defer src="/_vercel/speed-insights/script.js"></script>
-</body></html>';
+      var srcdocContent = '<!DOCTYPE html><html><head><style>' + emailStyles + '<\/style><\/head><body>' + safeHtml + '<\/body><\/html>';
       bodyDiv.innerHTML = '<iframe id="emailFrame" sandbox="allow-popups allow-popups-to-escape-sandbox" srcdoc="" style="width:100%;border:none;background:#fff;border-radius:10px;min-height:400px;box-shadow:0 1px 3px rgba(0,0,0,.1)"></iframe>';
       var frame = document.getElementById('emailFrame');
       frame.setAttribute('srcdoc', srcdocContent);
@@ -1074,7 +1076,7 @@ function startPolling() {
   if (_pollInterval) return; // already polling
   _pollInterval = setInterval(function() {
     // Don't fire if signed out or token expired
-    var tok = _Auth && _Auth.token();
+    var tok = window.Auth && Auth.token();
     if (!tok || isTokenExpired(tok)) return;
     loadCounts();
     if (!document.hidden) loadEmails();
@@ -1122,7 +1124,7 @@ var _tokenRefreshTimer = null;
 
 function scheduleTokenRefresh() {
   if (_tokenRefreshTimer) { clearTimeout(_tokenRefreshTimer); _tokenRefreshTimer = null; }
-  var tok = _Auth && _Auth.token();
+  var tok = window.Auth && Auth.token();
   if (!tok) return;
   try {
     var seg = tok.split('.')[1];
@@ -1227,7 +1229,7 @@ window.addEventListener('auth:ready', async function(e) {
     return;
   }
   // If access token is expired, refresh before making any API calls
-  var tok = _Auth.token();
+  var tok = Auth.token();
   if (tok && isTokenExpired(tok)) {
     try {
       var refreshResult = await window._sb.auth.refreshSession();
@@ -1262,5 +1264,6 @@ window.addEventListener('auth:changed', function(e) {
 });
 </script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
+<noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=8900834&fmt=gif" /></noscript>
 </body>
 </html>

@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -10,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Project Sovereign">
 <meta property="og:title" content="Pipeline — Project Sovereign">
-<meta property="og:description" content="21 AI agents. Zero capital. Acquire UK SaaS at 4-8x EBITDA.">
+<meta property="og:description" content="Manage your UK SaaS acquisition pipeline — deal tracking, workflow, and AI insights.">
 <meta property="og:image" content="https://sovereigncmd.xyz/api/og?title=Pipeline%20-%20Project%20Sovereign">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -20,7 +23,7 @@
 <title>Pipeline — Project Sovereign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=34">
+<link rel="stylesheet" href="app.css?v=41">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
@@ -48,6 +51,16 @@
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
 .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius2); width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
+/* Ambient AI panel */
+.ai-panel { background: linear-gradient(135deg, rgba(201,168,76,.06) 0%, rgba(96,165,250,.04) 100%); border: 1px solid rgba(201,168,76,.2); border-radius: 8px; padding: 14px 16px; margin-top: 16px; }
+.ai-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.ai-panel-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+.ai-panel-agent { font-size: 10px; color: var(--text3); }
+.ai-panel-content { font-size: 12px; color: var(--text2); line-height: 1.65; }
+.ai-panel-section { margin-bottom: 10px; }
+.ai-panel-section:last-child { margin-bottom: 0; }
+.ai-panel-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 3px; }
+.ai-panel-val { font-size: 12px; color: var(--text); line-height: 1.5; }
 .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .modal-body { padding: 20px 24px; }
 .modal-close { background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; padding: 4px; }
@@ -231,7 +244,7 @@
 
 
 
-<script src="app.js?v=38"></script>
+<script src="app.js?v=47"></script>
 <script>
 Chart.defaults.color='#9896a8';Chart.defaults.borderColor='rgba(255,255,255,0.06)';Chart.defaults.font.family='Inter,system-ui,sans-serif';Chart.defaults.font.size=11;
 
@@ -336,12 +349,102 @@ function openDeal(id) {
     + '<a href="command.html" class="btn btn-primary" style="font-size:12px;padding:8px 14px">Brief Vesper Thorne</a>'
     + '<a href="command.html" class="btn btn-outline" style="font-size:12px;padding:8px 14px">Brief Rhea Vance</a>'
     + '<a href="command.html" class="btn btn-outline" style="font-size:12px;padding:8px 14px">Brief Kaelen Voss</a>'
+    + '</div>'
+    + '<div class="ai-panel" id="aiInsightsPanel" style="margin-top:16px">'
+    + '<div class="ai-panel-header"><span class="ai-panel-title">⬡ Deal Intelligence</span><span class="ai-panel-agent">Vesper Thorne · AI Analysis</span></div>'
+    + '<div class="ai-panel-content" id="aiInsightsContent"><div style="display:flex;gap:8px;align-items:center;color:var(--text3);font-size:12px"><div class="spinner" style="width:14px;height:14px;border-width:2px;flex-shrink:0"></div>Analysing deal…</div></div>'
     + '</div>';
   document.getElementById('modalOverlay').classList.add('open');
+  loadDealInsights(d);
 }
 
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); currentDealView='detail'; document.getElementById('modalBody').style.display=''; document.getElementById('workflowBody').style.display='none'; document.getElementById('viewToggleLabel').textContent='Workflow Tree'; }
 document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+var INSIGHT_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+function renderInsights(text) {
+  // Parse sections from AI response and render as structured panels
+  var el = document.getElementById('aiInsightsContent');
+  if (!el) return;
+  // Simple section parser: lines starting with ** heading ** become labels
+  var sections = [];
+  var current = null;
+  text.split('\n').forEach(function(line) {
+    var heading = line.match(/^\*\*(.+?)\*\*/);
+    if (heading) {
+      if (current) sections.push(current);
+      current = { label: heading[1].replace(/[:：]$/, '').trim(), lines: [] };
+      var rest = line.replace(/^\*\*(.+?)\*\*[:\s]*/, '').trim();
+      if (rest) current.lines.push(rest);
+    } else if (current && line.trim()) {
+      current.lines.push(line.replace(/^[-•]\s*/, '').trim());
+    } else if (!current && line.trim()) {
+      sections.push({ label: '', lines: [line.trim()] });
+    }
+  });
+  if (current) sections.push(current);
+
+  if (!sections.length) {
+    el.textContent = text;
+    return;
+  }
+
+  var html = sections.map(function(s) {
+    var valColor = s.label.toLowerCase().includes('risk') ? 'color:var(--amber)' :
+                   s.label.toLowerCase().includes('valuation') ? 'color:var(--gold)' :
+                   s.label.toLowerCase().includes('next') ? 'color:var(--teal)' : '';
+    return '<div class="ai-panel-section">'
+      + (s.label ? '<div class="ai-panel-label">' + s.label + '</div>' : '')
+      + '<div class="ai-panel-val" style="' + valColor + '">' + s.lines.map(escHtml).join('<br>') + '</div>'
+      + '</div>';
+  }).join('');
+  el.innerHTML = html;
+}
+
+async function loadDealInsights(d) {
+  var el = document.getElementById('aiInsightsContent');
+  if (!el) return;
+
+  var cacheKey = 'sv_insight_' + String(d.id);
+  try {
+    var cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+    if (cached && (Date.now() - cached.ts) < INSIGHT_CACHE_TTL) {
+      renderInsights(cached.text);
+      return;
+    }
+  } catch(e) {}
+
+  var prompt = 'Deal: ' + d.name + '\n'
+    + 'Sector: ' + d.sector + '\n'
+    + 'Stage: ' + STAGES[d.stage] + '\n'
+    + 'EBITDA: ' + d.ebitda + ' | ARR: ' + d.arr + ' (' + d.rev + ' recurring)\n'
+    + 'Score: ' + d.score + '/100\n'
+    + 'Sell Signal: ' + d.signal + '\n'
+    + 'NMD Structure: ' + d.nmd + '\n'
+    + 'Notes: ' + (d.notes || 'n/a') + '\n\n'
+    + 'Provide a concise deal intelligence briefing with these four sections:\n'
+    + '**Risk Flags** — top 2 risks for this acquisition\n'
+    + '**Recommended Next Action** — one specific next step given current stage\n'
+    + '**NMD Structure** — brief recommendation on optimal structure given the sell signal\n'
+    + '**Valuation Range** — indicative range based on EBITDA and sector\n'
+    + 'Be specific and brief. No filler. Use plain text, no markdown tables.';
+
+  var text = await API.chat({
+    system: 'You are Vesper Thorne, an expert M&A analyst specializing in UK SaaS acquisitions. Provide structured, concise deal intelligence. No disclaimers.',
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 400,
+    agent_name: 'vesper-thorne-deal-intel',
+  });
+
+  if (!text) {
+    el.textContent = 'Analysis unavailable — brief Vesper Thorne directly via the Command page.';
+    return;
+  }
+
+  try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), text: text })); } catch(e) {}
+  renderInsights(text);
+}
 
 var currentDealView = 'detail';
 var currentDealId = null;
@@ -784,5 +887,6 @@ function exportWorkflowPDF() {
 
 </script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
+<noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=8900834&fmt=gif" /></noscript>
 </body>
 </html>

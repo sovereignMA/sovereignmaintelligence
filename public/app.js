@@ -147,7 +147,7 @@ const API = {
   async _call(fn, body) {
     const _req = async (tok) => fetch(`${FN_URL}/${fn}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}`, 'apikey': SB_ANON },
       body: JSON.stringify(body)
     });
 
@@ -196,13 +196,16 @@ const API = {
     } catch(e) { Toast.show('Network error', 'err'); return null; }
   },
 
-  /* AI — streaming via ai-proxy edge function */
+  /* AI — streaming via ai-proxy (default) or personaplex-proxy (use_persona:true) */
   async chat(opts) {
     let token = _Auth.token();
     if(!token){Toast.show('Sign in to use AI agents','warn');return null;}
-    const _req = (tok) => fetch(`${FN_URL}/ai-proxy`, {
+    // use_persona:true routes to personaplex-proxy for persona-consistent dialogue.
+    // Default false so all existing calls are unaffected.
+    const endpoint = opts.use_persona ? 'personaplex-proxy' : 'ai-proxy';
+    const _req = (tok) => fetch(`${FN_URL}/${endpoint}`, {
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${tok}`},
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${tok}`,'apikey':SB_ANON},
       body: JSON.stringify({system:opts.system||'',messages:opts.messages||[],max_tokens:opts.max_tokens||1200,stream:!!opts.onToken,model:'claude-sonnet-4-20250514',agent_name:opts.agent_name||'unknown'})
     });
     let r = await _req(token);
@@ -320,6 +323,7 @@ window.API = API;
     {href:'comms.html',       label:'Comms',     icon:'☎'},
     {href:'analytics.html',   label:'Analytics', icon:'◈'},
     {href:'vault.html',       label:'Vault',     icon:'◆'},
+    {href:'campaigns.html',   label:'Campaigns', icon:'◈'},
   ];
   const ADMIN_LINK = {href:'admin.html', label:'Admin', icon:'⚙'};
 
@@ -375,10 +379,43 @@ window.API = API;
     document.body.style.overflow = open ? 'hidden' : '';
   }
   ham?.addEventListener('click', ()=>toggleDrawer(!drawer.classList.contains('open')));
-  backdrop?.addEventListener('click', ()=>toggleDrawer(false));
+  backdrop?.addEventListener('click', ()=>{
+    toggleDrawer(false);
+    toggleSidebarPanel(false); // also close sidebar if open
+  });
 
   // Close on nav link click
   drawer?.querySelectorAll('.mob-link').forEach(a=>a.addEventListener('click',()=>toggleDrawer(false)));
+
+  // ── Sidebar toggle (app-shell pages: command.html, scout.html) ───────────
+  // Finds the page sidebar (.sidebar or .cmd-sidebar) and toggles .open on mobile.
+  // The nav button is CSS-shown at ≤768px via display:flex !important.
+  function getSidebar() {
+    return document.querySelector('.sidebar') || document.querySelector('.cmd-sidebar');
+  }
+  function toggleSidebarPanel(open) {
+    const sb = getSidebar();
+    if (!sb) return;
+    const isOpen = open !== undefined ? open : !sb.classList.contains('open');
+    sb.classList.toggle('open', isOpen);
+    backdrop?.classList.toggle('show', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+  const sidebarBtn = document.getElementById('sidebarToggleBtn');
+  if (sidebarBtn) {
+    // Wait for DOMContentLoaded so page content (including sidebars) is in the DOM
+    const activateSidebarBtn = () => {
+      if (getSidebar()) {
+        sidebarBtn.removeAttribute('style'); // remove hardcoded display:none; CSS now controls visibility
+        sidebarBtn.addEventListener('click', () => toggleSidebarPanel());
+      }
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', activateSidebarBtn);
+    } else {
+      activateSidebarBtn();
+    }
+  }
 
   // Inject auth button after supabase loads
   window.addEventListener('auth:ready', async e=>{
@@ -595,9 +632,11 @@ const _Analytics = {
     if(window.gtag) {
       window.gtag('event', event_name, props);
     }
-    // LinkedIn Insight (if configured)
-    if(window._linkedin_partner_id && window.lintrk) {
-      window.lintrk('track', {conversion_id: props.conversion_id});
+    // LinkedIn Insight Tag conversion tracking
+    if(window.lintrk) {
+      const liConversions = { sign_up: 26764154, deal_created: 26764154, upgrade: 26764154 };
+      const convId = props.conversion_id || liConversions[event_name];
+      if(convId) window.lintrk('track', { conversion_id: convId });
     }
     // Server-side ad tracking log
     if(window._sb && Auth.user) {
@@ -616,6 +655,16 @@ const _Analytics = {
 window.Analytics = _Analytics;
 // Auto-init after Supabase loads
 window.addEventListener('sb:ready', () => _Analytics.init());
+
+// ── LinkedIn Insight Tag (partner id: 8900834) ────────────────────────────────
+(function(){
+  if(!window.lintrk){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[];}
+  var s=document.getElementsByTagName('script')[0];
+  var b=document.createElement('script');
+  b.type='text/javascript';b.async=true;
+  b.src='https://snap.licdn.com/li.lms-analytics/insight.min.js';
+  s.parentNode.insertBefore(b,s);
+})();
 
 /* ══════════════════════════════════════
    EXTENDED API — NEW EDGE FUNCTIONS

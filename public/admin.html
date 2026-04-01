@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -17,7 +20,7 @@
 <meta name="twitter:image" content="https://sovereigncmd.xyz/api/og?title=Admin%20-%20Project%20Sovereign">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Admin — Project Sovereign</title>
-<link rel="stylesheet" href="app.css?v=34">
+<link rel="stylesheet" href="app.css?v=41">
 <style>
 .admin-shell{display:flex;height:calc(100vh - var(--nav-h));overflow:hidden}
 .admin-sb{width:190px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
@@ -121,6 +124,9 @@
   <button class="ani" onclick="S('billing')"   id="n-billing"><span>💳</span><span>Billing</span></button>
   <div class="anlabel">Docs</div>
   <button class="ani" onclick="S('kb')"        id="n-kb"><span>📚</span><span>Knowledge Base</span></button>
+  <div class="anlabel">Links</div>
+  <a class="ani" href="security.html" style="text-decoration:none"><span>🔒</span><span>Security</span></a>
+  <a class="ani" href="analytics.html" style="text-decoration:none"><span>◈</span><span>Analytics</span></a>
 </nav>
 
 <main class="admin-main">
@@ -551,7 +557,7 @@
   </div>
 </div>
 
-<script src="app.js?v=38"></script>
+<script src="app.js?v=47"></script>
 <script>
 'use strict';
 const COLORS=['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#f87171','#4ade80','#fbbf24','#e879f9','#34d399','#fb923c','#38bdf8','#c084fc','#f472b6','#4ade80','#22d3ee','#a3e635','#facc15','#f87171','#818cf8','#2dd4bf','#c9a84c'];
@@ -984,5 +990,6 @@ window.addEventListener('auth:ready',async e=>{
 });
 </script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
+<noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=8900834&fmt=gif" /></noscript>
 </body>
 </html>

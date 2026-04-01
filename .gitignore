@@ -7,3 +7,7 @@ node_modules/
 *.log
 deploy.js
 supabase/.temp/
+.claude/
+.env*.local
+.env.*
+.env.prod

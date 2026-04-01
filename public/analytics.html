@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -20,7 +23,7 @@
 <title>Analytics — Project Sovereign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=34">
+<link rel="stylesheet" href="app.css?v=41">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 .pg{padding:28px 24px;max-width:1400px;margin:0 auto}
@@ -167,48 +170,50 @@
 
 
 
-<script src="app.js?v=38"></script>
+<script src="app.js?v=47"></script>
 <script>
 Chart.defaults.color='#9490a8';Chart.defaults.borderColor='rgba(255,255,255,0.055)';Chart.defaults.font.family='Inter,system-ui,sans-serif';Chart.defaults.font.size=11;
 var gold='#c9a84c',teal='#2dd4bf',blue='#60a5fa',green='#4ade80',red='#f87171',purple='#a78bfa',amber='#fbbf24';
 
-// KPIs
-var kpis=[
-  {l:'Portfolio Value',v:'£10.5M',s:'4 active deals',c:'var(--gold)',d:'',dt:''},
-  {l:'Projected Exit',v:'£32M+',s:'at 15-20× EBITDA',c:'var(--teal)',d:'↑',dt:'delta-up'},
-  {l:'Avg Deal Score',v:'81.2',s:'across 6 targets',c:'var(--blue)',d:'',dt:''},
-  {l:'Time to Close',v:'94d',s:'avg days sourcing→SPA',c:'var(--amber)',d:'↑8d',dt:'delta-down'},
-];
-document.getElementById('kpiRow').innerHTML=kpis.map(function(k){
-  return '<div class="stat"><div class="stat-l">'+k.l+'</div><div class="stat-v" style="color:'+k.c+'">'+k.v+'</div>'+(k.d?'<div class="'+k.dt+'">'+k.d+'</div>':'')+'<div class="stat-s">'+k.s+'</div></div>';
-}).join('');
+function renderKPIs(kpis){
+  document.getElementById('kpiRow').innerHTML=kpis.map(function(k){
+    return '<div class="stat"><div class="stat-l">'+k.l+'</div><div class="stat-v" style="color:'+k.c+'">'+k.v+'</div>'+(k.d?'<div class="'+k.dt+'">'+k.d+'</div>':'')+'<div class="stat-s">'+k.s+'</div></div>';
+  }).join('');
+}
+renderKPIs([
+  {l:'Portfolio Value',v:'Loading…',s:'',c:'var(--gold)',d:'',dt:''},
+  {l:'Projected Exit',v:'—',s:'at 15-20× EBITDA',c:'var(--teal)',d:'',dt:''},
+  {l:'Avg Deal Score',v:'—',s:'',c:'var(--blue)',d:'',dt:''},
+  {l:'Activity (7d)',v:'—',s:'platform events',c:'var(--amber)',d:'',dt:''},
+]);
 
-// Value creation chart
-new Chart(document.getElementById('valueChart'),{type:'bar',data:{
-  labels:['CloudData.io','NexusSaaS','DataVault UK','OptiFlow Sys'],
+function renderFunnel(data){
+  document.getElementById('funnelChart').innerHTML=data.map(function(f){
+    return '<div class="funnel-bar"><div class="funnel-label"><span style="color:var(--text2)">'+f.label+'</span><span class="mono" style="color:var(--text3)">'+f.val+'</span></div>'
+      +'<div class="funnel-track"><div class="funnel-fill" style="width:'+f.pct+'%;background:'+f.c+'">'+f.pct+'%</div></div></div>';
+  }).join('');
+}
+renderFunnel([
+  {label:'Prospect',val:'—',pct:100,c:'#60a5fa'},
+  {label:'Contacted',val:'—',pct:60,c:'#a78bfa'},
+  {label:'NDA',val:'—',pct:25,c:'#fbbf24'},
+  {label:'LOI',val:'—',pct:10,c:'#2dd4bf'},
+  {label:'Due Diligence',val:'—',pct:5,c:'#4ade80'},
+  {label:'Closed',val:'—',pct:2,c:'#c9a84c'},
+]);
+
+// Value creation chart (illustrative model — updated with real deal names on load)
+var valueChart = new Chart(document.getElementById('valueChart'),{type:'bar',data:{
+  labels:['Deal 1','Deal 2','Deal 3','Deal 4'],
   datasets:[
-    {label:'Entry Value',data:[10.5,9,17,8.4],backgroundColor:'rgba(96,165,250,.35)',borderColor:blue,borderWidth:1},
-    {label:'Post-AI Value',data:[16,14,28,14],backgroundColor:'rgba(45,212,191,.35)',borderColor:teal,borderWidth:1},
-    {label:'Projected Exit',data:[25,21,42,22],backgroundColor:'rgba(201,168,76,.5)',borderColor:gold,borderWidth:1.5},
+    {label:'Entry Value',data:[0,0,0,0],backgroundColor:'rgba(96,165,250,.35)',borderColor:blue,borderWidth:1},
+    {label:'Post-AI Value',data:[0,0,0,0],backgroundColor:'rgba(45,212,191,.35)',borderColor:teal,borderWidth:1},
+    {label:'Projected Exit',data:[0,0,0,0],backgroundColor:'rgba(201,168,76,.5)',borderColor:gold,borderWidth:1.5},
   ]
 },options:{responsive:true,maintainAspectRatio:false,
   plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14}}},
   scales:{y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{callback:function(v){return'£'+v+'M'}}},x:{grid:{display:false}}}
 }});
-
-// Funnel
-var funnelData=[
-  {label:'Cold Outreach',val:340,pct:100,c:'#60a5fa'},
-  {label:'Replied',val:109,pct:32,c:'#a78bfa'},
-  {label:'Intro Call',val:44,pct:13,c:'#fbbf24'},
-  {label:'NDA Signed',val:18,pct:5.3,c:'#2dd4bf'},
-  {label:'LOI Issued',val:6,pct:1.8,c:'#4ade80'},
-  {label:'Closed',val:2,pct:0.6,c:'#c9a84c'},
-];
-document.getElementById('funnelChart').innerHTML=funnelData.map(function(f){
-  return '<div class="funnel-bar"><div class="funnel-label"><span style="color:var(--text2)">'+f.label+'</span><span class="mono" style="color:var(--text3)">'+f.val+'</span></div>'
-    +'<div class="funnel-track"><div class="funnel-fill" style="width:'+f.pct+'%;background:'+f.c+'">'+f.pct+'%</div></div></div>';
-}).join('');
 
 // AI cost reduction
 new Chart(document.getElementById('aiCostChart'),{type:'bar',data:{
@@ -296,15 +301,63 @@ document.getElementById('milestones').innerHTML=miles.map(function(m){
     +'<div class="tl-body"><div class="tl-t">'+m.title+'</div><div class="tl-m">'+m.date+'</div><div class="tl-n">'+m.note+'</div></div></div>';
 }).join('');
 
-// ── Auth guard ──
+// ── Auth guard + live data load ──
 window.addEventListener('auth:ready', function(e) {
   if(!e.detail?.user){
     Toast.show('Sign in to access this page', 'warn', 3000);
     setTimeout(function(){ window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname.split('/').pop()); }, 1500);
+    return;
   }
+  loadLiveData();
 });
+
+async function loadLiveData(){
+  try {
+    var [kpiRes, dealsRes] = await Promise.all([API.ops.kpis(), API.deals.list()]);
+
+    if(kpiRes && kpiRes.data){
+      var d = kpiRes.data;
+      var pv = d.deals.pipeline_value_gbp || 0;
+      renderKPIs([
+        {l:'Portfolio Value',v:fmtGBP(pv),s:d.deals.active+' active deal'+(d.deals.active===1?'':'s'),c:'var(--gold)',d:'',dt:''},
+        {l:'Projected Exit',v:fmtGBP(pv*17),s:'at 15-20× EBITDA',c:'var(--teal)',d:'',dt:''},
+        {l:'Avg Deal Score',v:d.deals.avg_score||'—',s:'across '+d.deals.total+' deal'+(d.deals.total===1?'':'s'),c:'var(--blue)',d:'',dt:''},
+        {l:'Activity (7d)',v:d.activity.audit_events_7d||0,s:'platform events',c:'var(--amber)',d:'',dt:''},
+      ]);
+    }
+
+    if(dealsRes && dealsRes.data && dealsRes.data.length){
+      var deals = dealsRes.data;
+      var stages = ['Prospect','Contacted','NDA','LOI','Due Diligence','Closed'];
+      var stageColors = ['#60a5fa','#a78bfa','#fbbf24','#2dd4bf','#4ade80','#c9a84c'];
+      var counts = deals.reduce(function(acc, d){
+        var key = (d.stage||'').toLowerCase();
+        acc[key] = (acc[key]||0) + 1;
+        return acc;
+      }, {});
+      var maxCount = Math.max(counts[(stages[0]||'').toLowerCase()]||0, 1);
+      renderFunnel(stages.map(function(s,i){
+        var n = counts[s.toLowerCase()]||0;
+        return {label:s,val:n,pct:Math.round(n/maxCount*100)||0,c:stageColors[i]};
+      }));
+
+      var top4 = deals.slice(0,4);
+      if(top4.length){
+        var entry = top4.map(function(d){ return +(Number(d.deal_value_gbp||0)/1e6).toFixed(1); });
+        valueChart.data.labels = top4.map(function(d){ return d.company_name||'Deal'; });
+        valueChart.data.datasets[0].data = entry;
+        valueChart.data.datasets[1].data = entry.map(function(v){ return +(v*1.5).toFixed(1); });
+        valueChart.data.datasets[2].data = entry.map(function(v){ return +(v*2.5).toFixed(1); });
+        valueChart.update();
+      }
+    }
+  } catch(err) {
+    console.warn('[analytics] live data load failed:', err);
+  }
+}
 
 </script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
+<noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=8900834&fmt=gif" /></noscript>
 </body>
 </html>
