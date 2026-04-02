@@ -3,7 +3,7 @@
 <head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("consent","default",{"ad_storage":"denied","ad_user_data":"denied","ad_personalization":"denied","analytics_storage":"denied"});gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -158,7 +158,7 @@
   </div>
 </div>
 
-<script src="app.js?v=47"></script>
+<script src="app.js?v=48"></script>
 <script>
 var _accountId = null;
 var _days = 7;
@@ -418,11 +418,14 @@ function showSetupBanner() {
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
-window.addEventListener('sb:ready', function() {
+window.addEventListener('auth:ready', function(e) {
+  if (!e.detail?.user) {
+    Toast.show('Sign in to access this page', 'warn', 3000);
+    setTimeout(function() { window.location.href = 'login.html?next=campaigns.html'; }, 1500);
+    return;
+  }
   loadAccounts();
 });
-// Fallback if sb:ready already fired
-if (window._sb) loadAccounts();
 </script>
 <noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=8900834&fmt=gif" /></noscript>
 </body>

@@ -3,7 +3,7 @@
 <head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("consent","default",{"ad_storage":"denied","ad_user_data":"denied","ad_personalization":"denied","analytics_storage":"denied"});gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0f">
@@ -47,10 +47,34 @@
       <button class="google-btn" onclick="doGoogle()"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Continue with Google + Gmail</button>
     </div>
     <div id="formUp" style="display:none">
+      <!-- Plan selector -->
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px">Choose your plan</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <label class="plan-radio" id="planPros">
+            <input type="radio" name="upPlan" value="prospector" style="display:none">
+            <div class="plan-radio-inner">
+              <div style="font-weight:700;font-size:13px">Prospector</div>
+              <div style="font-size:12px;color:var(--text3)">£99/mo</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:3px">Solo · 200 targets</div>
+            </div>
+          </label>
+          <label class="plan-radio selected" id="planDeal">
+            <input type="radio" name="upPlan" value="dealmaker" checked style="display:none">
+            <div class="plan-radio-inner">
+              <div style="font-weight:700;font-size:13px">Dealmaker <span style="font-size:10px;background:rgba(201,168,76,.2);color:var(--gold);padding:2px 6px;border-radius:10px;font-weight:700">Popular</span></div>
+              <div style="font-size:12px;color:var(--text3)">£299/mo</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:3px">All agents · Unlimited</div>
+            </div>
+          </label>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center">21-day free trial · No card required · Cancel anytime</div>
+      </div>
       <div class="field"><label>Full Name</label><input type="text" id="upName" placeholder="Your name" autocomplete="name"></div>
       <div class="field"><label>Email</label><input type="email" id="upEmail" placeholder="you@example.com" autocomplete="email"></div>
       <div class="field"><label>Password <span class="text-faint" style="font-weight:400">(min 8 chars)</span></label><input type="password" id="upPass" placeholder="Create strong password" autocomplete="new-password"></div>
-      <button class="btn btn-primary w-full" id="upBtn" onclick="doSignUp()">Create Account</button>
+      <div class="field" id="refField" style="display:none"><label>Referral Code <span class="text-faint" style="font-weight:400">(optional)</span></label><input type="text" id="upRef" placeholder="e.g. SOVEREIGN-XXXX" autocomplete="off" style="text-transform:uppercase"></div>
+      <button class="btn btn-primary w-full" id="upBtn" onclick="doSignUp()">Start Free Trial →</button>
       <div class="auth-or"><span>or</span></div>
       <button class="google-btn" onclick="doGoogle()"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Sign up with Google</button>
     </div>
@@ -89,11 +113,37 @@ body { display:flex; align-items:center; justify-content:center; min-height:100v
 .auth-features { display:flex; gap:8px; margin-top:20px; justify-content:center; flex-wrap:wrap; }
 .auth-feat { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:5px 10px; font-size:11px; color:var(--text3); display:flex; align-items:center; gap:5px; }
 .btn-spin::after { content:''; width:13px; height:13px; border-radius:50%; border:2px solid rgba(0,0,0,.25); border-top-color:#000; animation:spin .6s linear infinite; margin-left:6px; }
+.plan-radio { cursor:pointer; display:block; }
+.plan-radio-inner { border:1px solid var(--border2); border-radius:8px; padding:10px 12px; transition:all .15s; background:var(--bg2); }
+.plan-radio:hover .plan-radio-inner { border-color:rgba(201,168,76,.35); }
+.plan-radio.selected .plan-radio-inner { border-color:var(--gold); background:rgba(201,168,76,.06); }
 </style>
 
-<script src="app.js?v=47"></script>
+<script src="app.js?v=48"></script>
 <script>
 var tab = 'in';
+
+// Pre-fill referral code from URL ?ref= param
+(function(){
+  var params = new URLSearchParams(location.search);
+  var ref = params.get('ref');
+  if(ref){ localStorage.setItem('sv_ref', ref.toUpperCase()); }
+  // Show referral field if code in URL or localStorage
+  var stored = localStorage.getItem('sv_ref');
+  if(stored || ref){ document.getElementById('refField').style.display=''; }
+  if(stored){ var el=document.getElementById('upRef'); if(el) el.value=stored; }
+  // Switch to signup tab if ?signup=1
+  if(params.get('signup')==='1') switchTab('up');
+})();
+
+// Plan selector toggle
+document.querySelectorAll('input[name="upPlan"]').forEach(function(radio){
+  radio.addEventListener('change', function(){
+    document.getElementById('planPros').classList.toggle('selected', this.value==='prospector');
+    document.getElementById('planDeal').classList.toggle('selected', this.value==='dealmaker');
+  });
+});
+
 function switchTab(t){
   tab=t;
   document.getElementById('formIn').style.display=t==='in'?'':'none';
@@ -105,19 +155,35 @@ function switchTab(t){
 function showErr(m){ var e=document.getElementById('errBox'); e.textContent=m; e.style.display=m?'block':'none'; }
 function setLoad(id,on){ var b=document.getElementById(id); b.disabled=on; if(on)b.classList.add('btn-spin'); else b.classList.remove('btn-spin'); }
 
+var ALLOWED=['command.html','pipeline.html','intelligence.html','comms.html','analytics.html','vault.html','security.html','admin.html','resources.html','mediakit.html'];
+
 window.addEventListener('auth:ready', function(e){
-  if(e.detail?.user){
-    var raw=new URLSearchParams(location.search).get('next')||'';
-    // Only allow relative paths to prevent open-redirect attacks
-    var ALLOWED=['command.html','pipeline.html','intelligence.html','comms.html','analytics.html','vault.html','security.html','admin.html','resources.html','mediakit.html'];
-    var next=ALLOWED.indexOf(raw)!==-1?raw:'command.html';
-    location.href=next;
+  if(!e.detail?.user) return;
+  var raw = new URLSearchParams(location.search).get('next')||'';
+  var next = ALLOWED.indexOf(raw)!==-1 ? raw : 'command.html';
+
+  // If there's a pending plan selection (from signup), redirect to upgrade
+  var pending = localStorage.getItem('sv_pending_plan');
+  if(pending){
+    // Only auto-redirect for genuinely new accounts (created within last 10 min)
+    var user = e.detail.user;
+    var createdMs = user.created_at ? new Date(user.created_at).getTime() : 0;
+    var isNew = (Date.now() - createdMs) < 600000;
+    if(isNew){
+      localStorage.removeItem('sv_pending_plan');
+      location.href = 'upgrade.html?plan=' + encodeURIComponent(pending) + '&autostart=1';
+      return;
+    }
+    localStorage.removeItem('sv_pending_plan');
   }
+  location.href = next;
 });
 
 async function waitSB(){ if(!window._sb) await new Promise(r=>window.addEventListener('sb:ready',r,{once:true})); }
+
 async function doSignIn(){
-  showErr(''); var em=document.getElementById('inEmail').value.trim(), pw=document.getElementById('inPass').value;
+  showErr('');
+  var em=document.getElementById('inEmail').value.trim(), pw=document.getElementById('inPass').value;
   if(!em||!pw){showErr('Please enter email and password.');return;}
   setLoad('inBtn',true);
   await waitSB();
@@ -125,12 +191,17 @@ async function doSignIn(){
   if(!data){showErr('Invalid email or password.');setLoad('inBtn',false);}
   else {
     var raw=new URLSearchParams(location.search).get('next')||'';
-    var ALLOWED=['command.html','pipeline.html','intelligence.html','comms.html','analytics.html','vault.html','security.html','admin.html','resources.html','mediakit.html'];
     location.href=ALLOWED.indexOf(raw)!==-1?raw:'command.html';
   }
 }
+
 async function doSignUp(){
-  showErr(''); var nm=document.getElementById('upName').value.trim(), em=document.getElementById('upEmail').value.trim(), pw=document.getElementById('upPass').value;
+  showErr('');
+  var nm=document.getElementById('upName').value.trim(),
+      em=document.getElementById('upEmail').value.trim(),
+      pw=document.getElementById('upPass').value,
+      plan=document.querySelector('input[name="upPlan"]:checked')?.value||'dealmaker',
+      ref=(document.getElementById('upRef')?.value||'').trim().toUpperCase()||localStorage.getItem('sv_ref')||'';
   if(!nm||!em||!pw){showErr('Please fill in all fields.');return;}
   if(pw.length<8){showErr('Password must be at least 8 characters.');return;}
   setLoad('upBtn',true);
@@ -138,16 +209,28 @@ async function doSignUp(){
   var data=await Auth.signUp(em,pw,nm);
   if(!data){showErr('Sign up failed. This email may already be registered.');setLoad('upBtn',false);}
   else {
-    document.querySelector('.auth-card').innerHTML='<div style="text-align:center;padding:28px 0"><div style="font-size:42px;margin-bottom:16px">✉️</div><div style="font-size:18px;font-weight:700;margin-bottom:10px">Check your email</div><p style="font-size:13px;color:var(--text2);line-height:1.7">We sent a confirmation link to <strong id="_em_node"></strong>.<br>Click it to activate your account, then sign in.</p><a href="login.html" class="btn btn-primary" style="margin-top:20px;display:inline-flex">Back to Sign In</a></div>';
+    // Store plan and referral for post-confirmation redirect
+    localStorage.setItem('sv_pending_plan', plan);
+    if(ref) localStorage.setItem('sv_ref', ref);
+    var planLabel = plan==='prospector' ? 'Prospector (£99/mo)' : 'Dealmaker (£299/mo)';
+    document.querySelector('.auth-card').innerHTML='<div style="text-align:center;padding:28px 0"><div style="font-size:42px;margin-bottom:16px">✉️</div><div style="font-size:18px;font-weight:700;margin-bottom:10px">Check your email</div><p style="font-size:13px;color:var(--text2);line-height:1.7">We sent a confirmation link to <strong id="_em_node"></strong>.<br>Click it to activate your account — then we\'ll set up your <strong style="color:var(--gold)">' + planLabel + '</strong> free trial.</p><a href="login.html" class="btn btn-primary" style="margin-top:20px;display:inline-flex">Back to Sign In</a></div>';
     document.getElementById('_em_node').textContent=em;
   }
 }
-async function doGoogle(){ await waitSB(); await Auth.signInGoogle(); }
+
+async function doGoogle(){
+  await waitSB();
+  // Store default plan only when on the signup tab (new account flow)
+  if(tab === 'up' && !localStorage.getItem('sv_pending_plan')) localStorage.setItem('sv_pending_plan','dealmaker');
+  await Auth.signInGoogle();
+}
+
 async function doReset(){
   var em=prompt('Enter your email for a password reset link:');
   if(!em) return;
   await waitSB(); await Auth.resetPw(em);
 }
+
 document.addEventListener('keydown',e=>{if(e.key==='Enter')tab==='in'?doSignIn():doSignUp();});
 </script>
 <script defer src="/_vercel/speed-insights/script.js"></script>

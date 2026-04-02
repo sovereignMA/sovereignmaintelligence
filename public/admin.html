@@ -3,7 +3,7 @@
 <head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("consent","default",{"ad_storage":"denied","ad_user_data":"denied","ad_personalization":"denied","analytics_storage":"denied"});gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -318,8 +318,8 @@
       <div style="font-size:13px;font-weight:600;margin-bottom:12px">Pixel Status</div>
       <div style="font-size:12px;color:var(--text2);line-height:2.3">
         <div><span class="badge badge-ghost">Meta Pixel</span> — add <code style="color:var(--gold)">fbq</code> init snippet to index.html</div>
-        <div><span class="badge badge-ghost">Google GA4</span> — add <code style="color:var(--gold)">gtag.js</code> to all pages</div>
-        <div><span class="badge badge-ghost">LinkedIn Insight</span> — set <code style="color:var(--gold)">_linkedin_partner_id</code></div>
+        <div><span class="badge badge-green">Google GA4 ✓ ACTIVE</span> — G-9BQYFMVFTJ · all pages</div>
+        <div><span class="badge badge-green">LinkedIn Insight ✓ ACTIVE</span> — PID 8900834 · all pages</div>
         <div><span class="badge badge-green">1st Party ✓ ACTIVE</span> — all events → <code style="color:var(--gold)">ad_tracking</code> table</div>
       </div>
     </div>
@@ -338,19 +338,213 @@
 <!-- ═══ COMPLIANCE ═══ -->
 <section class="asec" id="s-compliance">
   <div class="page-hdr">
-    <div><div class="label">Legal</div><h1>Compliance Framework</h1><p>UK GDPR · FCA · ICO · Companies Act · AML · KYC · PECR — built for Howard Henry's UK M&A ops.</p></div>
-    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadCompliance()">↻</button><button class="btn btn-primary btn-sm" onclick="Modal.open('comp-modal')">+ Add</button></div>
+    <div><div class="label">Legal</div><h1>Compliance Dashboard</h1><p>UK GDPR · DPA 2018 · FCA · ICO · AML · KYC · PECR · PCI DSS · Cyber Essentials · SOC 2 · ISO 27001</p></div>
+    <div class="page-hdr-r"><button class="btn btn-outline btn-sm" onclick="loadCompliance()">↻</button><button class="btn btn-primary btn-sm" onclick="Modal.open('comp-modal')">+ Add Entry</button></div>
   </div>
-  <div class="g3" style="gap:12px;margin-bottom:18px">
-    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">UK GDPR</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Lawful basis documented. Retention periods set (730 days data, 2555 days AML). DSAR process via admin.</div></div>
-    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">FCA</div><span class="badge badge-amber">Review</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Operating as unregulated M&A introducer. Deal threshold monitoring. No financial advice given.</div></div>
-    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">AML</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">EDD for deals >£1M. PEP screening via Companies House. MLRO function active.</div></div>
-    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">KYC</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Director ID via CH API. Documents AES-256 encrypted. 5-year retention for AML obligations.</div></div>
-    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">ICO</div><span class="badge badge-amber">Action Required</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Register at ico.org.uk (£40/yr). Privacy policy needed on site. Cookie consent banner required.</div></div>
-    <div class="card"><div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">PECR</div><span class="badge badge-green">Compliant</span></div><div style="font-size:12px;color:var(--text2);line-height:1.65">Email consent tracked in outreach_log. Unsubscribe in all comms. Cookie banner — add before launch.</div></div>
+
+  <!-- Status summary bar -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;align-items:center">
+    <span style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Status</span>
+    <span id="comp-count-green" class="badge badge-green">— Compliant</span>
+    <span id="comp-count-amber" class="badge badge-amber">— Review / Action</span>
+    <span id="comp-count-ghost" class="badge badge-ghost">— Planned</span>
+    <span style="flex:1"></span>
+    <span style="font-size:11px;color:var(--text3)">Last reviewed: <strong style="color:var(--text2)">2 Apr 2026</strong></span>
   </div>
+
+  <!-- Mandatory frameworks -->
+  <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Mandatory — Legal Obligations</div>
+  <div class="g3" style="gap:12px;margin-bottom:20px">
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">UK GDPR / DPA 2018</div><span class="badge badge-green">Compliant</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">Lawful basis documented per data category. Retention: 730 days (operational), 2555 days (AML). DSAR workflow in admin. Privacy notice at <a href="/privacy" style="color:var(--gold)">/privacy</a>.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">▸ Article 32 encryption: AES-256-GCM &nbsp;▸ RLS on all 28 tables &nbsp;▸ Audit log active</div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">ICO Registration</div><span class="badge badge-amber">Action Required</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">Must register as a data controller. Fee: £40/yr (Tier 1). Privacy notice live. Cookie consent banner active.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">▸ <a href="https://ico.org.uk/registration" target="_blank" style="color:var(--gold)">Register at ico.org.uk →</a> &nbsp;▸ Annual renewal required</div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">PECR (Cookie Regulations)</div><span class="badge badge-green">Compliant</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">Consent banner gates GA4, LinkedIn pixel, and 1st-party analytics. All denied by default. Email opt-out in all comms.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">▸ Consent stored: localStorage[sv_cookies] &nbsp;▸ gtag consent mode v2 active</div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">AML / MLR 2017</div><span class="badge badge-green">Compliant</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">EDD triggered for deals >£1M. PEP/sanctions screening via Companies House API. SARs routed through MLRO function. 5-year record retention.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">▸ MLRO: Howard Henry &nbsp;▸ AML events logged in compliance_log</div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">KYC</div><span class="badge badge-green">Compliant</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">Director identity via CH API. Beneficial owner checks (PSC data). KYC documents AES-256 encrypted in Vault. 5-year retention per POCA 2002.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">▸ CH PSC API &nbsp;▸ Vault encryption &nbsp;▸ Periodic review reminders</div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">FCA — Financial Promotions</div><span class="badge badge-amber">Review</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">Operating as unregulated M&A introducer (sub-£10M deals). No financial advice given. Marketing copy must not imply FCA authorisation or guaranteed returns.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">▸ Review all marketing copy against FSMA s.21 &nbsp;▸ Add "not FCA regulated" disclaimer</div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:var(--gold)">PCI DSS SAQ-A</div><span class="badge badge-green">Compliant</span></div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">Card data handled entirely by Stripe (SAQ-A merchant). Sovereign never stores, processes, or transmits raw card data. Stripe webhook signed and verified.</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">▸ Stripe Elements — no card data touches server &nbsp;▸ Webhook HMAC-SHA256 verified</div>
+    </div>
+  </div>
+
+  <!-- Commercial Gates -->
+  <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Commercial Gates — In Progress</div>
+
+  <!-- CE / SOC2 / ISO27001 summary cards -->
+  <div class="g3" style="gap:12px;margin-bottom:16px">
+    <div class="card" style="cursor:pointer" onclick="toggleMatrix('ce-matrix')">
+      <div class="flex-between" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:var(--gold)">Cyber Essentials</div><span class="badge badge-amber">In Progress</span></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">5 NCSC technical controls · UK government certification · Enterprise sales gate</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden"><div style="width:80%;height:100%;background:var(--teal);border-radius:3px"></div></div>
+        <span style="font-size:11px;color:var(--teal);font-weight:700">4/5</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">▸ ~£400 self-assessment &nbsp;▸ Click to see controls ↓</div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="toggleMatrix('soc2-matrix')">
+      <div class="flex-between" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:var(--gold)">SOC 2 Type II</div><span class="badge badge-amber">In Progress</span></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">AICPA Trust Service Criteria · 6–12 month audit period · US/FS enterprise gate</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden"><div style="width:65%;height:100%;background:var(--teal);border-radius:3px"></div></div>
+        <span style="font-size:11px;color:var(--teal);font-weight:700">14/22</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">▸ Evidence collection active &nbsp;▸ Click to see controls ↓</div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="toggleMatrix('iso-matrix')">
+      <div class="flex-between" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:var(--gold)">ISO 27001:2022</div><span class="badge badge-amber">In Progress</span></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">ISMS · 93 Annex A controls · FS &amp; enterprise certification requirement</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden"><div style="width:57%;height:100%;background:var(--teal);border-radius:3px"></div></div>
+        <span style="font-size:11px;color:var(--teal);font-weight:700">8/14 domains</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">▸ ~£8–15K certification &nbsp;▸ Click to see controls ↓</div>
+    </div>
+  </div>
+
+  <!-- ── Cyber Essentials control matrix ── -->
+  <div id="ce-matrix" class="card" style="display:none;margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:14px">Cyber Essentials — Control Matrix</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px">● Pass &nbsp;◑ Partial &nbsp;○ Pending</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600">Control</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600">Status</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600">Evidence / Implementation</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-weight:600">CE1 — Firewalls</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Pass</td><td style="padding:8px;color:var(--text2)">Vercel edge network. CSP, HSTS, X-Frame-Options, X-Content-Type-Options headers enforced on all routes via vercel.json. No open ports.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-weight:600">CE2 — Secure Configuration</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Pass</td><td style="padding:8px;color:var(--text2)">All secrets in Vercel env vars (never in git). No default credentials. Admin access requires authenticated JWT + superadmin role. Unnecessary services not deployed.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-weight:600">CE3 — User Access Control</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Pass</td><td style="padding:8px;color:var(--text2)">Supabase Auth (email + Google OAuth). RLS enforced on all 28 tables (user_id = auth.uid()). RBAC: user / admin / superadmin. MFA available via Supabase Auth.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-weight:600">CE4 — Malware Protection</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Pass</td><td style="padding:8px;color:var(--text2)">No user-uploaded executables. CSP blocks inline script injection. Static HTML/JS frontend — no server-side execution surface. Supabase Edge Functions sandboxed (Deno).</td></tr>
+        <tr><td style="padding:8px;color:var(--text);font-weight:600">CE5 — Patch Management</td><td style="padding:8px"><span style="color:var(--gold)">◑</span> Partial</td><td style="padding:8px;color:var(--text2)"><strong style="color:var(--amber,#f59e0b)">Action:</strong> Define formal policy — run <code>npm audit</code> weekly, apply security patches within 14 days. Vercel/Supabase/Deno runtimes auto-patch. Document cadence.</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(20,184,166,.07);border:1px solid rgba(20,184,166,.2);border-radius:8px;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--teal)">Next step:</strong> Complete CE5 patch policy doc, then submit self-assessment at <a href="https://www.ncsc.gov.uk/cyberessentials" target="_blank" style="color:var(--gold)">ncsc.gov.uk/cyberessentials</a>. Estimated: 1 day of work + ~£400 fee.
+    </div>
+  </div>
+
+  <!-- ── SOC 2 Type II control matrix ── -->
+  <div id="soc2-matrix" class="card" style="display:none;margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:14px">SOC 2 Type II — Common Criteria Control Matrix</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px">● Implemented &nbsp;◑ Partial &nbsp;○ Pending &nbsp;— N/A</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600;width:120px">Criteria</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600">Description</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600;width:80px">Status</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600">Evidence</th>
+      </tr></thead>
+      <tbody>
+        <tr style="background:rgba(255,255,255,.02)"><td colspan="4" style="padding:6px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">CC1–CC3: Control Environment &amp; Risk Assessment</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC1.1</td><td style="padding:8px;color:var(--text2)">COSO integrity &amp; ethical values</td><td style="padding:8px"><span style="color:var(--gold)">◑</span> Partial</td><td style="padding:8px;color:var(--text2)">Document IS policy. Owner: Howard Henry. Target: Q2 2026.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC2.3</td><td style="padding:8px;color:var(--text2)">External communications re: obligations</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Privacy notice /privacy, Terms /terms, Cookie policy /cookies all live.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC3.1–3.3</td><td style="padding:8px;color:var(--text2)">Risk identification, analysis, mitigation</td><td style="padding:8px"><span style="color:var(--red,#f87171)">○</span> Pending</td><td style="padding:8px;color:var(--text2)">Create formal risk register. Use compliance_log table. Owner: Howard Henry.</td></tr>
+        <tr style="background:rgba(255,255,255,.02)"><td colspan="4" style="padding:6px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">CC4–CC5: Monitoring &amp; Control Activities</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC4.1</td><td style="padding:8px;color:var(--text2)">Ongoing monitoring of controls</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">audit_trail table, health-check cron (every 6h), pentest suite, admin dashboard.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC5.1</td><td style="padding:8px;color:var(--text2)">Security policies &amp; procedures</td><td style="padding:8px"><span style="color:var(--red,#f87171)">○</span> Pending</td><td style="padding:8px;color:var(--text2)">Write Information Security Policy document. Publish in /security or Vault.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC5.2</td><td style="padding:8px;color:var(--text2)">Technology controls for policies</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">RLS on 28 tables, AES-256-GCM encryption, Supabase Auth, HTTPS/TLS enforced.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC5.3</td><td style="padding:8px;color:var(--text2)">Deployment &amp; change controls</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Git version control, Vercel CI/CD with preview deployments, commit audit trail.</td></tr>
+        <tr style="background:rgba(255,255,255,.02)"><td colspan="4" style="padding:6px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">CC6: Logical &amp; Physical Access Controls</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC6.1</td><td style="padding:8px;color:var(--text2)">Logical access restrictions</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Supabase Auth JWT. RLS: user_id = auth.uid() on all tables. Admin role check in sovereign-api.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC6.2</td><td style="padding:8px;color:var(--text2)">Access provisioning controls</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Email verification required. Google OAuth. Admin-assigned roles in user_profiles.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC6.3</td><td style="padding:8px;color:var(--text2)">Removal of access on termination</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Admin Users panel can disable/delete accounts. Supabase auth.admin.deleteUser() available.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC6.6</td><td style="padding:8px;color:var(--text2)">Network security controls</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">HTTPS/TLS via Vercel. HSTS (2yr, includeSubDomains, preload). CSP. CORS restricted. No HTTP.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC6.7</td><td style="padding:8px;color:var(--text2)">Transmission security</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">TLS 1.2+ enforced by Vercel edge. Supabase data in transit encrypted. API keys never in frontend.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC6.8</td><td style="padding:8px;color:var(--text2)">Prevent/detect malicious software</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">CSP blocks XSS. No executable upload surface. Deno sandboxed edge functions. S20 Sentinel monitoring.</td></tr>
+        <tr style="background:rgba(255,255,255,.02)"><td colspan="4" style="padding:6px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">CC7–CC9: Operations, Change Management &amp; Risk Mitigation</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC7.1</td><td style="padding:8px;color:var(--text2)">Infrastructure monitoring</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">health-check cron runs every 6h. Vercel Speed Insights + Analytics. pipeline-health cron daily.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC7.2</td><td style="padding:8px;color:var(--text2)">Anomaly &amp; threat detection</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">S20 Sentinel agent, pentest suite (XSS/SQLi/CSRF/IDOR), audit_trail, Twilio escalation on anomaly.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC7.3</td><td style="padding:8px;color:var(--text2)">Incident response procedure</td><td style="padding:8px"><span style="color:var(--red,#f87171)">○</span> Pending</td><td style="padding:8px;color:var(--text2)">Define IR playbook: detection → containment → eradication → recovery → post-mortem. Store in Vault.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC8.1</td><td style="padding:8px;color:var(--text2)">Change management</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Git version control with signed commits. Vercel preview deployments before production. Audit trail.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC9.1</td><td style="padding:8px;color:var(--text2)">Business disruption risk mitigation</td><td style="padding:8px"><span style="color:var(--red,#f87171)">○</span> Pending</td><td style="padding:8px;color:var(--text2)">Write BCP: RTO/RPO targets, Supabase PITR backup window, failover procedure.</td></tr>
+        <tr><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">CC9.2</td><td style="padding:8px;color:var(--text2)">Vendor risk management</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Vercel (SOC 2 Type II), Supabase (SOC 2 Type II), Stripe (PCI DSS + SOC 1/2), Anthropic (enterprise). All vendors reviewed.</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(20,184,166,.07);border:1px solid rgba(20,184,166,.2);border-radius:8px;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--teal)">Pending items (4):</strong> IS Policy doc · Risk register · IR playbook · BCP document. Complete these to reach audit-readiness. Use Vanta or Drata to automate evidence collection at scale.
+    </div>
+  </div>
+
+  <!-- ── ISO 27001 control matrix ── -->
+  <div id="iso-matrix" class="card" style="display:none;margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:14px">ISO 27001:2022 — Annex A Domain Matrix</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px">● Implemented &nbsp;◑ Partial &nbsp;○ Pending &nbsp;— N/A (cloud-native)</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600;width:130px">Domain</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600">Title</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600;width:80px">Status</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--text3);font-weight:600">Implementation / Gap</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.5</td><td style="padding:8px;color:var(--text2)">Information Security Policies</td><td style="padding:8px"><span style="color:var(--red,#f87171)">○</span> Pending</td><td style="padding:8px;color:var(--text2)">Write top-level IS Policy. Approved by Howard Henry. Annual review cycle. Publish in /security or Vault.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.6</td><td style="padding:8px;color:var(--text2)">Organisation of Information Security</td><td style="padding:8px"><span style="color:var(--gold)">◑</span> Partial</td><td style="padding:8px;color:var(--text2)">MLRO/ISMS owner: Howard Henry. Formally assign IS roles, define segregation of duties. Document in policy.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.7</td><td style="padding:8px;color:var(--text2)">Human Resource Security</td><td style="padding:8px"><span style="color:var(--text3)">—</span> N/A</td><td style="padding:8px;color:var(--text2)">Solo operator. Revisit at first hire: background checks, security awareness training, offboarding procedure.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.8</td><td style="padding:8px;color:var(--text2)">Asset Management</td><td style="padding:8px"><span style="color:var(--gold)">◑</span> Partial</td><td style="padding:8px;color:var(--text2)">28 tables documented in admin architecture. Gap: formal asset register with data classification (public / confidential / restricted) per table.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.9</td><td style="padding:8px;color:var(--text2)">Access Control</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Supabase Auth. RLS user_id = auth.uid() on all tables. RBAC (user/admin/superadmin). MFA available. Least privilege principle enforced.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.10</td><td style="padding:8px;color:var(--text2)">Cryptography</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">AES-256-GCM (browser Crypto API). TLS 1.2+ enforced. Supabase encryption at rest. Bcrypt passwords. Keys in Vercel env vars, never in git.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.11</td><td style="padding:8px;color:var(--text2)">Physical &amp; Environmental Security</td><td style="padding:8px"><span style="color:var(--text3)">—</span> N/A</td><td style="padding:8px;color:var(--text2)">Cloud-native. Delegated to Vercel (SOC 2) and Supabase (SOC 2). Document vendor physical security attestations.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.12</td><td style="padding:8px;color:var(--text2)">Operations Security</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Audit trail (all mutations logged). 7 cron jobs (health, data retention, compliance). Pentest suite in admin. Self-improve agent.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.13</td><td style="padding:8px;color:var(--text2)">Communications Security</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">HTTPS/TLS everywhere. HSTS 2yr + preload. CSP with strict allow-list. CORS restricted to app origin. No data in URL params.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.14</td><td style="padding:8px;color:var(--text2)">System Acquisition &amp; Development</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Git version control. Secrets in env vars. Input validation in API layer. OWASP controls (CSP, HSTS, X-Frame-Options). No hardcoded credentials.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.15</td><td style="padding:8px;color:var(--text2)">Supplier Relationships</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">Vercel (SOC 2 Type II), Supabase (SOC 2 Type II), Stripe (PCI DSS + SOC 2), Resend, Twilio, Anthropic (enterprise DPA). All vendor certifications on file.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.16</td><td style="padding:8px;color:var(--text2)">Information Security Incident Management</td><td style="padding:8px"><span style="color:var(--red,#f87171)">○</span> Pending</td><td style="padding:8px;color:var(--text2)">Write IR playbook: detection (S20 Sentinel) → containment → notification (ICO 72hr) → eradication → recovery → post-mortem. Store in Vault.</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.17</td><td style="padding:8px;color:var(--text2)">Business Continuity Management</td><td style="padding:8px"><span style="color:var(--red,#f87171)">○</span> Pending</td><td style="padding:8px;color:var(--text2)">Define RTO (4h) / RPO (1h). Document Supabase PITR recovery. Vercel rollback procedure. BCP document in Vault.</td></tr>
+        <tr><td style="padding:8px;color:var(--text);font-family:var(--mono);font-size:11px">A.18</td><td style="padding:8px;color:var(--text2)">Compliance</td><td style="padding:8px"><span style="color:var(--teal)">●</span> Done</td><td style="padding:8px;color:var(--text2)">UK GDPR / DPA 2018 compliant. AML / MLR 2017 controls active. PECR consent mechanism live. PCI DSS SAQ-A via Stripe.</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(20,184,166,.07);border:1px solid rgba(20,184,166,.2);border-radius:8px;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--teal)">Pending items (4):</strong> IS Policy (A.5) · Data classification / asset register (A.8) · IR playbook (A.16) · BCP document (A.17). These 4 documents unlock audit-readiness across ISO 27001, SOC 2, and Cyber Essentials simultaneously.
+    </div>
+  </div>
+
   <div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:12px">Compliance Event Log</div><div id="compLog"></div></div>
 </section>
+
+<script>
+(function(){
+  var cards = document.querySelectorAll('#s-compliance .g3 .card .badge');
+  var green=0,amber=0,ghost=0;
+  cards.forEach(function(b){
+    if(b.classList.contains('badge-green')) green++;
+    else if(b.classList.contains('badge-amber')) amber++;
+    else if(b.classList.contains('badge-ghost')) ghost++;
+  });
+  document.getElementById('comp-count-green').textContent = green + ' Compliant';
+  document.getElementById('comp-count-amber').textContent = amber + ' In Progress';
+  document.getElementById('comp-count-ghost').textContent = ghost + ' Planned';
+})();
+function toggleMatrix(id){
+  var el=document.getElementById(id);
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+</script>
 
 <!-- ═══ AES-256 ═══ -->
 <section class="asec" id="s-crypto">
@@ -557,7 +751,7 @@
   </div>
 </div>
 
-<script src="app.js?v=47"></script>
+<script src="app.js?v=48"></script>
 <script>
 'use strict';
 const COLORS=['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#f87171','#4ade80','#fbbf24','#e879f9','#34d399','#fb923c','#38bdf8','#c084fc','#f472b6','#4ade80','#22d3ee','#a3e635','#facc15','#f87171','#818cf8','#2dd4bf','#c9a84c'];

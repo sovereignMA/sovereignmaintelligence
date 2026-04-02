@@ -38,6 +38,10 @@
     {
       "path": "/api/cron/compliance-check",
       "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/cron/trial-drip",
+      "schedule": "0 9 * * *"
     }
   ],
   "functions": {
@@ -98,6 +102,22 @@
     {
       "source": "/admin",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/admin/is-policy",
+      "destination": "/is-policy.html"
+    },
+    {
+      "source": "/admin/asset-register",
+      "destination": "/asset-register.html"
+    },
+    {
+      "source": "/admin/ir-playbook",
+      "destination": "/ir-playbook.html"
+    },
+    {
+      "source": "/admin/bcp",
+      "destination": "/bcp.html"
     },
     {
       "source": "/privacy",
@@ -166,7 +186,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com https://www.googletagmanager.com https://snap.licdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://kicdjdxxdqtmetphipnn.supabase.co wss://kicdjdxxdqtmetphipnn.supabase.co https://gmail.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://www.linkedin.com; img-src 'self' data: blob: https:; frame-ancestors 'none';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com https://www.googletagmanager.com https://snap.licdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://kicdjdxxdqtmetphipnn.supabase.co wss://kicdjdxxdqtmetphipnn.supabase.co https://gmail.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://region1.analytics.google.com https://stats.g.doubleclick.net https://www.linkedin.com https://px.ads.linkedin.com; img-src 'self' data: blob: https:; frame-ancestors 'none';"
         }
       ]
     },

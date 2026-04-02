@@ -3,7 +3,7 @@
 <head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9BQYFMVFTJ"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("consent","default",{"ad_storage":"denied","ad_user_data":"denied","ad_personalization":"denied","analytics_storage":"denied"});gtag("js",new Date());gtag("config","G-9BQYFMVFTJ");</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
@@ -60,7 +60,7 @@
 </style>
 </head>
 <body>
-<script src="app.js?v=47"></script>
+<script src="app.js?v=48"></script>
 
 <div class="upgrade-wrap">
   <div style="text-align:center;margin-bottom:8px">
@@ -296,8 +296,26 @@ async function selectPlan(plan) {
 }
 
 // Show trial status + update CTAs based on subscription state
+// Also handle ?plan=X&autostart=1 from post-signup redirect
 window.addEventListener('auth:ready', async function(e) {
   if(!e.detail?.user) return;
+
+  // Auto-trigger checkout if redirected from signup with a pre-selected plan
+  var params = new URLSearchParams(location.search);
+  var autoplan = params.get('plan');
+  var autostart = params.get('autostart') === '1';
+  if(autoplan && autostart && ['prospector','dealmaker','team'].includes(autoplan)) {
+    // Also process any pending referral code
+    var ref = localStorage.getItem('sv_ref');
+    if(ref) {
+      // Fire-and-forget referral tracking
+      API.referral.track(ref).catch(function(){});
+      localStorage.removeItem('sv_ref');
+    }
+    selectPlan(autoplan);
+    return;
+  }
+
   try {
     var res = await API.billing.status();
     if(!res?.data) return;

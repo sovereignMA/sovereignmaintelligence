@@ -4,6 +4,17 @@
    ═══════════════════════════════════════════════════ */
 'use strict';
 
+/* ── AUTH GATE: hide protected pages before auth resolves ── */
+(function(){
+  const _p = location.pathname.split('/').pop() || 'index.html';
+  const _PUBLIC = new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','']);
+  if(!_PUBLIC.has(_p)){
+    document.documentElement.style.visibility = 'hidden';
+    // Safety fallback: reveal after 4s in case auth never fires
+    window._authRevealTimer = setTimeout(function(){ document.documentElement.style.visibility = ''; }, 4000);
+  }
+})();
+
 const SB_URL  = 'https://kicdjdxxdqtmetphipnn.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpY2RqZHh4ZHF0bWV0cGhpcG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTQ2ODksImV4cCI6MjA4OTQzMDY4OX0.UukZihDkA1nwZe0MZewya3Is_7vCoVt4cVIKSrdjFKE';
 const FN_URL  = `${SB_URL}/functions/v1`;
@@ -437,11 +448,16 @@ window.API = API;
         hasActiveSub = !!p?.stripe_customer_id && ['active','past_due'].includes(p?.subscription_status);
       } catch(_){}
 
-      // Admin page guard — redirect non-admins away from admin.html
-      if(page === 'admin.html' && !isAdmin){
+      // Admin page guard — redirect non-admins away from admin-only pages
+      const ADMIN_ONLY_PAGES = ['admin.html','is-policy.html','asset-register.html','ir-playbook.html','bcp.html'];
+      if(ADMIN_ONLY_PAGES.includes(page) && !isAdmin){
         window.location.href = 'command.html';
         return;
       }
+
+      // Auth confirmed — reveal page
+      clearTimeout(window._authRevealTimer);
+      document.documentElement.style.visibility = '';
 
       // Update nav with role-appropriate links
       if(!isPublicPage){
@@ -508,6 +524,15 @@ window.API = API;
         if(dd && !wrap.contains(e.target)) dd.classList.remove('open');
       });
     } else {
+      // Not authenticated — redirect protected pages to login, then reveal public ones
+      if(!isPublicPage){
+        clearTimeout(window._authRevealTimer);
+        window.location.href = 'login.html' + (page ? '?next=' + encodeURIComponent(page) : '');
+        return;
+      }
+      clearTimeout(window._authRevealTimer);
+      document.documentElement.style.visibility = '';
+
       // Logged-out: ensure public nav is shown
       const {nav,mob} = renderLinks(PUBLIC_LINKS);
       const nl = document.getElementById('navLinks');
@@ -656,14 +681,69 @@ window.Analytics = _Analytics;
 // Auto-init after Supabase loads
 window.addEventListener('sb:ready', () => _Analytics.init());
 
-// ── LinkedIn Insight Tag (partner id: 8900834) ────────────────────────────────
-(function(){
+// ── LinkedIn Insight Tag — loaded only after cookie consent ───────────────────
+function _loadLinkedIn(){
   if(!window.lintrk){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[];}
   var s=document.getElementsByTagName('script')[0];
   var b=document.createElement('script');
   b.type='text/javascript';b.async=true;
   b.src='https://snap.licdn.com/li.lms-analytics/insight.min.js';
   s.parentNode.insertBefore(b,s);
+}
+
+// ── Cookie Consent (PECR / UK GDPR) ──────────────────────────────────────────
+(function(){
+  var CONSENT_KEY = 'sv_cookies';
+
+  function grantConsent(){
+    localStorage.setItem(CONSENT_KEY, 'yes');
+    // Legacy key used by Analytics.track / firePixels
+    localStorage.setItem('cookies', 'yes');
+    if(window.gtag) gtag('consent','update',{
+      ad_storage:'granted', ad_user_data:'granted',
+      ad_personalization:'granted', analytics_storage:'granted'
+    });
+    _loadLinkedIn();
+  }
+
+  function denyConsent(){
+    localStorage.setItem(CONSENT_KEY, 'no');
+    localStorage.setItem('cookies', 'no');
+  }
+
+  function hideBanner(){
+    var el=document.getElementById('sv-cookie-banner');
+    if(el) el.remove();
+  }
+
+  // Already decided — apply grant and hide
+  var stored = localStorage.getItem(CONSENT_KEY);
+  if(stored === 'yes'){ grantConsent(); return; }
+  if(stored === 'no'){ return; }
+
+  // Show banner on DOMContentLoaded
+  function showBanner(){
+    var b=document.createElement('div');
+    b.id='sv-cookie-banner';
+    b.innerHTML='<div style="max-width:780px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+      +'<span style="flex:1;min-width:220px;font-size:13px;color:#a1a1aa;line-height:1.5">'
+      +'We use cookies and pixels for analytics and advertising. See our <a href="/privacy" style="color:#c9a84c">Privacy Policy</a>.'
+      +'</span>'
+      +'<div style="display:flex;gap:8px;flex-shrink:0">'
+      +'<button id="sv-ck-deny" style="padding:8px 16px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#71717a;font-size:13px;cursor:pointer">Decline</button>'
+      +'<button id="sv-ck-accept" style="padding:8px 20px;border-radius:7px;border:none;background:#c9a84c;color:#0a0a0f;font-size:13px;font-weight:700;cursor:pointer">Accept</button>'
+      +'</div></div>';
+    b.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#111118;border-top:1px solid rgba(255,255,255,.08);padding:14px 20px;display:flex;justify-content:center';
+    document.body.appendChild(b);
+    document.getElementById('sv-ck-accept').onclick=function(){ grantConsent(); hideBanner(); };
+    document.getElementById('sv-ck-deny').onclick=function(){ denyConsent(); hideBanner(); };
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', showBanner);
+  } else {
+    showBanner();
+  }
 })();
 
 /* ══════════════════════════════════════

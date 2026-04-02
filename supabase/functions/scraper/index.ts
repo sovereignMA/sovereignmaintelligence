@@ -211,14 +211,14 @@ async function processQueue() {
 // ── Main handler ──────────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, content-type' } });
+    return new Response(null, { headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, apikey, x-client-info, content-type' } });
   }
   if (MISSING_VARS.length) {
     return new Response(JSON.stringify({ error: `Server misconfiguration — missing: ${MISSING_VARS.join(', ')}` }), { status: 500, headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Content-Type': 'application/json' } });
   }
 
   try {
-    const CORS_HEADERS = { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' };
+    const CORS_HEADERS = { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, apikey, x-client-info, content-type', 'Content-Type': 'application/json' };
     const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
     if (!auth) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS_HEADERS });
     // Allow service role key (used by cron jobs) — otherwise validate as user JWT
@@ -283,5 +283,5 @@ Deno.serve(async (req: Request) => {
 });
 
 function scrapeJson(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, content-type', 'Content-Type': 'application/json' } });
+  return new Response(JSON.stringify(data), { status, headers: { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN, 'Access-Control-Allow-Headers': 'authorization, apikey, x-client-info, content-type', 'Content-Type': 'application/json' } });
 }
