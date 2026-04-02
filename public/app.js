@@ -136,6 +136,7 @@ const _Auth = {
   },
 
   async signOut() {
+    document.cookie = 'sv_auth=; path=/; max-age=0';
     await window._sb.auth.signOut();
     location.href = 'index.html';
   },
@@ -455,9 +456,13 @@ window.API = API;
         return;
       }
 
-      // Auth confirmed — reveal page
+      // Auth confirmed — set session cookie for Edge Middleware, reveal page
+      document.cookie = 'sv_auth=' + (isAdmin ? 'admin' : '1') + '; path=/; secure; samesite=lax; max-age=604800';
       clearTimeout(window._authRevealTimer);
       document.documentElement.style.visibility = '';
+
+      // Fire auth:admin so admin.html can safely load — only after role is confirmed
+      if(isAdmin) window.dispatchEvent(new CustomEvent('auth:admin', {detail: e.detail}));
 
       // Update nav with role-appropriate links
       if(!isPublicPage){

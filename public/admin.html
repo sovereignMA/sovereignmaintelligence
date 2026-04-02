@@ -1169,14 +1169,10 @@ function kbRender() {
 function loadKb() { kbRender(); }
 
 // ── INIT ──
-window.addEventListener('auth:ready',async e=>{
-  if(!e.detail?.user){
-    Toast.show('Admin requires authentication','warn',3000);
-    setTimeout(()=>location.href='login.html?next=admin.html',2000);
-    return;
-  }
-  // Brief settle delay after OAuth redirect — gives Supabase auth time to propagate
-  // the new session before edge functions try to validate the token
+// Listen for auth:admin (fired by app.js only after role=admin/superadmin confirmed)
+// This prevents API calls firing before role is verified, which would return 403.
+window.addEventListener('auth:admin', async e=>{
+  // Brief settle delay after OAuth redirect
   if(location.hash || location.search.includes('code=')){
     await new Promise(ok=>setTimeout(ok,1000));
   }
