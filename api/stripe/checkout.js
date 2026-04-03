@@ -62,7 +62,8 @@ export default async function handler(req, res) {
       });
       customerId = customer.id;
       // Store customer ID immediately
-      await sb.from('user_profiles').upsert({ id: user.id, stripe_customer_id: customerId });
+      const { error: upsertErr } = await sb.from('user_profiles').upsert({ id: user.id, stripe_customer_id: customerId });
+      if (upsertErr) console.error('[stripe/checkout] Failed to store customer ID:', upsertErr.message);
     }
 
     const appUrl = process.env.APP_URL || 'https://sovereigncmd.xyz';

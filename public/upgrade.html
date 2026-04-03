@@ -103,7 +103,7 @@
         <li>Email templates</li>
         <li>21-day free trial</li>
       </ul>
-      <button class="plan-cta plan-cta-secondary" onclick="selectPlan('prospector')">Start Free Trial</button>
+      <button class="plan-cta plan-cta-secondary" onclick="selectPlan('prospector', this)">Start Free Trial</button>
       <div class="trial-note">21 days free · No credit card required</div>
     </div>
 
@@ -124,7 +124,7 @@
         <li>Deal analytics</li>
         <li>21-day free trial</li>
       </ul>
-      <button class="plan-cta plan-cta-primary" onclick="selectPlan('dealmaker')">Start Free Trial</button>
+      <button class="plan-cta plan-cta-primary" onclick="selectPlan('dealmaker', this)">Start Free Trial</button>
       <div class="trial-note">21 days free · No credit card required</div>
     </div>
 
@@ -144,7 +144,7 @@
         <li>CSV import</li>
         <li>Weekly deal digest</li>
       </ul>
-      <button class="plan-cta plan-cta-secondary" onclick="selectPlan('team')">Start Free Trial</button>
+      <button class="plan-cta plan-cta-secondary" onclick="selectPlan('team', this)">Start Free Trial</button>
       <div class="trial-note">21 days free · No credit card required</div>
     </div>
 
@@ -165,7 +165,7 @@
         <li>SSO / SAML</li>
         <li>SLA</li>
       </ul>
-      <button class="plan-cta plan-cta-ghost" onclick="selectPlan('fund')">Book a Demo</button>
+      <button class="plan-cta plan-cta-ghost" onclick="selectPlan('fund', this)">Book a Demo</button>
       <div class="trial-note">Card required · white-glove onboarding</div>
     </div>
 
@@ -264,7 +264,7 @@ function setBilling(type) {
   });
 }
 
-async function selectPlan(plan) {
+async function selectPlan(plan, btn) {
   if(!window.Auth || !Auth.user) {
     window.location.href = 'login.html?next=upgrade.html';
     return;
@@ -274,7 +274,6 @@ async function selectPlan(plan) {
     Toast.show('Book a demo — email hello@sovereigncmd.xyz and we\'ll set up a call within 24 hours.', 'info', 7000);
     return;
   }
-  var btn = event?.target;
   if(btn) { btn.textContent = 'Redirecting…'; btn.disabled = true; }
   try {
     var r = await fetch('/api/stripe/checkout', {
@@ -291,7 +290,7 @@ async function selectPlan(plan) {
     }
   } catch(e) {
     Toast.show('Network error — please try again', 'err');
-    if(btn) { btn.disabled = false; }
+    if(btn) { btn.textContent = 'Start Free Trial'; btn.disabled = false; }
   }
 }
 
@@ -327,15 +326,15 @@ window.addEventListener('auth:ready', async function(e) {
       txt.textContent = 'You\'re on the ' + (d.plan || 'active') + ' plan. Manage your subscription from the account menu.';
       txt.style.color = 'var(--teal)';
       bar.style.display = 'flex';
-      ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund')") { b.textContent = 'Change Plan'; } });
+      ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Change Plan'; } });
     } else if(d.subscription_status === 'trialing' || d.subscription_status === 'trial') {
       if(d.trial_expired) {
         txt.textContent = 'Your trial has expired. Subscribe now to restore full access.';
         txt.style.color = 'var(--red, #dc3545)';
-        ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund')") { b.textContent = 'Subscribe Now'; } });
+        ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Subscribe Now'; } });
       } else {
         txt.textContent = (d.trial_days_left || 0) + ' day' + (d.trial_days_left === 1 ? '' : 's') + ' left on your free trial — subscribe to keep access.';
-        ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund')") { b.textContent = 'Subscribe — ' + (d.trial_days_left || 0) + ' days free'; } });
+        ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Subscribe — ' + (d.trial_days_left || 0) + ' days free'; } });
       }
       bar.style.display = 'flex';
     }
