@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Incident Response Playbook — Project Sovereign</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="app.css?v=41">
+<style>
+.doc-wrap{max-width:820px;margin:0 auto;padding:40px 24px 100px}
+.doc-header{border-bottom:2px solid var(--gold);padding-bottom:20px;margin-bottom:32px}
+.doc-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:16px;padding:14px;background:var(--surface);border-radius:8px;font-size:12px}
+.doc-meta-item{color:var(--text3)}.doc-meta-item strong{display:block;color:var(--text);margin-bottom:2px}
+.doc-section{margin-bottom:36px}
+.doc-section h2{font-size:16px;font-weight:700;color:var(--gold2);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.doc-section h3{font-size:13px;font-weight:700;color:var(--text);margin:16px 0 8px}
+.doc-section p{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:10px}
+.doc-section ul,ol{padding-left:20px;margin-bottom:12px}
+.doc-section li{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:4px}
+.doc-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.doc-table th{text-align:left;padding:8px 10px;background:var(--surface);color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)}
+.doc-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.doc-table td:first-child{color:var(--text);font-weight:600}
+.sev-p1{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(248,113,113,.15);color:#f87171}
+.sev-p2{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(251,191,36,.15);color:#fbbf24}
+.sev-p3{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(20,184,166,.15);color:var(--teal)}
+.sev-p4{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(161,161,170,.12);color:var(--text3)}
+.step-box{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.step-num{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.step-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px}
+.step-body{font-size:12px;color:var(--text2);line-height:1.7}
+.alert-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--text2)}
+.alert-box strong{color:#f87171}
+.doc-actions{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+@media print{.doc-actions,.nav-bar,.mob-nav{display:none!important}.doc-wrap{padding:20px}.doc-header{border-color:#000}body{background:#fff;color:#000}.doc-section h2{color:#000}.doc-meta{background:#f5f5f5}.step-box{background:#f9f9f9;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+<script src="app.js?v=48"></script>
+<div class="doc-wrap">
+  <div class="doc-actions">
+    <a href="/admin" class="btn btn-outline btn-sm">← Admin</a>
+    <button class="btn btn-outline btn-sm" onclick="window.print()">⎙ Print / PDF</button>
+  </div>
+
+  <div class="doc-header">
+    <div class="label">SOV-IRP-001</div>
+    <h1 style="font-size:24px;font-weight:800;margin:8px 0 4px">Incident Response Playbook</h1>
+    <div style="font-size:13px;color:var(--text3)">Project Sovereign · Howard Henry · London, UK</div>
+    <div class="doc-meta">
+      <div class="doc-meta-item"><strong>Document ID</strong>SOV-IRP-001</div>
+      <div class="doc-meta-item"><strong>Version</strong>1.0</div>
+      <div class="doc-meta-item"><strong>Status</strong>Active</div>
+      <div class="doc-meta-item"><strong>Owner</strong>Howard Henry</div>
+      <div class="doc-meta-item"><strong>Approved</strong>4 April 2026</div>
+      <div class="doc-meta-item"><strong>Next Review</strong>4 April 2027</div>
+      <div class="doc-meta-item"><strong>Classification</strong>Restricted — Internal</div>
+      <div class="doc-meta-item"><strong>Frameworks</strong>ISO 27001 A.5.24-26 · SOC 2 CC7.3-7.5 · UK GDPR Art.33</div>
+    </div>
+  </div>
+
+  <div class="alert-box">
+    <strong>ACTIVE INCIDENT?</strong> Skip to Section 3 (Response Procedures) immediately. Return to this page for context once containment is underway.
+  </div>
+
+  <div class="doc-section">
+    <h2>1. Purpose and Scope</h2>
+    <p>This Incident Response Playbook ("Playbook") defines the procedures for identifying, containing, eradicating, and recovering from security incidents affecting Project Sovereign. It is the authoritative reference for all security incident response activity.</p>
+    <p>This Playbook covers:</p>
+    <ul>
+      <li>All security events affecting Platform infrastructure, data, or services</li>
+      <li>Personal data breaches under UK GDPR / DPA 2018</li>
+      <li>Service disruption events meeting the P1/P2 severity threshold</li>
+      <li>Third-party provider incidents that affect Platform data or availability</li>
+    </ul>
+    <p>The Incident Response Lead for all incidents is Howard Henry. All incidents must be logged in the <code>compliance_log</code> table (event type: <code>security_incident</code>) within 2 hours of detection.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>2. Incident Severity Classification</h2>
+    <table class="doc-table">
+      <thead><tr><th>Severity</th><th>Definition</th><th>Response SLA</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="sev-p1">P1 — Critical</span></td>
+          <td>Active breach of personal data or secrets; complete service outage; active attacker in system</td>
+          <td>Immediate — within 15 min of detection</td>
+          <td>Supabase service role key leaked; production DB accessed by unauthorised party; ransomware; mass user data exfiltration</td>
+        </tr>
+        <tr>
+          <td><span class="sev-p2">P2 — High</span></td>
+          <td>Confirmed or probable breach; significant service degradation; credentials suspected compromised</td>
+          <td>Within 1 hour</td>
+          <td>Suspected API key exposure; production environment misconfiguration exposing data; failed authentication surge; partial outage &gt;30 min</td>
+        </tr>
+        <tr>
+          <td><span class="sev-p3">P3 — Medium</span></td>
+          <td>Potential security issue; service degradation; single non-critical system affected</td>
+          <td>Within 4 hours</td>
+          <td>Elevated error rates; unusual access patterns; cron job failure; dependency vulnerability (CVSS 7–9)</td>
+        </tr>
+        <tr>
+          <td><span class="sev-p4">P4 — Low</span></td>
+          <td>Minor security concern; no immediate data risk; informational</td>
+          <td>Within 1 business day</td>
+          <td>Single failed login spike; low-severity CVE; policy violation with no data impact; spam to platform email</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>3. Response Procedures</h2>
+
+    <h3>3.1 All Incidents — Universal Steps</h3>
+    <div class="step-box">
+      <div class="step-num">Step 1 — Detect &amp; Triage</div>
+      <div class="step-title">Identify and classify the incident</div>
+      <div class="step-body">
+        Determine: What happened? When? What systems/data are affected? Assign severity (P1–P4) using Section 2. If uncertain, escalate to P2.
+        <br><br>Sources: Vercel runtime logs · Supabase logs · admin audit trail · health-check cron alerts · user reports · Stripe webhook failures
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Step 2 — Log &amp; Preserve</div>
+      <div class="step-title">Create an incident record immediately</div>
+      <div class="step-body">
+        Log to <code>compliance_log</code> table: event_type = <code>security_incident</code>, framework = severity level, notes = brief description, timestamp.<br>
+        Preserve evidence: export relevant Vercel logs, Supabase audit_trail rows, and Stripe event logs. Do not delete or modify anything until investigation is complete.
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Step 3 — Contain</div>
+      <div class="step-title">Stop the bleeding — limit blast radius</div>
+      <div class="step-body">
+        Immediate containment actions (as appropriate): revoke compromised credentials · disable affected user accounts via Admin Users panel · put Vercel deployment on maintenance mode · pause cron jobs · block suspicious IPs via Vercel firewall rules.
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Step 4 — Eradicate</div>
+      <div class="step-title">Remove the root cause</div>
+      <div class="step-body">
+        Rotate all potentially compromised secrets. Patch vulnerabilities. Remove unauthorised access. Verify no backdoors or persistent access remain. Cross-check asset register (SOV-ASR-001) to confirm all affected assets identified.
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Step 5 — Recover</div>
+      <div class="step-title">Restore to secure operations</div>
+      <div class="step-body">
+        Restore affected services using BCP procedures (SOV-BCP-001). Verify integrity of restored data. Monitor for 24 hours post-recovery for recurrence. Update <code>compliance_log</code> with resolution timestamp and root cause.
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Step 6 — Post-Incident Review</div>
+      <div class="step-title">Document and improve</div>
+      <div class="step-body">
+        Complete a post-incident review within 5 business days: root cause analysis, timeline, impact assessment, remediation actions completed, and preventive measures. Update this Playbook if procedure gaps were identified.
+      </div>
+    </div>
+
+    <h3>3.2 Personal Data Breach — UK GDPR Protocol</h3>
+    <p>If the incident involves personal data (any data relating to an identified or identifiable natural person), the following additional obligations apply:</p>
+    <div class="step-box">
+      <div class="step-num">T+0 — Discovery</div>
+      <div class="step-title">Clock starts now</div>
+      <div class="step-body">
+        The 72-hour ICO notification window begins at the moment personal data breach is <em>known</em> (not suspected). Assess: What data? How many individuals? What risk of harm?
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">T+24 hours</div>
+      <div class="step-title">Initial risk assessment complete</div>
+      <div class="step-body">
+        Determine whether breach is notifiable to ICO (Art. 33 UK GDPR): breach is notifiable unless it is <em>unlikely to result in a risk to rights and freedoms</em> of individuals. If notifiable, begin preparing ICO notification. If clearly not notifiable, document the reasoning.
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">T+72 hours</div>
+      <div class="step-title">ICO notification deadline (if notifiable)</div>
+      <div class="step-body">
+        Report via ICO self-reporting portal: <strong>ico.org.uk/for-organisations/report-a-breach</strong><br>
+        Required information: nature of breach · categories and approximate number of individuals · categories and approximate number of records · DPO contact details · likely consequences · measures taken/proposed.<br>
+        If full information is not available within 72 hours, submit initial notification and follow up without undue delay. Partial notification is better than no notification.
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Without undue delay</div>
+      <div class="step-title">Data subject notification (if high risk)</div>
+      <div class="step-body">
+        If the breach is likely to result in <em>high risk</em> to affected individuals (Art. 34 UK GDPR), notify affected users directly via email. Message must: describe the breach in plain language · provide DPO contact details · describe likely consequences · describe measures being taken. Draft and send via Resend.
+      </div>
+    </div>
+
+    <h3>3.3 Credential / Secret Compromise</h3>
+    <ol>
+      <li>Immediately revoke the compromised credential in the issuing service (Stripe Dashboard, Supabase Settings, Anthropic Console, etc.)</li>
+      <li>Generate a new credential and update in Vercel environment variables: <code>vercel env add KEY production</code></li>
+      <li>Redeploy: <code>vercel deploy --prod</code></li>
+      <li>Audit <code>audit_trail</code> for any activity using the compromised credential within the suspected exposure window</li>
+      <li>Update asset register (SOV-ASR-001) with new rotation date</li>
+      <li>If Supabase service role key: immediately check all tables for unauthorised data changes; restore from PITR if necessary</li>
+    </ol>
+
+    <h3>3.4 Unauthorised Account Access</h3>
+    <ol>
+      <li>In Admin Users panel: disable the affected account immediately</li>
+      <li>Revoke all active sessions via Supabase Auth dashboard</li>
+      <li>Export and review <code>audit_trail</code> for all actions taken by the account during the suspected window</li>
+      <li>If personal data was accessed: trigger Personal Data Breach protocol (3.2)</li>
+      <li>Contact affected user to notify, change credentials, and re-enable if legitimate user</li>
+      <li>Review how unauthorised access was obtained; patch the vector before re-enabling</li>
+    </ol>
+
+    <h3>3.5 Stripe / Payment Incident</h3>
+    <ol>
+      <li>If fraudulent charges suspected: contact Stripe Trust &amp; Safety immediately via Stripe Dashboard</li>
+      <li>Revoke <code>STRIPE_SECRET_KEY</code> and generate a new key; redeploy</li>
+      <li>Review all Stripe webhook events in the past 30 days via Stripe Dashboard Events log</li>
+      <li>Check <code>user_profiles</code> for unexpected subscription status changes</li>
+      <li>If card data exposure: note that Platform uses Stripe-hosted Checkout — no raw card data ever touches Platform servers. Stripe handles PCI DSS compliance. Incident is Stripe-side; follow their notification.</li>
+    </ol>
+
+    <h3>3.6 AI Prompt Injection / Data Exfiltration via AI</h3>
+    <ol>
+      <li>Disable AI agents immediately: set <code>ANTHROPIC_API_KEY</code> to empty string in Vercel env vars; redeploy</li>
+      <li>Review <code>conversations</code> table for the affected user/session to understand what data was exposed in prompts</li>
+      <li>Review <code>audit_trail</code> for the ai-proxy function calls during the incident window</li>
+      <li>If personal data was extracted: trigger Personal Data Breach protocol (3.2)</li>
+      <li>Re-enable AI only after root cause is identified and input sanitisation is verified</li>
+    </ol>
+  </div>
+
+  <div class="doc-section">
+    <h2>4. Contact and Escalation</h2>
+    <table class="doc-table">
+      <thead><tr><th>Role</th><th>Name</th><th>Contact</th><th>When to Contact</th></tr></thead>
+      <tbody>
+        <tr><td>Incident Response Lead / ISMS Owner</td><td>Howard Henry</td><td>trainingcircuitvc@gmail.com · personal mobile</td><td>All P1/P2 incidents immediately</td></tr>
+        <tr><td>ICO (Information Commissioner's Office)</td><td>—</td><td>ico.org.uk/for-organisations/report-a-breach · 0303 123 1113</td><td>Personal data breach within 72 hours if notifiable</td></tr>
+        <tr><td>Vercel Support</td><td>—</td><td>vercel.com/support</td><td>Infrastructure outage, deployment issues</td></tr>
+        <tr><td>Supabase Support</td><td>—</td><td>supabase.com/support</td><td>DB outage, data integrity issues, auth failures</td></tr>
+        <tr><td>Stripe Trust &amp; Safety</td><td>—</td><td>stripe.com/docs/disputes · Dashboard contact</td><td>Fraudulent charges, payment disputes</td></tr>
+        <tr><td>National Cyber Security Centre</td><td>—</td><td>ncsc.gov.uk/cyberalert</td><td>Significant cyber attack; ransomware; state-sponsored threat</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>5. Evidence Preservation Checklist</h2>
+    <p>For all P1/P2 incidents, preserve the following before taking remediation actions where possible:</p>
+    <ul>
+      <li>Vercel runtime logs export (from Vercel Dashboard → Deployments → Logs)</li>
+      <li>Supabase audit_trail rows for affected user and time window (SQL export)</li>
+      <li>Supabase auth logs (Supabase Dashboard → Auth → Logs)</li>
+      <li>Stripe event log export for relevant time window</li>
+      <li>Browser/device access logs if client-side compromise suspected</li>
+      <li>Screenshot or export of any error messages or unusual UI state</li>
+      <li>Timestamps in UTC for all observed anomalies</li>
+    </ul>
+    <p>Evidence must be retained for a minimum of 3 years from incident date, or as required by any legal/regulatory proceedings.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>6. Post-Incident Review Template</h2>
+    <p>Complete within 5 business days of incident resolution. Log outcome to <code>compliance_log</code>.</p>
+    <table class="doc-table">
+      <thead><tr><th>Field</th><th>Content</th></tr></thead>
+      <tbody>
+        <tr><td>Incident ID</td><td>INC-YYYY-NNN (sequential)</td></tr>
+        <tr><td>Date/Time Detected</td><td>UTC timestamp</td></tr>
+        <tr><td>Date/Time Resolved</td><td>UTC timestamp</td></tr>
+        <tr><td>Severity</td><td>P1 / P2 / P3 / P4</td></tr>
+        <tr><td>Systems Affected</td><td>List of asset IDs from SOV-ASR-001</td></tr>
+        <tr><td>Personal Data Involved?</td><td>Yes/No — if Yes: categories, approx. number of individuals</td></tr>
+        <tr><td>ICO Notified?</td><td>Yes / No / Not required (with reasoning)</td></tr>
+        <tr><td>Data Subjects Notified?</td><td>Yes / No / Not required (with reasoning)</td></tr>
+        <tr><td>Root Cause</td><td>Technical and/or process root cause</td></tr>
+        <tr><td>Timeline</td><td>Chronological sequence of events</td></tr>
+        <tr><td>Containment Actions</td><td>What was done to stop the incident</td></tr>
+        <tr><td>Remediation Actions</td><td>What was fixed and when</td></tr>
+        <tr><td>Preventive Measures</td><td>Process, technical, or policy changes to prevent recurrence</td></tr>
+        <tr><td>Playbook Gaps Identified</td><td>Any steps this Playbook failed to cover</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>7. Testing and Review</h2>
+    <p>This Playbook is tested and reviewed as follows:</p>
+    <ul>
+      <li><strong>Annual tabletop exercise:</strong> Simulate a P1 personal data breach scenario; walk through all steps; identify gaps</li>
+      <li><strong>Annual review:</strong> Review all procedures against current infrastructure and any incidents from the past year</li>
+      <li><strong>Post-incident update:</strong> Update Playbook within 5 business days of any P1/P2 incident to address identified gaps</li>
+      <li><strong>Regulation tracking:</strong> Review ICO guidance and NCSC advisories quarterly; update if material changes occur</li>
+    </ul>
+    <div style="margin-top:20px;padding:14px;background:var(--surface);border-radius:8px;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--text)">Approval</strong><br>
+      This Playbook has been reviewed and approved by Howard Henry, ISMS Owner, on 4 April 2026.<br>
+      <span style="color:var(--text3)">Signature on file. Next review: 4 April 2027.</span>
+    </div>
+  </div>
+</div>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

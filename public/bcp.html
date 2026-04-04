@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Business Continuity Plan — Project Sovereign</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="app.css?v=41">
+<style>
+.doc-wrap{max-width:820px;margin:0 auto;padding:40px 24px 100px}
+.doc-header{border-bottom:2px solid var(--gold);padding-bottom:20px;margin-bottom:32px}
+.doc-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:16px;padding:14px;background:var(--surface);border-radius:8px;font-size:12px}
+.doc-meta-item{color:var(--text3)}.doc-meta-item strong{display:block;color:var(--text);margin-bottom:2px}
+.doc-section{margin-bottom:36px}
+.doc-section h2{font-size:16px;font-weight:700;color:var(--gold2);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.doc-section h3{font-size:13px;font-weight:700;color:var(--text);margin:16px 0 8px}
+.doc-section p{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:10px}
+.doc-section ul,ol{padding-left:20px;margin-bottom:12px}
+.doc-section li{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:4px}
+.doc-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.doc-table th{text-align:left;padding:8px 10px;background:var(--surface);color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)}
+.doc-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.doc-table td:first-child{color:var(--text);font-weight:600}
+.badge-ok{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(20,184,166,.15);color:var(--teal)}
+.badge-warn{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(251,191,36,.15);color:#fbbf24}
+.badge-high{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(248,113,113,.15);color:#f87171}
+.step-box{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.step-num{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.step-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px}
+.step-body{font-size:12px;color:var(--text2);line-height:1.7}
+.doc-actions{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+@media print{.doc-actions,.nav-bar,.mob-nav{display:none!important}.doc-wrap{padding:20px}.doc-header{border-color:#000}body{background:#fff;color:#000}.doc-section h2{color:#000}.doc-meta{background:#f5f5f5}.step-box{background:#f9f9f9;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+<script src="app.js?v=48"></script>
+<div class="doc-wrap">
+  <div class="doc-actions">
+    <a href="/admin" class="btn btn-outline btn-sm">← Admin</a>
+    <button class="btn btn-outline btn-sm" onclick="window.print()">⎙ Print / PDF</button>
+  </div>
+
+  <div class="doc-header">
+    <div class="label">SOV-BCP-001</div>
+    <h1 style="font-size:24px;font-weight:800;margin:8px 0 4px">Business Continuity Plan</h1>
+    <div style="font-size:13px;color:var(--text3)">Project Sovereign · Howard Henry · London, UK</div>
+    <div class="doc-meta">
+      <div class="doc-meta-item"><strong>Document ID</strong>SOV-BCP-001</div>
+      <div class="doc-meta-item"><strong>Version</strong>1.0</div>
+      <div class="doc-meta-item"><strong>Status</strong>Active</div>
+      <div class="doc-meta-item"><strong>Owner</strong>Howard Henry</div>
+      <div class="doc-meta-item"><strong>Approved</strong>4 April 2026</div>
+      <div class="doc-meta-item"><strong>Next Review</strong>4 April 2027</div>
+      <div class="doc-meta-item"><strong>Classification</strong>Restricted — Internal</div>
+      <div class="doc-meta-item"><strong>Frameworks</strong>ISO 27001 A.5.29-30 · SOC 2 A1.1-A1.3 · Cyber Essentials</div>
+    </div>
+  </div>
+
+  <div class="doc-section">
+    <h2>1. Purpose and Scope</h2>
+    <p>This Business Continuity Plan ("BCP") defines the procedures for maintaining and restoring Platform services during and after a disruptive event. It addresses both technical recovery and operational continuity.</p>
+    <p>The BCP covers all scenarios that could prevent users from accessing Project Sovereign, including:</p>
+    <ul>
+      <li>Provider outages (Vercel, Supabase, Stripe, Anthropic)</li>
+      <li>Data loss or corruption events</li>
+      <li>Security incidents requiring service shutdown (refer also to SOV-IRP-001)</li>
+      <li>Loss or incapacitation of the sole operator (Howard Henry)</li>
+      <li>Domain / DNS disruption</li>
+      <li>Credential loss or account lockout</li>
+    </ul>
+  </div>
+
+  <div class="doc-section">
+    <h2>2. Recovery Objectives</h2>
+    <table class="doc-table">
+      <thead><tr><th>Objective</th><th>Target</th><th>Basis</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Recovery Time Objective (RTO)</td>
+          <td>4 hours for critical services; 24 hours for full service restoration</td>
+          <td>Business impact assessment — users expect same-day recovery; deals don't close in hours</td>
+        </tr>
+        <tr>
+          <td>Recovery Point Objective (RPO)</td>
+          <td>1 hour maximum data loss</td>
+          <td>Supabase Point-in-Time Recovery (PITR) with continuous WAL archiving. Effective RPO is &lt;5 minutes in practice.</td>
+        </tr>
+        <tr>
+          <td>Maximum Tolerable Downtime (MTD)</td>
+          <td>24 hours</td>
+          <td>Beyond 24 hours, subscriber churn and reputational damage become material</td>
+        </tr>
+        <tr>
+          <td>Minimum Business Continuity Objective (MBCO)</td>
+          <td>Read-only access to deal pipeline and documents; email access</td>
+          <td>Users can continue research and communication even if write capabilities are unavailable</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>3. Critical Services and Dependencies</h2>
+    <table class="doc-table">
+      <thead><tr><th>Service</th><th>Criticality</th><th>Provider SLA</th><th>Impact if Down</th><th>Alternative</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Supabase (DB + Auth)</td>
+          <td><span class="badge-high">Critical</span></td>
+          <td>99.9% uptime (managed)</td>
+          <td>Full platform unavailable — no auth, no data</td>
+          <td>PITR restore to new project; see Section 4.2</td>
+        </tr>
+        <tr>
+          <td>Vercel (Hosting + Functions)</td>
+          <td><span class="badge-high">Critical</span></td>
+          <td>99.99% uptime (Enterprise SLA)</td>
+          <td>Platform inaccessible</td>
+          <td>Redeploy from GitHub to new project; DNS switch</td>
+        </tr>
+        <tr>
+          <td>Stripe (Billing)</td>
+          <td><span class="badge-warn">High</span></td>
+          <td>99.999% uptime</td>
+          <td>New subscriptions cannot be created; existing access unaffected</td>
+          <td>Manual invoice; subscription pause via Dashboard</td>
+        </tr>
+        <tr>
+          <td>Anthropic API (Claude)</td>
+          <td><span class="badge-warn">High</span></td>
+          <td>99.9% uptime</td>
+          <td>All AI agents non-functional; Platform usable in read-only mode</td>
+          <td>Graceful degradation — UI shows "AI unavailable"; no data loss</td>
+        </tr>
+        <tr>
+          <td>DNS / Domain (sovereigncmd.xyz)</td>
+          <td><span class="badge-high">Critical</span></td>
+          <td>Depends on registrar</td>
+          <td>Platform unreachable by domain name</td>
+          <td>Direct Vercel URL accessible; DNS TTL set to 300s for fast propagation</td>
+        </tr>
+        <tr>
+          <td>Resend (Email)</td>
+          <td><span class="badge-ok">Medium</span></td>
+          <td>99.9% uptime</td>
+          <td>Trial drip and cron alerts stop; no user-facing impact immediately</td>
+          <td>Manual email via Gmail; switch to Postmark as backup</td>
+        </tr>
+        <tr>
+          <td>GitHub (Source code)</td>
+          <td><span class="badge-warn">High</span></td>
+          <td>99.9% uptime</td>
+          <td>Cannot deploy new code; running deployment unaffected</td>
+          <td>Local git clone on development machine (HW-001); push to Vercel directly</td>
+        </tr>
+        <tr>
+          <td>MacBook (HW-001) — Primary device</td>
+          <td><span class="badge-high">Critical</span></td>
+          <td>N/A — physical device</td>
+          <td>Cannot deploy, administer, or develop without primary device</td>
+          <td>Recovery from iCloud/Time Machine backup to replacement hardware. All credentials in password manager accessible from any device.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>4. Recovery Procedures</h2>
+
+    <h3>4.1 Vercel Outage or Deployment Failure</h3>
+    <div class="step-box">
+      <div class="step-num">Detection</div>
+      <div class="step-title">Platform returns 5xx or is unreachable</div>
+      <div class="step-body">Check Vercel status page: vercel.com/status. Check runtime logs in Vercel Dashboard. If provider outage: monitor Vercel status and wait — no action needed, SLA-backed recovery. If deployment issue:</div>
+    </div>
+    <ol>
+      <li>Check latest deployment state: <code>vercel ls</code></li>
+      <li>Roll back to last READY deployment: <code>vercel rollback [deployment-id]</code></li>
+      <li>If rollback fails: redeploy from local: <code>vercel deploy --prod</code></li>
+      <li>If Vercel account inaccessible: log in via vercel.com with Google auth (trainingcircuitvc@gmail.com)</li>
+      <li>Communicate outage to affected users if &gt;30 minutes: status update via email</li>
+    </ol>
+
+    <h3>4.2 Supabase Database Outage or Data Loss</h3>
+    <div class="step-box">
+      <div class="step-num">For provider outage</div>
+      <div class="step-title">Supabase-side incident</div>
+      <div class="step-body">Check status.supabase.com. If provider outage: monitor and wait — Supabase manages recovery. The Platform will return HTTP 5xx during the outage. Vercel Edge Middleware will still serve redirects; only DB-dependent routes are affected.</div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">For data corruption or loss</div>
+      <div class="step-title">Point-in-Time Recovery</div>
+      <div class="step-body">
+        Supabase PITR is enabled on the production project. To restore:<br><br>
+        1. Log in to app.supabase.com → project → Settings → Backups<br>
+        2. Select the recovery point (RPO: any point in the last 7 days)<br>
+        3. Initiate PITR restore to a new project (non-destructive — creates a new instance)<br>
+        4. Verify data integrity on the restored project<br>
+        5. Update SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel env vars to point to restored project<br>
+        6. Redeploy: <code>vercel deploy --prod</code><br>
+        7. Update Supabase edge function secrets: <code>supabase secrets set ...</code><br>
+        8. Verify auth, RLS, and all functions operational
+      </div>
+    </div>
+
+    <h3>4.3 Stripe Account Disruption</h3>
+    <ol>
+      <li>Log in to dashboard.stripe.com (trainingcircuitvc@gmail.com + 2FA)</li>
+      <li>If credentials lost: initiate Stripe account recovery via email</li>
+      <li>For billing disputes: use Stripe Dashboard to pause subscriptions and communicate with affected users</li>
+      <li>Subscriptions are stored both in Stripe and mirrored to <code>user_profiles.subscription_status</code> — existing subscribers retain access even if Stripe webhook is temporarily down</li>
+      <li>New subscriptions: create manually via Stripe Dashboard if checkout API is unavailable</li>
+    </ol>
+
+    <h3>4.4 Loss of Primary Device (HW-001)</h3>
+    <ol>
+      <li>All Platform credentials are stored in 1Password (cloud-synced, accessible from any device)</li>
+      <li>Source code: full clone available from GitHub (sovereignMA/sovereignmaintelligence) — no local-only changes should exist</li>
+      <li>Acquire replacement device or use any available Mac/PC</li>
+      <li>Install Vercel CLI: <code>npm i -g vercel</code>; authenticate: <code>vercel login</code></li>
+      <li>Clone repo: <code>git clone https://github.com/sovereignMA/sovereignmaintelligence.git</code></li>
+      <li>Pull env vars: <code>vercel env pull</code></li>
+      <li>Platform administration continues — no code changes needed for operations</li>
+    </ol>
+
+    <h3>4.5 Domain / DNS Disruption</h3>
+    <ol>
+      <li>Verify domain registration at registrar (check 1Password for registrar login)</li>
+      <li>If DNS propagation issue: verify Vercel DNS records in Vercel Dashboard → Domains</li>
+      <li>Emergency access: direct Vercel deployment URL (sovereign-*.vercel.app) remains accessible</li>
+      <li>Share emergency URL with known subscribers if domain is down &gt;1 hour</li>
+      <li>DNS TTL for sovereigncmd.xyz is set to 300 seconds — changes propagate within 5 minutes</li>
+    </ol>
+
+    <h3>4.6 Credential Loss (API Key / Service Account)</h3>
+    <ol>
+      <li>All active credentials are listed in SOV-ASR-001 (Section 6)</li>
+      <li>For each lost credential: access the provider dashboard (1Password has all logins) and generate a new key</li>
+      <li>Update in Vercel: <code>vercel env add KEY_NAME production</code></li>
+      <li>Redeploy: <code>vercel deploy --prod</code></li>
+      <li>Update Supabase secrets if applicable: <code>supabase secrets set KEY=value</code></li>
+      <li>Update rotation date in SOV-ASR-001</li>
+    </ol>
+
+    <h3>4.7 Anthropic API / AI Outage</h3>
+    <ol>
+      <li>Check status.anthropic.com</li>
+      <li>The Platform degrades gracefully — all non-AI features (pipeline, vault, analytics, email) remain available</li>
+      <li>AI agents return a user-facing error message; no data is lost</li>
+      <li>If outage is extended (&gt;4 hours): notify active users via Resend broadcast</li>
+      <li>No recovery action needed — service resumes automatically when Anthropic API recovers</li>
+    </ol>
+  </div>
+
+  <div class="doc-section">
+    <h2>5. Backup and Restore Summary</h2>
+    <table class="doc-table">
+      <thead><tr><th>Asset</th><th>Backup Method</th><th>Frequency</th><th>Retention</th><th>Recovery Time</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Supabase database (all tables)</td>
+          <td>Supabase PITR (continuous WAL + daily snapshots)</td>
+          <td>Continuous</td>
+          <td>7 days PITR; daily snapshots 30 days</td>
+          <td>15–30 min (PITR restore to new project)</td>
+        </tr>
+        <tr>
+          <td>Source code</td>
+          <td>GitHub (sovereignMA org) — distributed git history</td>
+          <td>On every commit</td>
+          <td>Indefinite</td>
+          <td>5 min (clone + deploy)</td>
+        </tr>
+        <tr>
+          <td>Environment variables / secrets</td>
+          <td>Vercel env vars (encrypted); 1Password (master record)</td>
+          <td>On change</td>
+          <td>Indefinite (1Password)</td>
+          <td>10 min (pull from 1Password + vercel env add)</td>
+        </tr>
+        <tr>
+          <td>MacBook (HW-001)</td>
+          <td>Time Machine (external drive, weekly) + iCloud (documents)</td>
+          <td>Weekly full + continuous iCloud</td>
+          <td>4 weeks (Time Machine)</td>
+          <td>2–4 hours (to replacement hardware)</td>
+        </tr>
+        <tr>
+          <td>Stripe customer/subscription data</td>
+          <td>Stripe manages backups; mirrored to user_profiles in Supabase</td>
+          <td>Real-time (webhook sync)</td>
+          <td>Stripe: 7 years; Supabase: per retention policy</td>
+          <td>Re-sync via webhook replay in Stripe Dashboard</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>6. Communication Plan</h2>
+    <p>During a significant outage or incident, the following communication schedule applies:</p>
+    <table class="doc-table">
+      <thead><tr><th>Trigger</th><th>Audience</th><th>Channel</th><th>Message</th><th>Who</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Outage &gt;30 minutes confirmed</td>
+          <td>All active subscribers</td>
+          <td>Email (Resend broadcast)</td>
+          <td>"Platform temporarily unavailable — investigating. ETA: [X]. Your data is safe."</td>
+          <td>Howard Henry</td>
+        </tr>
+        <tr>
+          <td>Personal data breach (any)</td>
+          <td>Affected users (if high risk)</td>
+          <td>Email (direct)</td>
+          <td>Per UK GDPR Art. 34 requirements — see SOV-IRP-001 §3.2</td>
+          <td>Howard Henry</td>
+        </tr>
+        <tr>
+          <td>Service restored</td>
+          <td>All active subscribers</td>
+          <td>Email (Resend broadcast)</td>
+          <td>"Platform is restored. [Brief description of what happened]. [Any action required by users]."</td>
+          <td>Howard Henry</td>
+        </tr>
+        <tr>
+          <td>Stripe disruption &gt;2 hours</td>
+          <td>Users attempting to subscribe</td>
+          <td>In-app toast (upgrade.html)</td>
+          <td>"Payments temporarily unavailable — email hello@sovereigncmd.xyz to subscribe manually."</td>
+          <td>Code change (static message)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-section">
+    <h2>7. Single-Operator Contingency</h2>
+    <p>Project Sovereign is currently operated by a single person (Howard Henry). The following measures reduce single-operator risk:</p>
+    <ul>
+      <li><strong>Credential escrow:</strong> All service credentials stored in 1Password with emergency access kit (printed, in secure physical location). Account recovery contacts registered with each provider.</li>
+      <li><strong>Runbook:</strong> This BCP serves as the operational runbook for any authorised substitute operator. All recovery procedures are documented without assumed knowledge.</li>
+      <li><strong>Infrastructure as code:</strong> All configuration is in <code>vercel.json</code>, <code>middleware.js</code>, and Supabase migrations. A competent developer can reproduce the infrastructure from the GitHub repo alone.</li>
+      <li><strong>Provider accounts:</strong> All provider accounts (Vercel, Supabase, Stripe, GitHub) use the trainingcircuitvc@gmail.com Google account as the single sign-on root. Access to Google account grants recovery path for all providers.</li>
+      <li><strong>Subscriber notification:</strong> In the event of extended unavailability (&gt;72 hours), affected subscribers will be contacted and offered pro-rata refunds. All user data will be retained and provided on request.</li>
+    </ul>
+  </div>
+
+  <div class="doc-section">
+    <h2>8. BCP Testing Schedule</h2>
+    <table class="doc-table">
+      <thead><tr><th>Test</th><th>Frequency</th><th>What is tested</th><th>Pass criteria</th></tr></thead>
+      <tbody>
+        <tr><td>Database restore test</td><td>Annually</td><td>PITR restore to a test Supabase project; verify data integrity</td><td>Restore completes within 30 min; all tables present; row counts match</td></tr>
+        <tr><td>Deployment recovery test</td><td>Quarterly</td><td>Roll back to previous deployment via CLI; verify platform accessible</td><td>Rollback completes within 10 min; no data loss</td></tr>
+        <tr><td>Credential rotation drill</td><td>Annually</td><td>Rotate CRON_SECRET; update Vercel; verify crons still authenticate</td><td>Crons succeed on first post-rotation run</td></tr>
+        <tr><td>Tabletop exercise</td><td>Annually</td><td>Walk through a P1 scenario (e.g., service role key leak) without executing; identify gaps</td><td>All steps executable; no unresolved decision points</td></tr>
+      </tbody>
+    </table>
+    <p>Test results are logged in the <code>compliance_log</code> table (event_type: <code>bcp_test</code>) and reviewed as part of the annual BCP review.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>9. Service Status Quick Reference</h2>
+    <table class="doc-table">
+      <thead><tr><th>Service</th><th>Status Page</th></tr></thead>
+      <tbody>
+        <tr><td>Vercel</td><td>vercel.com/status</td></tr>
+        <tr><td>Supabase</td><td>status.supabase.com</td></tr>
+        <tr><td>Stripe</td><td>status.stripe.com</td></tr>
+        <tr><td>Anthropic (Claude)</td><td>status.anthropic.com</td></tr>
+        <tr><td>Resend</td><td>resend.com/status</td></tr>
+        <tr><td>GitHub</td><td>githubstatus.com</td></tr>
+        <tr><td>Twilio</td><td>status.twilio.com</td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:20px;padding:14px;background:var(--surface);border-radius:8px;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--text)">Approval</strong><br>
+      This Business Continuity Plan has been reviewed and approved by Howard Henry, ISMS Owner, on 4 April 2026.<br>
+      <span style="color:var(--text3)">Signature on file. Next review: 4 April 2027.</span>
+    </div>
+  </div>
+</div>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>
