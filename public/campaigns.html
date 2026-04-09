@@ -15,156 +15,464 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css?v=41">
 <style>
+/* ── Layout ── */
 .pg { padding: 24px; max-width: 1400px; margin: 0 auto; }
-.page-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.page-sub { font-size: 13px; color: var(--text3); margin-bottom: 24px; }
-/* KPI row */
-.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
-@media(max-width:900px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:500px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+/* ── Platform nav strip ── */
+.plat-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+.plat-btn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border2); background: var(--surface); font-size: 12px; font-weight: 500; color: var(--text3); cursor: pointer; font-family: var(--font); transition: all .15s; white-space: nowrap; }
+.plat-btn:hover { border-color: var(--text3); color: var(--text); }
+.plat-btn.connected { color: var(--text); border-color: var(--border2); }
+.plat-btn .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-li    { background: #0a66c2; }
+.dot-meta  { background: #1877f2; }
+.dot-goog  { background: #4285f4; }
+.dot-ga    { background: #e37400; }
+.dot-tt    { background: #69c9d0; }
+.dot-rd    { background: #ff4500; }
+.dot-yt    { background: #ff0000; }
+.dot-off   { background: var(--border2); }
+/* ── Shared range tabs ── */
+.range-tabs { display: flex; gap: 6px; }
+.range-tab { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--border2); color: var(--text3); background: none; font-family: var(--font); transition: all .15s; }
+.range-tab.active { background: rgba(255,189,0,.12); border-color: rgba(255,189,0,.35); color: var(--gold); }
+/* ── KPI tiles ── */
+.kpi-row { display: grid; gap: 12px; margin-bottom: 16px; }
+.kpi-row-5 { grid-template-columns: repeat(5,1fr); }
+.kpi-row-4 { grid-template-columns: repeat(4,1fr); }
+@media(max-width:900px){.kpi-row-5,.kpi-row-4{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:500px){.kpi-row-5,.kpi-row-4{grid-template-columns:repeat(2,1fr)}}
 .kpi { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 16px; }
 .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); margin-bottom: 6px; }
 .kpi-value { font-size: 22px; font-weight: 700; font-family: var(--mono); color: var(--text); }
 .kpi-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-/* Section card */
-.card { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
-.card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+/* ── Platform section heading ── */
+.sec-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 32px 0 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border2); }
+.sec-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.sec-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.sec-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* ── Card ── */
+.card { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); }
 .card-sub { font-size: 11px; color: var(--text3); }
-/* Account selector */
-.acct-select { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--text); font-family: var(--font); cursor: pointer; }
-.acct-select:focus { outline: none; border-color: #0077b5; }
-/* Range tabs */
-.range-tabs { display: flex; gap: 6px; }
-.range-tab { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--border2); color: var(--text3); background: none; font-family: var(--font); transition: all .15s; }
-.range-tab.active { background: rgba(0,119,181,.15); border-color: rgba(0,119,181,.4); color: #0a66c2; }
-/* Campaign table */
-.camp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.camp-table th { padding: 8px 10px; text-align: left; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border2); font-weight: 500; white-space: nowrap; }
-.camp-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.camp-table tr:last-child td { border: none; }
-.camp-table tbody tr { cursor: pointer; transition: background .1s; }
-.camp-table tbody tr:hover td { background: var(--surface2); }
-.camp-table tbody tr.selected td { background: rgba(0,119,181,.07); }
-.camp-status { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: .04em; }
-.camp-status.ACTIVE { background: rgba(74,222,128,.15); color: var(--green); }
-.camp-status.PAUSED { background: rgba(251,191,36,.12); color: var(--gold); }
-.camp-status.DRAFT  { background: rgba(148,163,184,.12); color: var(--text3); }
-.camp-status.COMPLETED { background: rgba(167,139,250,.12); color: var(--purple); }
-.camp-status.ARCHIVED { background: rgba(148,163,184,.08); color: var(--text3); }
+/* ── Tables ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th { padding: 7px 10px; text-align: left; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border2); font-weight: 500; white-space: nowrap; }
+.data-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.data-table tr:last-child td { border: none; }
+.data-table tbody tr { transition: background .1s; }
+.data-table tbody tr:hover td { background: var(--surface2); }
 .metric { font-family: var(--mono); font-size: 12px; color: var(--text2); }
 .metric.good { color: var(--green); }
-/* Leads panel */
+.metric.hi { color: var(--gold); }
+/* ── Campaign status badges ── */
+.cs { display: inline-flex; align-items: center; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.cs.ACTIVE    { background: rgba(74,222,128,.15); color: var(--green); }
+.cs.PAUSED    { background: rgba(251,191,36,.12); color: var(--gold); }
+.cs.DRAFT     { background: rgba(148,163,184,.12); color: var(--text3); }
+.cs.COMPLETED { background: rgba(167,139,250,.12); color: var(--purple); }
+.cs.ARCHIVED  { background: rgba(148,163,184,.08); color: var(--text3); }
+/* ── Event source pills ── */
+.pill-capi    { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px; background: rgba(74,222,128,.15); color: var(--green); text-transform: uppercase; letter-spacing: .04em; }
+.pill-browser { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px; background: rgba(96,165,250,.15); color: #60a5fa; text-transform: uppercase; letter-spacing: .04em; }
+/* ── Lead rows ── */
 .lead-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .lead-row:last-child { border: none; }
-.lead-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(0,119,181,.2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #0a66c2; flex-shrink: 0; }
+.lead-avatar { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,119,181,.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #0a66c2; flex-shrink: 0; }
 .lead-body { flex: 1; min-width: 0; }
 .lead-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 1px; }
 .lead-role { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
-.lead-form { font-size: 10px; color: var(--text3); background: var(--surface2); padding: 2px 7px; border-radius: 4px; display: inline-block; }
-.lead-time { font-size: 10px; color: var(--text3); white-space: nowrap; }
 .lead-actions { display: flex; gap: 6px; margin-top: 6px; }
-.lead-btn { font-size: 10px; padding: 3px 10px; border-radius: 5px; border: 1px solid var(--border2); background: none; color: var(--text2); font-family: var(--font); cursor: pointer; transition: all .15s; font-weight: 500; }
-.lead-btn:hover { border-color: var(--text3); color: var(--text); }
-.lead-btn.primary { background: var(--gold); color: #000; border-color: var(--gold); }
-.lead-btn.primary:hover { filter: brightness(1.1); }
-/* State overlays */
+.lbtn { font-size: 10px; padding: 3px 10px; border-radius: 5px; border: 1px solid var(--border2); background: none; color: var(--text2); font-family: var(--font); cursor: pointer; transition: all .15s; font-weight: 500; }
+.lbtn:hover { border-color: var(--text3); color: var(--text); }
+.lbtn.primary { background: var(--gold); color: #000; border-color: var(--gold); }
+/* ── State overlays ── */
 .state-loading { display: flex; align-items: center; gap: 8px; color: var(--text3); font-size: 12px; padding: 20px 0; }
 .state-empty { color: var(--text3); font-size: 12px; padding: 24px 0; text-align: center; }
 .state-error { color: var(--red); font-size: 12px; padding: 16px 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.1); border-top-color: var(--gold); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
-/* Setup banner */
-.setup-banner { background: rgba(0,119,181,.08); border: 1px solid rgba(0,119,181,.25); border-radius: 10px; padding: 24px; text-align: center; }
-.setup-banner h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-.setup-banner p { font-size: 12px; color: var(--text3); margin-bottom: 16px; line-height: 1.6; }
-.setup-steps { display: flex; flex-direction: column; gap: 8px; text-align: left; max-width: 480px; margin: 0 auto 20px; }
+/* ── Setup cards ── */
+.setup-card { border: 1px dashed var(--border2); border-radius: 10px; padding: 28px 24px; margin-bottom: 16px; }
+.setup-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.setup-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.setup-card h3 { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+.setup-card p { font-size: 12px; color: var(--text3); margin: 0 0 14px; line-height: 1.6; }
+.setup-steps { display: flex; flex-direction: column; gap: 8px; max-width: 560px; }
 .setup-step { display: flex; gap: 10px; font-size: 12px; color: var(--text2); line-height: 1.5; }
-.setup-step-num { width: 20px; height: 20px; border-radius: 50%; background: rgba(0,119,181,.2); color: #0a66c2; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-/* LinkedIn brand colour */
-.li-blue { color: #0a66c2; }
-.li-dot { width: 8px; height: 8px; background: #0a66c2; border-radius: 50%; display: inline-block; margin-right: 5px; }
+.step-n { width: 20px; height: 20px; border-radius: 50%; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+/* ── Account select ── */
+.acct-select { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--text); font-family: var(--font); cursor: pointer; }
+/* ── Status dot (missing from app.css) ── */
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; flex-shrink: 0; }
+.status-dot.dot-green  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-dot.dot-red    { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+.status-dot.dot-pulse  { animation: sdpulse 2s ease-in-out infinite; }
+@keyframes sdpulse { 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
 <div style="height:56px"></div>
 <div class="pg">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+
+  <!-- ── Page header ── -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
     <div>
-      <div class="page-title"><span class="li-dot"></span>LinkedIn Campaigns</div>
-      <div class="page-sub">Ad performance · Lead pipeline · Campaign management</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:3px">Marketing Overview</div>
+      <div style="font-size:13px;color:var(--text3)">All channels · paid ads · pixel &amp; conversion tracking</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span id="connStatus" class="badge" style="display:none"></span>
-      <a href="https://www.linkedin.com/campaignmanager/" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:12px;padding:7px 14px">Open Campaign Manager ↗</a>
-    </div>
-  </div>
-
-  <!-- Setup banner (shown when no account is loaded) -->
-  <div id="setupBanner" class="setup-banner" style="display:none">
-    <h3>Connect LinkedIn Campaign Manager</h3>
-    <p>Add your LinkedIn access token as a Supabase secret to view live campaign data, track leads, and manage ad performance inside Sovereign.</p>
-    <div class="setup-steps">
-      <div class="setup-step"><span class="setup-step-num">1</span><span>Go to <a href="https://www.linkedin.com/developers/apps" target="_blank" style="color:#0a66c2">LinkedIn Developers</a> → your app → Auth → generate access token with <code style="color:var(--gold)">r_ads, rw_ads</code> scopes</span></div>
-      <div class="setup-step"><span class="setup-step-num">2</span><span>Run: <code style="color:var(--gold)">supabase secrets set LINKEDIN_ACCESS_TOKEN=your-token --project-ref kicdjdxxdqtmetphipnn</code></span></div>
-      <div class="setup-step"><span class="setup-step-num">3</span><span>Refresh this page</span></div>
-    </div>
-  </div>
-
-  <!-- KPI row -->
-  <div class="kpi-row" id="kpiRow">
-    <div class="kpi"><div class="kpi-label">Total Spend</div><div class="kpi-value" id="kpiSpend">—</div><div class="kpi-sub" id="kpiSpendSub"></div></div>
-    <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-value" id="kpiImpr">—</div><div class="kpi-sub" id="kpiImprSub"></div></div>
-    <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value" id="kpiClicks">—</div><div class="kpi-sub" id="kpiCTR"></div></div>
-    <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value" id="kpiLeads" style="color:var(--green)">—</div><div class="kpi-sub" id="kpiLeadsSub"></div></div>
-    <div class="kpi"><div class="kpi-label">CPL</div><div class="kpi-value" id="kpiCPL">—</div><div class="kpi-sub">cost per lead</div></div>
-  </div>
-
-  <!-- Campaigns table -->
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Campaigns</div>
-        <div class="card-sub" id="campSub">Loading…</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div class="range-tabs" id="globalRange">
+        <button class="range-tab active" data-days="7"  onclick="setGlobalRange(7,this)">7d</button>
+        <button class="range-tab" data-days="30" onclick="setGlobalRange(30,this)">30d</button>
+        <button class="range-tab" data-days="90" onclick="setGlobalRange(90,this)">90d</button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-outline" style="font-size:11px;padding:6px 12px" onclick="refreshAll()">↺ Refresh all</button>
+    </div>
+  </div>
+
+  <!-- ── Platform status strip ── -->
+  <div class="plat-nav" id="platNav">
+    <a class="plat-btn" href="#sec-li">  <span class="dot dot-off" id="navDotLi"></span>  LinkedIn</a>
+    <a class="plat-btn" href="#sec-meta"><span class="dot dot-off" id="navDotMeta"></span> Meta</a>
+    <a class="plat-btn" href="#sec-goog"><span class="dot dot-off"></span>  Google Ads</a>
+    <a class="plat-btn" href="#sec-ga">  <span class="dot dot-off"></span>  Google Analytics</a>
+    <a class="plat-btn" href="#sec-tt">  <span class="dot dot-off"></span>  TikTok</a>
+    <a class="plat-btn" href="#sec-rd">  <span class="dot dot-off"></span>  Reddit</a>
+    <a class="plat-btn" href="#sec-yt">  <span class="dot dot-off"></span>  YouTube Ads</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       LINKEDIN
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="sec-li">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn Campaigns
+        </div>
+        <div class="sec-sub">Paid ads · lead gen forms · campaign analytics</div>
+      </div>
+      <div class="sec-controls">
+        <span id="liStatus" class="badge" style="display:none"></span>
         <select id="accountSelect" class="acct-select" style="display:none" onchange="onAccountChange()">
           <option value="">Select account…</option>
         </select>
-        <div class="range-tabs">
-          <button class="range-tab active" data-days="7" onclick="setRange(7,this)">7d</button>
-          <button class="range-tab" data-days="30" onclick="setRange(30,this)">30d</button>
-          <button class="range-tab" data-days="90" onclick="setRange(90,this)">90d</button>
+        <a href="https://www.linkedin.com/campaignmanager/" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:11px;padding:5px 11px">Campaign Manager ↗</a>
+      </div>
+    </div>
+
+    <!-- Setup banner (hidden until needed) -->
+    <div id="liSetupBanner" class="setup-card" style="display:none">
+      <div class="setup-card-head">
+        <div class="setup-icon" style="background:rgba(10,102,194,.15)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </div>
+        <div><h3>Connect LinkedIn Campaign Manager</h3></div>
+      </div>
+      <p>Add your LinkedIn access token to view live campaign data, leads, and ad performance inside Sovereign.</p>
+      <div class="setup-steps">
+        <div class="setup-step"><span class="step-n" style="background:rgba(10,102,194,.2);color:#0a66c2">1</span><span>Go to <a href="https://www.linkedin.com/developers/apps" target="_blank" style="color:#0a66c2">LinkedIn Developers</a> → your app → Auth → generate access token with <code style="color:var(--gold)">r_ads, rw_ads</code> scopes</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(10,102,194,.2);color:#0a66c2">2</span><span>Run: <code style="color:var(--gold)">supabase secrets set LINKEDIN_ACCESS_TOKEN=your-token --project-ref kicdjdxxdqtmetphipnn</code></span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(10,102,194,.2);color:#0a66c2">3</span><span>Refresh this page</span></div>
+      </div>
+    </div>
+
+    <!-- LinkedIn KPI row -->
+    <div class="kpi-row kpi-row-5" id="liKpiRow">
+      <div class="kpi"><div class="kpi-label">Total Spend</div><div class="kpi-value" id="kpiSpend">—</div><div class="kpi-sub" id="kpiSpendSub"></div></div>
+      <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-value" id="kpiImpr">—</div><div class="kpi-sub" id="kpiImprSub"></div></div>
+      <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-value" id="kpiClicks">—</div><div class="kpi-sub" id="kpiCTR"></div></div>
+      <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value" id="kpiLeads" style="color:var(--green)">—</div><div class="kpi-sub" id="kpiLeadsSub"></div></div>
+      <div class="kpi"><div class="kpi-label">CPL</div><div class="kpi-value" id="kpiCPL">—</div><div class="kpi-sub">cost per lead</div></div>
+    </div>
+
+    <!-- Campaigns table -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Campaigns</div>
+          <div class="card-sub" id="campSub">Loading…</div>
         </div>
       </div>
+      <div id="campBody"><div class="state-loading"><div class="spinner-sm"></div> Loading campaigns…</div></div>
     </div>
-    <div id="campBody">
-      <div class="state-loading"><div class="spinner-sm"></div> Loading campaigns…</div>
-    </div>
-  </div>
 
-  <!-- Leads -->
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Lead Gen Responses</div>
-        <div class="card-sub">From LinkedIn lead generation forms — click to add to pipeline</div>
+    <!-- Leads -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Lead Gen Responses</div>
+          <div class="card-sub">From LinkedIn lead generation forms</div>
+        </div>
+        <button class="btn btn-outline" style="font-size:11px;padding:5px 11px" onclick="loadLeads()">Refresh</button>
       </div>
-      <button class="btn btn-outline" style="font-size:11px;padding:6px 12px" onclick="loadLeads()">Refresh</button>
-    </div>
-    <div id="leadsBody">
-      <div class="state-empty">Select an ad account above to load leads.</div>
+      <div id="leadsBody"><div class="state-empty">Select an ad account above to load leads.</div></div>
     </div>
   </div>
-</div>
 
-<script src="app.js?v=48"></script>
+  <!-- ═══════════════════════════════════════════════════════════════
+       META — Facebook · Instagram · WhatsApp
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="sec-meta">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Meta · Facebook · Instagram · WhatsApp
+        </div>
+        <div class="sec-sub">Pixel ID 1943804979837382 · browser pixel + server-side CAPI</div>
+      </div>
+      <div class="sec-controls">
+        <span id="metaStatus" class="badge" style="display:none"></span>
+        <button class="btn btn-outline" style="font-size:11px;padding:5px 11px" onclick="loadMetaInsights()">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Meta KPI row -->
+    <div class="kpi-row kpi-row-5">
+      <div class="kpi"><div class="kpi-label">Page Views</div><div class="kpi-value" id="mkpiPV">—</div><div class="kpi-sub">pixel + server</div></div>
+      <div class="kpi"><div class="kpi-label">Initiate Checkout</div><div class="kpi-value" id="mkpiIC">—</div><div class="kpi-sub">checkout intent</div></div>
+      <div class="kpi"><div class="kpi-label">Trials Started</div><div class="kpi-value" id="mkpiST" style="color:var(--gold)">—</div><div class="kpi-sub">StartTrial · CAPI</div></div>
+      <div class="kpi"><div class="kpi-label">Registrations</div><div class="kpi-value" id="mkpiCR">—</div><div class="kpi-sub">CompleteRegistration</div></div>
+      <div class="kpi"><div class="kpi-label">Purchases</div><div class="kpi-value" id="mkpiPurch" style="color:var(--green)">—</div><div class="kpi-sub">Purchase · CAPI</div></div>
+    </div>
+
+    <!-- Meta event breakdown -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Event Breakdown</div>
+          <div class="card-sub" id="metaSub">Loading…</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="pill-capi">CAPI server</span>
+          <span class="pill-browser">PIX browser</span>
+        </div>
+      </div>
+      <div id="metaBody"><div class="state-loading"><div class="spinner-sm"></div> Fetching pixel stats…</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       GOOGLE ADS
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="sec-goog">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google Ads
+        </div>
+        <div class="sec-sub">Search · Display · Shopping · Performance Max</div>
+      </div>
+      <div class="sec-controls">
+        <span class="badge" style="color:var(--text3);border-color:var(--border2)">Not connected</span>
+      </div>
+    </div>
+    <div class="setup-card">
+      <div class="setup-card-head">
+        <div class="setup-icon" style="background:rgba(66,133,244,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        </div>
+        <div><h3>Connect Google Ads</h3></div>
+      </div>
+      <p>Pull campaign spend, impressions, clicks, and conversion data directly from Google Ads into this dashboard.</p>
+      <div class="setup-steps">
+        <div class="setup-step"><span class="step-n" style="background:rgba(66,133,244,.15);color:#4285f4">1</span><span>Create a Google Ads API developer token in your MCC account → Tools → API Centre</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(66,133,244,.15);color:#4285f4">2</span><span>Create OAuth2 credentials for a service account with <code style="color:var(--gold)">https://www.googleapis.com/auth/adwords</code> scope</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(66,133,244,.15);color:#4285f4">3</span><span>Set env vars: <code style="color:var(--gold)">GOOGLE_ADS_DEVELOPER_TOKEN</code>, <code style="color:var(--gold)">GOOGLE_ADS_CLIENT_ID</code>, <code style="color:var(--gold)">GOOGLE_ADS_CLIENT_SECRET</code>, <code style="color:var(--gold)">GOOGLE_ADS_REFRESH_TOKEN</code>, <code style="color:var(--gold)">GOOGLE_ADS_CUSTOMER_ID</code></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       GOOGLE ANALYTICS 4
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="sec-ga">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">
+          <svg width="18" height="18" viewBox="0 0 24 24"><rect x="13" y="2" width="4" height="20" rx="2" fill="#e37400"/><rect x="2" y="10" width="4" height="12" rx="2" fill="#e37400" opacity=".5"/><rect x="7.5" y="6" width="4" height="16" rx="2" fill="#e37400" opacity=".75"/></svg>
+          Google Analytics 4
+        </div>
+        <div class="sec-sub">Property G-9BQYFMVFTJ · sessions · events · conversions</div>
+      </div>
+      <div class="sec-controls">
+        <span class="badge" style="color:var(--text3);border-color:var(--border2)">API not connected</span>
+        <a href="https://analytics.google.com" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:11px;padding:5px 11px">Open GA4 ↗</a>
+      </div>
+    </div>
+    <div class="setup-card">
+      <div class="setup-card-head">
+        <div class="setup-icon" style="background:rgba(227,116,0,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect x="13" y="2" width="4" height="20" rx="2" fill="#e37400"/><rect x="2" y="10" width="4" height="12" rx="2" fill="#e37400" opacity=".5"/><rect x="7.5" y="6" width="4" height="16" rx="2" fill="#e37400" opacity=".75"/></svg>
+        </div>
+        <div><h3>Connect Google Analytics 4 Data API</h3></div>
+      </div>
+      <p>GA4 tag <code style="color:var(--gold)">G-9BQYFMVFTJ</code> is already firing on all pages. Connect the GA4 Data API to pull sessions, events, and conversion funnels into this dashboard.</p>
+      <div class="setup-steps">
+        <div class="setup-step"><span class="step-n" style="background:rgba(227,116,0,.15);color:#e37400">1</span><span>Go to Google Cloud Console → enable <strong>Google Analytics Data API</strong></span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(227,116,0,.15);color:#e37400">2</span><span>Create a service account → download JSON key → add the service account email as Viewer in GA4 Admin → Account Access</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(227,116,0,.15);color:#e37400">3</span><span>Set env vars: <code style="color:var(--gold)">GA4_PROPERTY_ID</code> (numeric, e.g. 123456789), <code style="color:var(--gold)">GA4_SERVICE_ACCOUNT_KEY</code> (JSON string)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       TIKTOK ADS
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="sec-tt">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#69c9d0" d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.24 8.24 0 004.84 1.55V6.86a4.85 4.85 0 01-1.07-.17z"/></svg>
+          TikTok Ads
+        </div>
+        <div class="sec-sub">TikTok For Business · video ads · spark ads</div>
+      </div>
+      <div class="sec-controls">
+        <span class="badge" style="color:var(--text3);border-color:var(--border2)">Not connected</span>
+      </div>
+    </div>
+    <div class="setup-card">
+      <div class="setup-card-head">
+        <div class="setup-icon" style="background:rgba(105,201,208,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#69c9d0" d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.24 8.24 0 004.84 1.55V6.86a4.85 4.85 0 01-1.07-.17z"/></svg>
+        </div>
+        <div><h3>Connect TikTok Ads Manager</h3></div>
+      </div>
+      <p>Pull TikTok campaign spend, video views, clicks, and conversions into this dashboard via the TikTok Marketing API.</p>
+      <div class="setup-steps">
+        <div class="setup-step"><span class="step-n" style="background:rgba(105,201,208,.15);color:#69c9d0">1</span><span>Go to <strong>TikTok for Business</strong> → Marketing API → apply for access and create an app</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(105,201,208,.15);color:#69c9d0">2</span><span>Generate a long-lived access token with <code style="color:var(--gold)">ad.read</code> permissions</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(105,201,208,.15);color:#69c9d0">3</span><span>Set env vars: <code style="color:var(--gold)">TIKTOK_ACCESS_TOKEN</code>, <code style="color:var(--gold)">TIKTOK_ADVERTISER_ID</code></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       REDDIT ADS
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="sec-rd">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff4500"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+          Reddit Ads
+        </div>
+        <div class="sec-sub">Reddit Ads Manager · promoted posts · community targeting</div>
+      </div>
+      <div class="sec-controls">
+        <span class="badge" style="color:var(--text3);border-color:var(--border2)">Not connected</span>
+      </div>
+    </div>
+    <div class="setup-card">
+      <div class="setup-card-head">
+        <div class="setup-icon" style="background:rgba(255,69,0,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff4500"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+        </div>
+        <div><h3>Connect Reddit Ads Manager</h3></div>
+      </div>
+      <p>Pull Reddit campaign metrics — impressions, clicks, CPM, and conversion events — directly into this dashboard.</p>
+      <div class="setup-steps">
+        <div class="setup-step"><span class="step-n" style="background:rgba(255,69,0,.12);color:#ff4500">1</span><span>Go to <strong>Reddit Ads Manager</strong> → create a developer application at <a href="https://www.reddit.com/prefs/apps" target="_blank" style="color:#ff4500">reddit.com/prefs/apps</a></span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(255,69,0,.12);color:#ff4500">2</span><span>Use client credentials OAuth2 flow (or user token with <code style="color:var(--gold)">ads:read</code> scope)</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(255,69,0,.12);color:#ff4500">3</span><span>Set env vars: <code style="color:var(--gold)">REDDIT_ADS_CLIENT_ID</code>, <code style="color:var(--gold)">REDDIT_ADS_CLIENT_SECRET</code>, <code style="color:var(--gold)">REDDIT_ADS_ACCOUNT_ID</code></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       YOUTUBE ADS
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="sec-yt">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          YouTube Ads
+        </div>
+        <div class="sec-sub">Video campaigns · skippable in-stream · bumper ads · connected to Google Ads</div>
+      </div>
+      <div class="sec-controls">
+        <span class="badge" style="color:var(--text3);border-color:var(--border2)">Not connected</span>
+      </div>
+    </div>
+    <div class="setup-card">
+      <div class="setup-card-head">
+        <div class="setup-icon" style="background:rgba(255,0,0,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </div>
+        <div><h3>Connect YouTube Ads</h3></div>
+      </div>
+      <p>YouTube Ads are managed via Google Ads. Once Google Ads is connected (see above), YouTube video campaign metrics will appear here automatically — video views, view rate, CPV, and watch time.</p>
+      <div class="setup-steps">
+        <div class="setup-step"><span class="step-n" style="background:rgba(255,0,0,.1);color:#ff0000">1</span><span>Connect Google Ads first (see section above)</span></div>
+        <div class="setup-step"><span class="step-n" style="background:rgba(255,0,0,.1);color:#ff0000">2</span><span>YouTube campaigns will be filtered from your Google Ads campaign list by <code style="color:var(--gold)">MULTI_CHANNEL</code> / <code style="color:var(--gold)">VIDEO</code> campaign type automatically</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.pg -->
+
+<script src="app.js?v=49"></script>
 <script>
 var _accountId = null;
-var _days = 7;
-var _campaigns = [];
+var _globalDays = 7;
 var FN_URL = 'https://kicdjdxxdqtmetphipnn.supabase.co/functions/v1';
 
+// ── Global range ─────────────────────────────────────────────────────────────
+function setGlobalRange(days, btn) {
+  _globalDays = days;
+  document.querySelectorAll('#globalRange .range-tab').forEach(function(t){t.classList.remove('active');});
+  btn.classList.add('active');
+  if (_accountId) loadSummary();
+  loadMetaInsights();
+}
+
+function refreshAll() {
+  if (_accountId) { loadSummary(); loadLeads(); }
+  else loadAccounts();
+  loadMetaInsights();
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt(n)       { if (n == null || n === '') return '—'; return Number(n).toLocaleString(); }
+function fmtMoney(n)  { if (n == null || n === '') return '—'; return '£' + Number(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmtPct(a,b)  { if (!b || !a) return '—'; return (a/b*100).toFixed(2)+'%'; }
+function timeAgo(s) {
+  if (!s) return '';
+  var d = new Date(s), diff = Date.now() - d.getTime();
+  if (diff < 3600000)  return Math.max(1,Math.floor(diff/60000))+'m ago';
+  if (diff < 86400000) return Math.floor(diff/3600000)+'h ago';
+  return Math.floor(diff/86400000)+'d ago';
+}
+function initials(name) {
+  if (!name) return '?';
+  return name.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase();
+}
+
+// ── LinkedIn API call ────────────────────────────────────────────────────────
 function liCall(action, extra) {
   var tok = Auth && Auth.token ? Auth.token() : null;
   if (!tok) return Promise.reject(new Error('Not authenticated'));
@@ -172,43 +480,15 @@ function liCall(action, extra) {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpY2RqZHh4ZHF0bWV0cGhpcG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NTQ2ODksImV4cCI6MjA4OTQzMDY4OX0.UukZihDkA1nwZe0MZewya3Is_7vCoVt4cVIKSrdjFKE' },
     body: JSON.stringify(Object.assign({ action: action }, extra || {}))
-  }).then(function(r) { return r.json(); });
+  }).then(function(r){ return r.json(); });
 }
 
-function fmt(n) { if (n == null || n === '') return '—'; return Number(n).toLocaleString(); }
-function fmtMoney(n) { if (n == null || n === '') return '—'; return '£' + Number(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
-function fmtPct(a, b) { if (!b || !a) return '—'; return (a/b*100).toFixed(2) + '%'; }
-function timeAgo(s) {
-  if (!s) return '';
-  var d = new Date(s), now = Date.now(), diff = now - d.getTime();
-  if (diff < 3600000) return Math.max(1,Math.floor(diff/60000)) + 'm ago';
-  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-  return Math.floor(diff/86400000) + 'd ago';
-}
-function initials(name) {
-  if (!name) return '?';
-  return name.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase();
-}
-
-function setRange(days, btn) {
-  _days = days;
-  document.querySelectorAll('.range-tab').forEach(function(t){t.classList.remove('active');});
-  btn.classList.add('active');
-  if (_accountId) loadSummary();
-}
-
-function onAccountChange() {
-  var sel = document.getElementById('accountSelect');
-  _accountId = sel.value || null;
-  if (_accountId) { loadSummary(); loadLeads(); }
-}
-
-// ── Load ad accounts ─────────────────────────────────────────────────────────
+// ── LinkedIn: accounts ───────────────────────────────────────────────────────
 async function loadAccounts() {
   try {
     var res = await liCall('accounts');
     if (res.error) {
-      if (res.status === 503) { showSetupBanner(); return; }
+      if (res.status === 503) { showLiSetup(); return; }
       setCampBody('<div class="state-error">Error: ' + res.error + '</div>');
       return;
     }
@@ -221,203 +501,253 @@ async function loadAccounts() {
     sel.style.display = '';
     accounts.forEach(function(a) {
       var id = (a.id || a.reference || '').toString().replace('urn:li:sponsoredAccount:','');
-      var name = a.name || ('Account ' + id);
       var opt = document.createElement('option');
-      opt.value = id; opt.textContent = name;
+      opt.value = id;
+      opt.textContent = a.name || ('Account ' + id);
       sel.appendChild(opt);
     });
-    // Auto-select first
-    if (accounts.length === 1) { sel.value = (accounts[0].id||'').toString().replace('urn:li:sponsoredAccount:',''); onAccountChange(); }
-    else { setCampBody('<div class="state-empty">Select an ad account above to load campaigns.</div>'); }
-    setConnStatus(true);
+    if (accounts.length === 1) {
+      sel.value = (accounts[0].id||'').toString().replace('urn:li:sponsoredAccount:','');
+      onAccountChange();
+    } else {
+      setCampBody('<div class="state-empty">Select an ad account above to load campaigns.</div>');
+    }
+    setLiStatus(true);
+    document.getElementById('navDotLi').className = 'dot dot-li';
   } catch(e) {
     setCampBody('<div class="state-error">Could not load accounts: ' + e.message + '</div>');
   }
 }
 
-// ── Load summary (campaigns + analytics) ────────────────────────────────────
+function onAccountChange() {
+  var sel = document.getElementById('accountSelect');
+  _accountId = sel.value || null;
+  if (_accountId) { loadSummary(); loadLeads(); }
+}
+
+// ── LinkedIn: summary ────────────────────────────────────────────────────────
 async function loadSummary() {
   setCampBody('<div class="state-loading"><div class="spinner-sm"></div> Loading campaigns…</div>');
   document.getElementById('campSub').textContent = 'Loading…';
   try {
-    var res = await liCall('summary', { account_id: _accountId, days: _days });
+    var res = await liCall('summary', { account_id: _accountId, days: _globalDays });
     if (res.error) { setCampBody('<div class="state-error">Error: ' + res.error + '</div>'); return; }
 
-    _campaigns = res.campaigns || [];
+    var campaigns = res.campaigns || [];
     var analytics = res.analytics || [];
 
-    // Build analytics map keyed by campaign URN
     var analyticsMap = {};
     analytics.forEach(function(a) {
-      var key = (a.pivotValues || [])[0] || '';
-      analyticsMap[key] = a;
+      analyticsMap[(a.pivotValues||[])[0]||''] = a;
     });
 
-    // Compute KPIs
-    var totalSpend = 0, totalImpr = 0, totalClicks = 0, totalLeads = 0;
+    var totalSpend=0, totalImpr=0, totalClicks=0, totalLeads=0;
     analytics.forEach(function(a) {
-      totalSpend += Number(a.costInLocalCurrency || 0);
-      totalImpr += Number(a.impressions || 0);
-      totalClicks += Number(a.clicks || 0);
-      totalLeads += Number(a.oneClickLeads || 0) + Number(a.leadGenerationMailContactInfoShares || 0);
+      totalSpend  += Number(a.costInLocalCurrency||0);
+      totalImpr   += Number(a.impressions||0);
+      totalClicks += Number(a.clicks||0);
+      totalLeads  += Number(a.oneClickLeads||0) + Number(a.leadGenerationMailContactInfoShares||0);
     });
-    var cpl = totalLeads > 0 ? totalSpend / totalLeads : null;
 
-    document.getElementById('kpiSpend').textContent = fmtMoney(totalSpend);
-    document.getElementById('kpiSpendSub').textContent = 'last ' + _days + ' days';
-    document.getElementById('kpiImpr').textContent = totalImpr >= 1000 ? (totalImpr/1000).toFixed(1)+'k' : fmt(totalImpr);
-    document.getElementById('kpiImprSub').textContent = 'total impressions';
-    document.getElementById('kpiClicks').textContent = fmt(totalClicks);
-    document.getElementById('kpiCTR').textContent = 'CTR ' + fmtPct(totalClicks, totalImpr);
-    document.getElementById('kpiLeads').textContent = fmt(totalLeads);
+    document.getElementById('kpiSpend').textContent   = fmtMoney(totalSpend);
+    document.getElementById('kpiSpendSub').textContent = 'last ' + _globalDays + ' days';
+    document.getElementById('kpiImpr').textContent    = totalImpr >= 1000 ? (totalImpr/1000).toFixed(1)+'k' : fmt(totalImpr);
+    document.getElementById('kpiImprSub').textContent  = 'total impressions';
+    document.getElementById('kpiClicks').textContent  = fmt(totalClicks);
+    document.getElementById('kpiCTR').textContent     = 'CTR ' + fmtPct(totalClicks, totalImpr);
+    document.getElementById('kpiLeads').textContent   = fmt(totalLeads);
     document.getElementById('kpiLeadsSub').textContent = 'lead gen responses';
-    document.getElementById('kpiCPL').textContent = cpl !== null ? fmtMoney(cpl) : '—';
+    document.getElementById('kpiCPL').textContent     = totalLeads > 0 ? fmtMoney(totalSpend / totalLeads) : '—';
 
-    // Render table
-    if (!_campaigns.length) {
+    if (!campaigns.length) {
       setCampBody('<div class="state-empty">No campaigns found for this account.</div>');
       document.getElementById('campSub').textContent = 'No campaigns';
       return;
     }
 
-    document.getElementById('campSub').textContent = _campaigns.length + ' campaigns · last ' + _days + ' days';
+    document.getElementById('campSub').textContent = campaigns.length + ' campaigns · last ' + _globalDays + 'd';
 
-    var html = '<div style="overflow-x:auto"><table class="camp-table"><thead><tr>'
+    var html = '<div style="overflow-x:auto"><table class="data-table"><thead><tr>'
       + '<th>Campaign</th><th>Status</th><th>Objective</th>'
-      + '<th>Impressions</th><th>Clicks</th><th>CTR</th>'
+      + '<th>Impr.</th><th>Clicks</th><th>CTR</th>'
       + '<th>Leads</th><th>Spend</th><th>CPL</th>'
       + '</tr></thead><tbody>';
 
-    _campaigns.forEach(function(c) {
-      var id = (c.id || '').toString().replace('urn:li:sponsoredCampaign:','');
-      var urn = 'urn:li:sponsoredCampaign:' + id;
-      var a = analyticsMap[urn] || {};
-      var impr = Number(a.impressions || 0);
-      var clicks = Number(a.clicks || 0);
-      var leads = Number(a.oneClickLeads || 0) + Number(a.leadGenerationMailContactInfoShares || 0);
-      var spend = Number(a.costInLocalCurrency || 0);
-      var campCPL = leads > 0 ? spend / leads : null;
-      var status = c.status || 'UNKNOWN';
-      var statusClass = ['ACTIVE','PAUSED','DRAFT','COMPLETED','ARCHIVED'].includes(status) ? status : 'DRAFT';
-      var name = c.name || ('Campaign ' + id);
-      var obj = (c.objectiveType || c.type || '—').replace(/_/g,' ').toLowerCase();
-
-      html += '<tr onclick="selectCampaign(\'' + id + '\')">'
-        + '<td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + name + '">' + name + '</td>'
-        + '<td><span class="camp-status ' + statusClass + '">' + status + '</span></td>'
-        + '<td style="color:var(--text3);text-transform:capitalize">' + obj + '</td>'
-        + '<td class="metric">' + (impr >= 1000 ? (impr/1000).toFixed(1)+'k' : fmt(impr)) + '</td>'
-        + '<td class="metric">' + fmt(clicks) + '</td>'
-        + '<td class="metric">' + fmtPct(clicks, impr) + '</td>'
-        + '<td class="metric' + (leads > 0 ? ' good' : '') + '">' + (leads || '—') + '</td>'
-        + '<td class="metric">' + (spend > 0 ? fmtMoney(spend) : '—') + '</td>'
-        + '<td class="metric">' + (campCPL !== null ? fmtMoney(campCPL) : '—') + '</td>'
+    campaigns.forEach(function(c) {
+      var id = (c.id||'').toString().replace('urn:li:sponsoredCampaign:','');
+      var a  = analyticsMap['urn:li:sponsoredCampaign:'+id] || {};
+      var impr  = Number(a.impressions||0);
+      var clicks= Number(a.clicks||0);
+      var leads = Number(a.oneClickLeads||0) + Number(a.leadGenerationMailContactInfoShares||0);
+      var spend = Number(a.costInLocalCurrency||0);
+      var cpl   = leads > 0 ? spend/leads : null;
+      var status= c.status || 'UNKNOWN';
+      var sc    = ['ACTIVE','PAUSED','DRAFT','COMPLETED','ARCHIVED'].includes(status) ? status : 'DRAFT';
+      var name  = c.name || ('Campaign '+id);
+      var obj   = (c.objectiveType||c.type||'—').replace(/_/g,' ').toLowerCase();
+      html += '<tr>'
+        + '<td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(name)+'">'+esc(name)+'</td>'
+        + '<td><span class="cs '+sc+'">'+status+'</span></td>'
+        + '<td style="color:var(--text3);text-transform:capitalize">'+obj+'</td>'
+        + '<td class="metric">'+(impr>=1000?(impr/1000).toFixed(1)+'k':fmt(impr))+'</td>'
+        + '<td class="metric">'+fmt(clicks)+'</td>'
+        + '<td class="metric">'+fmtPct(clicks,impr)+'</td>'
+        + '<td class="metric'+(leads>0?' good':'')+'">'+  (leads||'—')+'</td>'
+        + '<td class="metric">'+(spend>0?fmtMoney(spend):'—')+'</td>'
+        + '<td class="metric">'+(cpl!==null?fmtMoney(cpl):'—')+'</td>'
         + '</tr>';
     });
-
     html += '</tbody></table></div>';
     setCampBody(html);
-
   } catch(e) {
     setCampBody('<div class="state-error">Failed to load: ' + e.message + '</div>');
   }
 }
 
-function selectCampaign(id) {
-  document.querySelectorAll('.camp-table tbody tr').forEach(function(r){
-    r.classList.toggle('selected', r.getAttribute('onclick') === 'selectCampaign(\'' + id + '\')');
-  });
-}
-
-// ── Load leads ───────────────────────────────────────────────────────────────
+// ── LinkedIn: leads ───────────────────────────────────────────────────────────
 async function loadLeads() {
   if (!_accountId) return;
-  setLeadsBody('<div class="state-loading"><div class="spinner-sm"></div> Loading lead gen responses…</div>');
+  setLeadsBody('<div class="state-loading"><div class="spinner-sm"></div> Loading leads…</div>');
   try {
     var res = await liCall('leads', { account_id: _accountId });
     if (res.error) { setLeadsBody('<div class="state-error">Error: ' + res.error + '</div>'); return; }
     var leads = res.elements || [];
     if (!leads.length) { setLeadsBody('<div class="state-empty">No lead gen form responses found yet.</div>'); return; }
-
     var html = '';
-    leads.slice(0, 20).forEach(function(l) {
-      var firstName = l.firstName || (l.formResponse && l.formResponse.firstName) || '';
-      var lastName = l.lastName || (l.formResponse && l.formResponse.lastName) || '';
-      var name = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown';
-      var email = l.email || (l.formResponse && l.formResponse.emailAddress) || '';
-      var title = l.title || (l.formResponse && l.formResponse.title) || '';
-      var company = l.company || (l.formResponse && l.formResponse.companyName) || '';
-      var formName = l._form_name || 'Lead Form';
-      var submittedAt = l.submittedAt || l.createdAt || '';
-      var safeEmail = email.replace(/'/g, "\\'");
-      var safeName = name.replace(/'/g, "\\'");
-      var safeCompany = company.replace(/'/g, "\\'");
-
+    leads.slice(0,20).forEach(function(l) {
+      var firstName = l.firstName || (l.formResponse&&l.formResponse.firstName) || '';
+      var lastName  = l.lastName  || (l.formResponse&&l.formResponse.lastName)  || '';
+      var name    = [firstName,lastName].filter(Boolean).join(' ') || 'Unknown';
+      var email   = l.email || (l.formResponse&&l.formResponse.emailAddress) || '';
+      var title   = l.title || (l.formResponse&&l.formResponse.title) || '';
+      var company = l.company || (l.formResponse&&l.formResponse.companyName) || '';
+      var form    = l._form_name || 'Lead Form';
+      var sub     = l.submittedAt || l.createdAt || '';
+      var se = email.replace(/'/g,"\\'"), sn = name.replace(/'/g,"\\'"), sc = company.replace(/'/g,"\\'");
       html += '<div class="lead-row">'
-        + '<div class="lead-avatar">' + initials(name) + '</div>'
+        + '<div class="lead-avatar">'+initials(name)+'</div>'
         + '<div class="lead-body">'
-        + '<div class="lead-name">' + name + (company ? ' · <span style="color:var(--text3);font-weight:400">' + company + '</span>' : '') + '</div>'
-        + (title ? '<div class="lead-role">' + title + '</div>' : '')
-        + (email ? '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">' + email + '</div>' : '')
+        + '<div class="lead-name">'+esc(name)+(company?' · <span style="color:var(--text3);font-weight:400">'+esc(company)+'</span>':'')+'</div>'
+        + (title ? '<div class="lead-role">'+esc(title)+'</div>' : '')
+        + (email ? '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">'+esc(email)+'</div>' : '')
         + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-        + '<span class="lead-form">' + formName + '</span>'
-        + (submittedAt ? '<span class="lead-time">' + timeAgo(submittedAt) + '</span>' : '')
+        + '<span style="font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:4px">'+form+'</span>'
+        + (sub ? '<span style="font-size:10px;color:var(--text3)">'+timeAgo(sub)+'</span>' : '')
         + '</div>'
         + '<div class="lead-actions">'
-        + '<button class="lead-btn primary" onclick="addLeadToPipeline(\'' + safeName + '\',\'' + safeEmail + '\',\'' + safeCompany + '\')">+ Add to Pipeline</button>'
-        + (email ? '<a class="lead-btn" href="mailto:' + email + '">Email</a>' : '')
-        + '<button class="lead-btn" onclick="briefOnLead(\'' + safeName + '\',\'' + safeCompany + '\')">Brief S13</button>'
-        + '</div>'
-        + '</div>'
-        + '</div>';
+        + '<button class="lbtn primary" onclick="addLeadToPipeline(\''+sn+'\',\''+se+'\',\''+sc+'\')">+ Add to Pipeline</button>'
+        + (email ? '<a class="lbtn" href="mailto:'+email+'">Email</a>' : '')
+        + '<button class="lbtn" onclick="briefOnLead(\''+sn+'\',\''+sc+'\')">Brief S13</button>'
+        + '</div></div></div>';
     });
     setLeadsBody(html);
   } catch(e) {
-    setLeadsBody('<div class="state-error">Failed to load leads: ' + e.message + '</div>');
+    setLeadsBody('<div class="state-error">Failed to load leads: '+e.message+'</div>');
   }
 }
 
 function addLeadToPipeline(name, email, company) {
   var target = company || name;
-  API.deals.create({
-    company_name: target,
-    stage: 'Prospect',
-    notes: 'LinkedIn lead gen · Contact: ' + name + (email ? ' <' + email + '>' : ''),
-  }).then(function(res) {
-    if (res && res.data) Toast.show(target + ' added to pipeline', 'ok', 2500);
-    else Toast.show('Failed to add: ' + ((res && res.error) || 'error'), 'error', 2500);
-  }).catch(function() { Toast.show('Error adding to pipeline', 'error', 2000); });
+  API.deals.create({ company_name: target, stage: 'Prospect', notes: 'LinkedIn lead · '+name+(email?' <'+email+'>':'') })
+    .then(function(res){
+      if (res && res.data) Toast.show(target+' added to pipeline','ok',2500);
+      else Toast.show('Failed: '+((res&&res.error)||'error'),'error',2500);
+    }).catch(function(){ Toast.show('Error adding to pipeline','error',2000); });
 }
 
 function briefOnLead(name, company) {
-  var q = 'LinkedIn lead from our campaign: ' + name + (company ? ' at ' + company : '') + '. Design a follow-up outreach sequence.';
+  var q = 'LinkedIn lead: '+name+(company?' at '+company:'')+'. Design a follow-up outreach sequence.';
   window.location.href = 'command.html?brief=' + encodeURIComponent(q);
 }
 
-function setCampBody(html) { document.getElementById('campBody').innerHTML = html; }
+function setCampBody(html)  { document.getElementById('campBody').innerHTML  = html; }
 function setLeadsBody(html) { document.getElementById('leadsBody').innerHTML = html; }
 
-function setConnStatus(ok) {
-  var el = document.getElementById('connStatus');
+function setLiStatus(ok) {
+  var el = document.getElementById('liStatus');
   el.style.display = '';
-  if (ok) {
-    el.className = 'badge badge-green';
-    el.innerHTML = '<span class="status-dot dot-green dot-pulse"></span> Connected';
-  } else {
-    el.className = 'badge badge-red';
-    el.innerHTML = 'Disconnected';
+  el.className = ok ? 'badge badge-green' : 'badge badge-red';
+  el.innerHTML  = ok ? '<span class="status-dot dot-green dot-pulse"></span> Connected' : 'Disconnected';
+}
+
+function showLiSetup() {
+  document.getElementById('liSetupBanner').style.display = '';
+  setCampBody('');
+  document.getElementById('campSub').textContent = 'Not connected';
+  document.getElementById('liKpiRow').style.opacity = '.3';
+  setLiStatus(false);
+}
+
+// ── Meta Pixel / CAPI ─────────────────────────────────────────────────────────
+async function loadMetaInsights() {
+  document.getElementById('metaBody').innerHTML = '<div class="state-loading"><div class="spinner-sm"></div> Fetching pixel stats…</div>';
+  document.getElementById('metaSub').textContent = 'Loading…';
+  try {
+    var r = await fetch('/api/meta-insights?days=' + _globalDays);
+    var data = await r.json();
+    if (data.error) {
+      document.getElementById('metaBody').innerHTML = '<div class="state-error">Error: ' + data.error + '</div>';
+      document.getElementById('metaSub').textContent = 'Error loading pixel stats';
+      setMetaStatus(false);
+      return;
+    }
+
+    var ev = data.events || {};
+
+    document.getElementById('mkpiPV').textContent    = fmt(ev['PageView'] || 0);
+    document.getElementById('mkpiIC').textContent    = fmt(ev['InitiateCheckout'] || 0);
+    document.getElementById('mkpiST').textContent    = fmt(ev['StartTrial'] || 0);
+    document.getElementById('mkpiCR').textContent    = fmt(ev['CompleteRegistration'] || 0);
+    document.getElementById('mkpiPurch').textContent = fmt(ev['Purchase'] || 0);
+
+    var allKeys = Object.keys(ev).sort();
+    var lastFired = data.pixel && data.pixel.last_fired_time ? ' · last fired ' + timeAgo(data.pixel.last_fired_time * 1000) : '';
+    document.getElementById('metaSub').textContent = allKeys.length + ' event types · last ' + _globalDays + 'd' + lastFired;
+
+    if (!allKeys.length) {
+      document.getElementById('metaBody').innerHTML = '<div class="state-empty">No pixel events in this period yet.</div>';
+      setMetaStatus(true);
+      return;
+    }
+
+    var CONV_EVENTS = ['Purchase','StartTrial','CompleteRegistration','InitiateCheckout'];
+    var html = '<div style="overflow-x:auto"><table class="data-table"><thead><tr>'
+      + '<th>Event</th>'
+      + '<th>Count <span class="pill-browser" style="margin-left:4px">PIX+CAPI</span></th>'
+      + '<th>Type</th>'
+      + '</tr></thead><tbody>';
+
+    allKeys.forEach(function(evName) {
+      var count  = Number(ev[evName] || 0);
+      var isConv = CONV_EVENTS.includes(evName);
+      var type   = isConv ? '<span class="pill-capi">conversion</span>' : '<span style="font-size:10px;color:var(--text3)">standard</span>';
+      html += '<tr>'
+        + '<td style="font-weight:'+(isConv?'600':'400')+';color:'+(isConv?'var(--text)':'var(--text2)')+'">'+esc(evName)+'</td>'
+        + '<td class="metric'+(isConv?' good':'')+'">'+fmt(count)+'</td>'
+        + '<td>'+type+'</td>'
+        + '</tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('metaBody').innerHTML = html;
+    setMetaStatus(true);
+    document.getElementById('navDotMeta').className = 'dot dot-meta';
+  } catch(e) {
+    document.getElementById('metaBody').innerHTML = '<div class="state-error">Failed: ' + e.message + '</div>';
+    document.getElementById('metaSub').textContent = 'Error';
+    setMetaStatus(false);
   }
 }
 
-function showSetupBanner() {
-  document.getElementById('setupBanner').style.display = '';
-  setCampBody('');
-  document.getElementById('campSub').textContent = 'Not connected';
-  document.getElementById('kpiRow').style.opacity = '.3';
-  setConnStatus(false);
+function setMetaStatus(ok) {
+  var el = document.getElementById('metaStatus');
+  el.style.display = '';
+  el.className = ok ? 'badge badge-green' : 'badge badge-red';
+  el.innerHTML = ok
+    ? '<span class="status-dot dot-green dot-pulse"></span> Pixel Active'
+    : '<span class="status-dot dot-red"></span> Pixel Error';
 }
 
-// ── Boot ─────────────────────────────────────────────────────────────────────
+// ── Boot ──────────────────────────────────────────────────────────────────────
 window.addEventListener('auth:ready', function(e) {
   if (!e.detail?.user) {
     Toast.show('Sign in to access this page', 'warn', 3000);
@@ -425,6 +755,7 @@ window.addEventListener('auth:ready', function(e) {
     return;
   }
   loadAccounts();
+  loadMetaInsights();
 });
 </script>
 <noscript><img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=8900834&fmt=gif" /></noscript>
