@@ -1,6 +1,6 @@
 // api/lib/meta-capi.js
 // Meta Conversions API helper — server-side event forwarding with SHA-256 user hashing
-// Pixel ID: 1943804979837382  |  Token: META_ACCESS_TOKEN env var
+// Pixel ID and API version come from meta-config.js  |  Token: META_ACCESS_TOKEN env var
 
 import crypto from 'crypto';
 import { PIXEL_ID, API_VERSION } from './meta-config.js';

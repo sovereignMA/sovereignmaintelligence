@@ -472,6 +472,17 @@ function initials(name) {
   if (!name) return '?';
   return name.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase();
 }
+function normalizeLead(l) {
+  var fr = l.formResponse || {};
+  var firstName = l.firstName || fr.firstName || '';
+  var lastName  = l.lastName  || fr.lastName  || '';
+  return {
+    name:    [firstName, lastName].filter(Boolean).join(' ') || 'Unknown',
+    email:   l.email   || fr.emailAddress || '',
+    title:   l.title   || fr.title        || '',
+    company: l.company || fr.companyName  || '',
+  };
+}
 
 // ── LinkedIn API call ────────────────────────────────────────────────────────
 function liCall(action, extra) {
@@ -614,12 +625,8 @@ async function loadLeads() {
     _leads = leads.slice(0,20);
     var html = '';
     _leads.forEach(function(l, i) {
-      var firstName = l.firstName || (l.formResponse&&l.formResponse.firstName) || '';
-      var lastName  = l.lastName  || (l.formResponse&&l.formResponse.lastName)  || '';
-      var name    = [firstName,lastName].filter(Boolean).join(' ') || 'Unknown';
-      var email   = l.email || (l.formResponse&&l.formResponse.emailAddress) || '';
-      var title   = l.title || (l.formResponse&&l.formResponse.title) || '';
-      var company = l.company || (l.formResponse&&l.formResponse.companyName) || '';
+      var nl = normalizeLead(l);
+      var name = nl.name, email = nl.email, title = nl.title, company = nl.company;
       var form    = l._form_name || 'Lead Form';
       var sub     = l.submittedAt || l.createdAt || '';
       html += '<div class="lead-row">'
@@ -646,11 +653,8 @@ async function loadLeads() {
 
 function addLeadToPipeline(i) {
   var l = _leads[i]; if (!l) return;
-  var firstName = l.firstName || (l.formResponse&&l.formResponse.firstName) || '';
-  var lastName  = l.lastName  || (l.formResponse&&l.formResponse.lastName)  || '';
-  var name    = [firstName,lastName].filter(Boolean).join(' ') || 'Unknown';
-  var email   = l.email || (l.formResponse&&l.formResponse.emailAddress) || '';
-  var company = l.company || (l.formResponse&&l.formResponse.companyName) || '';
+  var nl = normalizeLead(l);
+  var name = nl.name, email = nl.email, company = nl.company;
   var target = company || name;
   API.deals.create({ company_name: target, stage: 'Prospect', notes: 'LinkedIn lead · '+name+(email?' <'+email+'>':'') })
     .then(function(res){
@@ -661,11 +665,8 @@ function addLeadToPipeline(i) {
 
 function briefOnLead(i) {
   var l = _leads[i]; if (!l) return;
-  var firstName = l.firstName || (l.formResponse&&l.formResponse.firstName) || '';
-  var lastName  = l.lastName  || (l.formResponse&&l.formResponse.lastName)  || '';
-  var name    = [firstName,lastName].filter(Boolean).join(' ') || 'Unknown';
-  var company = l.company || (l.formResponse&&l.formResponse.companyName) || '';
-  var q = 'LinkedIn lead: '+name+(company?' at '+company:'')+'. Design a follow-up outreach sequence.';
+  var nl = normalizeLead(l);
+  var q = 'LinkedIn lead: '+nl.name+(nl.company?' at '+nl.company:'')+'. Design a follow-up outreach sequence.';
   window.location.href = 'command.html?brief=' + encodeURIComponent(q);
 }
 
