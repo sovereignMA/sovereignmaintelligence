@@ -264,8 +264,7 @@ src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
           <div class="card-sub" id="metaSub">Loading…</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
-          <span class="pill-capi">CAPI server</span>
-          <span class="pill-browser">PIX browser</span>
+          <span class="pill-browser">PIX + CAPI combined</span>
         </div>
       </div>
       <div id="metaBody"><div class="state-loading"><div class="spinner-sm"></div> Fetching pixel stats…</div></div>
@@ -438,6 +437,8 @@ src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
 <script>
 var _accountId = null;
 var _globalDays = 7;
+var _leads = [];
+var CONV_EVENTS = ['Purchase','StartTrial','CompleteRegistration','InitiateCheckout'];
 var FN_URL = 'https://kicdjdxxdqtmetphipnn.supabase.co/functions/v1';
 
 // ── Global range ─────────────────────────────────────────────────────────────
@@ -499,6 +500,7 @@ async function loadAccounts() {
     }
     var sel = document.getElementById('accountSelect');
     sel.style.display = '';
+    sel.innerHTML = '<option value="">Select account…</option>';
     accounts.forEach(function(a) {
       var id = (a.id || a.reference || '').toString().replace('urn:li:sponsoredAccount:','');
       var opt = document.createElement('option');
@@ -536,13 +538,9 @@ async function loadSummary() {
     var campaigns = res.campaigns || [];
     var analytics = res.analytics || [];
 
-    var analyticsMap = {};
+    var analyticsMap = {}, totalSpend=0, totalImpr=0, totalClicks=0, totalLeads=0;
     analytics.forEach(function(a) {
       analyticsMap[(a.pivotValues||[])[0]||''] = a;
-    });
-
-    var totalSpend=0, totalImpr=0, totalClicks=0, totalLeads=0;
-    analytics.forEach(function(a) {
       totalSpend  += Number(a.costInLocalCurrency||0);
       totalImpr   += Number(a.impressions||0);
       totalClicks += Number(a.clicks||0);
@@ -613,8 +611,9 @@ async function loadLeads() {
     if (res.error) { setLeadsBody('<div class="state-error">Error: ' + res.error + '</div>'); return; }
     var leads = res.elements || [];
     if (!leads.length) { setLeadsBody('<div class="state-empty">No lead gen form responses found yet.</div>'); return; }
+    _leads = leads.slice(0,20);
     var html = '';
-    leads.slice(0,20).forEach(function(l) {
+    _leads.forEach(function(l, i) {
       var firstName = l.firstName || (l.formResponse&&l.formResponse.firstName) || '';
       var lastName  = l.lastName  || (l.formResponse&&l.formResponse.lastName)  || '';
       var name    = [firstName,lastName].filter(Boolean).join(' ') || 'Unknown';
@@ -623,7 +622,6 @@ async function loadLeads() {
       var company = l.company || (l.formResponse&&l.formResponse.companyName) || '';
       var form    = l._form_name || 'Lead Form';
       var sub     = l.submittedAt || l.createdAt || '';
-      var se = email.replace(/'/g,"\\'"), sn = name.replace(/'/g,"\\'"), sc = company.replace(/'/g,"\\'");
       html += '<div class="lead-row">'
         + '<div class="lead-avatar">'+initials(name)+'</div>'
         + '<div class="lead-body">'
@@ -631,13 +629,13 @@ async function loadLeads() {
         + (title ? '<div class="lead-role">'+esc(title)+'</div>' : '')
         + (email ? '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">'+esc(email)+'</div>' : '')
         + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-        + '<span style="font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:4px">'+form+'</span>'
+        + '<span style="font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:4px">'+esc(form)+'</span>'
         + (sub ? '<span style="font-size:10px;color:var(--text3)">'+timeAgo(sub)+'</span>' : '')
         + '</div>'
         + '<div class="lead-actions">'
-        + '<button class="lbtn primary" onclick="addLeadToPipeline(\''+sn+'\',\''+se+'\',\''+sc+'\')">+ Add to Pipeline</button>'
-        + (email ? '<a class="lbtn" href="mailto:'+email+'">Email</a>' : '')
-        + '<button class="lbtn" onclick="briefOnLead(\''+sn+'\',\''+sc+'\')">Brief S13</button>'
+        + '<button class="lbtn primary" onclick="addLeadToPipeline('+i+')">+ Add to Pipeline</button>'
+        + (email ? '<a class="lbtn" href="mailto:'+esc(email)+'">Email</a>' : '')
+        + '<button class="lbtn" onclick="briefOnLead('+i+')">Brief S13</button>'
         + '</div></div></div>';
     });
     setLeadsBody(html);
@@ -646,7 +644,13 @@ async function loadLeads() {
   }
 }
 
-function addLeadToPipeline(name, email, company) {
+function addLeadToPipeline(i) {
+  var l = _leads[i]; if (!l) return;
+  var firstName = l.firstName || (l.formResponse&&l.formResponse.firstName) || '';
+  var lastName  = l.lastName  || (l.formResponse&&l.formResponse.lastName)  || '';
+  var name    = [firstName,lastName].filter(Boolean).join(' ') || 'Unknown';
+  var email   = l.email || (l.formResponse&&l.formResponse.emailAddress) || '';
+  var company = l.company || (l.formResponse&&l.formResponse.companyName) || '';
   var target = company || name;
   API.deals.create({ company_name: target, stage: 'Prospect', notes: 'LinkedIn lead · '+name+(email?' <'+email+'>':'') })
     .then(function(res){
@@ -655,7 +659,12 @@ function addLeadToPipeline(name, email, company) {
     }).catch(function(){ Toast.show('Error adding to pipeline','error',2000); });
 }
 
-function briefOnLead(name, company) {
+function briefOnLead(i) {
+  var l = _leads[i]; if (!l) return;
+  var firstName = l.firstName || (l.formResponse&&l.formResponse.firstName) || '';
+  var lastName  = l.lastName  || (l.formResponse&&l.formResponse.lastName)  || '';
+  var name    = [firstName,lastName].filter(Boolean).join(' ') || 'Unknown';
+  var company = l.company || (l.formResponse&&l.formResponse.companyName) || '';
   var q = 'LinkedIn lead: '+name+(company?' at '+company:'')+'. Design a follow-up outreach sequence.';
   window.location.href = 'command.html?brief=' + encodeURIComponent(q);
 }
@@ -710,7 +719,6 @@ async function loadMetaInsights() {
       return;
     }
 
-    var CONV_EVENTS = ['Purchase','StartTrial','CompleteRegistration','InitiateCheckout'];
     var html = '<div style="overflow-x:auto"><table class="data-table"><thead><tr>'
       + '<th>Event</th>'
       + '<th>Count <span class="pill-browser" style="margin-left:4px">PIX+CAPI</span></th>'

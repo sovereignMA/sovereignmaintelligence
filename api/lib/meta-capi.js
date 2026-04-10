@@ -3,9 +3,7 @@
 // Pixel ID: 1943804979837382  |  Token: META_ACCESS_TOKEN env var
 
 import crypto from 'crypto';
-
-const PIXEL_ID = '1943804979837382';
-const API_VERSION = 'v19.0';
+import { PIXEL_ID, API_VERSION } from './meta-config.js';
 
 function sha256(value) {
   if (!value) return undefined;
@@ -53,8 +51,8 @@ export async function sendMetaEvent({ event_name, event_id, user_data = {}, cust
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [evt] }) }
     );
     const result = await res.json();
-    if (!res.ok) console.error(`[meta-capi] ${event_name} error:`, result?.error?.message || JSON.stringify(result));
-    else         console.log(`[meta-capi] ${event_name} sent — events_received:${result.events_received}`);
+    if (!res.ok || result?.error) console.error(`[meta-capi] ${event_name} error:`, result?.error?.message || JSON.stringify(result));
+    else                          console.log(`[meta-capi] ${event_name} sent — events_received:${result.events_received}`);
     return result;
   } catch (e) {
     console.error('[meta-capi] fetch error:', e.message);

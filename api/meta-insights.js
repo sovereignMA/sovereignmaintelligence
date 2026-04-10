@@ -2,12 +2,11 @@
 // Returns Meta Pixel event stats + CAPI delivery info for the campaigns dashboard
 // GET /api/meta-insights?days=7|30|90
 
-const PIXEL_ID = '1943804979837382';
-const API_VERSION = 'v19.0';
-const BASE = `https://graph.facebook.com/${API_VERSION}`;
+import { setCORS } from './lib/cors-auth.js';
+import { PIXEL_ID, GRAPH_BASE as BASE } from './lib/meta-config.js';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://sovereigncmd.xyz');
+  setCORS(req, res, 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).end();
 
@@ -21,7 +20,7 @@ export default async function handler(req, res) {
   try {
     const [pixelInfo, statsRaw] = await Promise.all([
       // Pixel metadata
-      fetch(`${BASE}/${PIXEL_ID}?fields=name,creation_time,last_fired_time,code&access_token=${token}`)
+      fetch(`${BASE}/${PIXEL_ID}?fields=name,last_fired_time&access_token=${token}`)
         .then(r => r.json()),
 
       // All event counts aggregated by event name (browser pixel + CAPI combined)

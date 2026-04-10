@@ -3,13 +3,13 @@
 // Forwards IP + User-Agent from the actual visitor for better audience matching
 // POST /api/meta-events { event_name, event_id, user_data?, custom_data?, event_source_url? }
 
+import { setCORS } from './lib/cors-auth.js';
 import { sendMetaEvent } from './lib/meta-capi.js';
 
-// Only safe browser-initiated events are allowed through this public endpoint
 const ALLOWED = new Set(['PageView', 'ViewContent', 'Lead', 'InitiateCheckout', 'CompleteRegistration', 'Search']);
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://sovereigncmd.xyz');
+  setCORS(req, res, 'POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
