@@ -5,13 +5,26 @@
 'use strict';
 
 /* ── AUTH GATE: hide protected pages before auth resolves ── */
+function _removeAuthOverlay(){ var o=document.getElementById('_authOverlay'); if(o) o.remove(); }
 (function(){
   const _p = location.pathname.split('/').pop() || 'index.html';
-  const _PUBLIC = new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','']);
+  const _PUBLIC = new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','','login','upgrade','legal','mediakit','resources']);
   if(!_PUBLIC.has(_p)){
     document.documentElement.style.visibility = 'hidden';
+    // Show loading overlay so users see a spinner instead of a blank page
+    var _style = document.createElement('style');
+    _style.textContent = '@keyframes _spin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(_style);
+    var _ol = document.createElement('div');
+    _ol.id = '_authOverlay';
+    _ol.style.cssText = 'position:fixed;inset:0;background:#0a0a0f;display:flex;align-items:center;justify-content:center;z-index:99999;visibility:visible;';
+    _ol.innerHTML = '<div style="width:36px;height:36px;border:2px solid #2a2a3a;border-top-color:#c9a84c;border-radius:50%;animation:_spin .7s linear infinite"></div>';
+    document.body.appendChild(_ol);
     // Safety fallback: reveal after 4s in case auth never fires
-    window._authRevealTimer = setTimeout(function(){ document.documentElement.style.visibility = ''; }, 4000);
+    window._authRevealTimer = setTimeout(function(){
+      document.documentElement.style.visibility = '';
+      _removeAuthOverlay();
+    }, 4000);
   }
 })();
 
@@ -93,7 +106,7 @@ const _Auth = {
 
   token() { return this.session?.access_token ?? null; },
 
-  guard(redirect='login.html') {
+  guard(redirect='/login') {
     if(!this.user) {
       const dest = redirect + '?next=' + encodeURIComponent(location.pathname.split('/').pop());
       location.href = dest;
@@ -107,7 +120,7 @@ const _Auth = {
       provider:'google',
       options:{
         scopes:'email profile https://www.googleapis.com/auth/gmail.modify',
-        redirectTo: location.origin + '/command.html',
+        redirectTo: location.origin + '/command',
         queryParams:{access_type:'offline',prompt:'consent'}
       }
     });
@@ -122,7 +135,7 @@ const _Auth = {
   },
 
   async signUp(email, pass, name) {
-    const {data,error} = await window._sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:location.origin+'/login.html'}});
+    const {data,error} = await window._sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:location.origin+'/login'}});
     if(error){Toast.show(error.message,'err');return null;}
     Toast.show('Account created — check your email','ok',6000);
     // Track referral if someone signed up via a referral link
@@ -138,11 +151,11 @@ const _Auth = {
   async signOut() {
     document.cookie = 'sv_auth=; path=/; max-age=0';
     await window._sb.auth.signOut();
-    location.href = 'index.html';
+    location.href = '/';
   },
 
   async resetPw(email) {
-    const {error} = await window._sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/login.html?mode=reset'});
+    const {error} = await window._sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/login?mode=reset'});
     if(error){Toast.show(error.message,'err');return false;}
     Toast.show('Reset link sent','ok');
     return true;
@@ -187,7 +200,7 @@ const API = {
           // Refresh token also invalid — session is dead; sign out cleanly
           await window._sb.auth.signOut();
           Toast.show('Session expired — please sign in again', 'warn', 4000);
-          setTimeout(() => location.href = 'login.html', 2000);
+          setTimeout(() => location.href = '/login', 2000);
           return null;
         }
         _Auth.session = currentSession;
@@ -197,7 +210,7 @@ const API = {
           // Fresh token still rejected — session unrecoverable, sign out
           await window._sb.auth.signOut();
           Toast.show('Session invalid — please sign in again', 'warn', 4000);
-          setTimeout(() => location.href = 'login.html', 2000);
+          setTimeout(() => location.href = '/login', 2000);
           return null;
         }
       }
@@ -230,7 +243,7 @@ const API = {
         if(!refreshed?.access_token) {
           if(opts.onError) opts.onError('Session expired — please sign in again');
           Toast.show('Session expired — please sign in again','warn',4000);
-          setTimeout(()=>location.href='login.html',2500);
+          setTimeout(()=>location.href='/login',2500);
           return null;
         }
         currentSession = refreshed;
@@ -317,29 +330,30 @@ window.API = API;
    ══════════════════════════════════════ */
 (function injectNav(){
   const page = location.pathname.split('/').pop() || 'index.html';
-  const PUBLIC_PAGES = new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','']);
+  const PUBLIC_PAGES = new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','','login','upgrade','legal','mediakit','resources']);
   const isPublicPage = PUBLIC_PAGES.has(page);
 
   const PUBLIC_LINKS = [
-    {href:'index.html',    label:'Home',    icon:'⌂'},
-    {href:'upgrade.html',  label:'Pricing', icon:'◈'},
-    {href:'resources.html',label:'Guide',   icon:'◉'},
-    {href:'legal.html',    label:'Legal',   icon:'⚖'},
+    {href:'/',           label:'Home',    icon:'⌂'},
+    {href:'/upgrade',    label:'Pricing', icon:'◈'},
+    {href:'/resources',  label:'Guide',   icon:'◉'},
+    {href:'/legal',      label:'Legal',   icon:'⚖'},
   ];
   const APP_LINKS = [
-    {href:'scout.html',       label:'Scout',     icon:'◉'},
-    {href:'command.html',     label:'Command',   icon:'⌘'},
-    {href:'pipeline.html',    label:'Pipeline',  icon:'▤'},
-    {href:'intelligence.html',label:'Intel',     icon:'◎'},
-    {href:'mail.html',        label:'Mail',      icon:'✉'},
-    {href:'comms.html',       label:'Comms',     icon:'☎'},
-    {href:'analytics.html',   label:'Analytics', icon:'◈'},
-    {href:'vault.html',       label:'Vault',     icon:'◆'},
-    {href:'campaigns.html',   label:'Campaigns', icon:'◈'},
+    {href:'/scout',        label:'Scout',     icon:'◉'},
+    {href:'/command',      label:'Command',   icon:'⌘'},
+    {href:'/pipeline',     label:'Pipeline',  icon:'▤'},
+    {href:'/intelligence', label:'Intel',     icon:'◎'},
+    {href:'/mail',         label:'Mail',      icon:'✉'},
+    {href:'/comms',        label:'Comms',     icon:'☎'},
+    {href:'/analytics',    label:'Analytics', icon:'◈'},
+    {href:'/vault',        label:'Vault',     icon:'◆'},
+    {href:'/campaigns',    label:'Campaigns', icon:'◈'},
+    {href:'/agents',       label:'Agents',    icon:'⚡'},
   ];
-  const ADMIN_LINK = {href:'admin.html', label:'Admin', icon:'⚙'};
+  const ADMIN_LINK = {href:'/admin', label:'Admin', icon:'⚙'};
 
-  function isActive(h){return h===page||(h==='index.html'&&(page===''||page==='index.html'));}
+  function isActive(h){const s=h.replace(/^\/|\.html$/g,'');return s===page||(s===''&&(page===''||page==='index.html'));}
   function renderLinks(links){
     return {
       nav: links.map(l=>`<a href="${l.href}" class="nav-link${isActive(l.href)?' active':''}">${l.label}</a>`).join(''),
@@ -355,7 +369,7 @@ window.API = API;
   <button class="nav-sidebar-btn" id="sidebarToggleBtn" aria-label="Toggle sidebar" style="display:none">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="1.5" rx=".75" fill="currentColor"/><rect x="2" y="8.25" width="14" height="1.5" rx=".75" fill="currentColor"/><rect x="2" y="12.5" width="14" height="1.5" rx=".75" fill="currentColor"/></svg>
   </button>
-  <a href="index.html" class="nav-logo">
+  <a href="/" class="nav-logo">
     <div class="nav-logo-icon">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.5" fill="currentColor"/></svg>
     </div>
@@ -364,7 +378,7 @@ window.API = API;
   <div class="nav-links" id="navLinks">${navLinks}</div>
   <div class="nav-actions" id="navActions">
     <span class="nav-live"><span class="live-dot"></span><span class="live-label">Live</span></span>
-    <a href="command.html" class="btn btn-primary btn-sm nav-cta">Command ⌘</a>
+    <a href="/command" class="btn btn-primary btn-sm nav-cta">Command ⌘</a>
     <button class="nav-ham" id="navHam" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -373,7 +387,7 @@ window.API = API;
 <div class="nav-drawer" id="navDrawer">
   <div class="mob-links">${mobLinks}</div>
   <div style="padding:0 12px 16px">
-    <a href="command.html" class="btn btn-primary w-full" style="justify-content:center">Command ⌘</a>
+    <a href="/command" class="btn btn-primary w-full" style="justify-content:center">Command ⌘</a>
   </div>
 </div>
 <div class="nav-backdrop" id="navBackdrop"></div>`;
@@ -450,9 +464,9 @@ window.API = API;
       } catch(_){}
 
       // Admin page guard — redirect non-admins away from admin-only pages
-      const ADMIN_ONLY_PAGES = ['admin.html','is-policy.html','asset-register.html','ir-playbook.html','bcp.html'];
-      if(ADMIN_ONLY_PAGES.includes(page) && !isAdmin){
-        window.location.href = 'command.html';
+      const ADMIN_ONLY_PAGES = new Set(['admin.html','is-policy.html','asset-register.html','ir-playbook.html','bcp.html','agents.html','video-generator.html','admin','is-policy','asset-register','ir-playbook','bcp','agents','video-generator','video']);
+      if(ADMIN_ONLY_PAGES.has(page) && !isAdmin){
+        window.location.href = '/command';
         return;
       }
 
@@ -460,6 +474,7 @@ window.API = API;
       document.cookie = 'sv_auth=' + (isAdmin ? 'admin' : '1') + '; path=/; secure; samesite=lax; max-age=604800';
       clearTimeout(window._authRevealTimer);
       document.documentElement.style.visibility = '';
+      _removeAuthOverlay();
 
       // Fire auth:admin so admin.html can safely load — only after role is confirmed
       if(isAdmin) window.dispatchEvent(new CustomEvent('auth:admin', {detail: e.detail}));
@@ -487,10 +502,10 @@ window.API = API;
         +`<div class="udd-email">${eEmail}</div></div>`
         +`</div>`
         +`<div class="udd-sep"></div>`
-        +(isAdmin ? `<a class="udd-item" href="admin.html"><span class="udd-icon">⚙</span>Admin Dashboard</a>` : '')
-        +`<a class="udd-item" href="security.html"><span class="udd-icon">⬡</span>Security & Privacy</a>`
-        +`<a class="udd-item" href="resources.html"><span class="udd-icon">◉</span>Help & Support</a>`
-        +`<a class="udd-item" href="upgrade.html"><span class="udd-icon">◈</span>Upgrade Plan</a>`
+        +(isAdmin ? `<a class="udd-item" href="/admin"><span class="udd-icon">⚙</span>Admin Dashboard</a>` : '')
+        +`<a class="udd-item" href="/security"><span class="udd-icon">⬡</span>Security & Privacy</a>`
+        +`<a class="udd-item" href="/resources"><span class="udd-icon">◉</span>Help & Support</a>`
+        +`<a class="udd-item" href="/upgrade"><span class="udd-icon">◈</span>Upgrade Plan</a>`
         +`<button class="udd-item udd-referral" id="uddReferral"><span class="udd-icon">◆</span>Invite & Earn</button>`
         +`<button class="udd-item" id="uddBilling"><span class="udd-icon">◎</span>${hasActiveSub ? 'Manage Subscription' : 'Subscribe Now'}</button>`
         +`<div class="udd-sep"></div>`
@@ -518,10 +533,10 @@ window.API = API;
               method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}
             });
           }
-          if(r.status === 400) { window.location.href = 'upgrade.html'; return; }
+          if(r.status === 400) { window.location.href = '/upgrade'; return; }
           const d = await r.json();
-          if(d.url) { Toast.show('Opening billing portal…','info',2000); window.location.href = d.url; }
-          else { window.location.href = 'upgrade.html'; }
+          if(d.url && d.url.startsWith('https://billing.stripe.com/')) { Toast.show('Opening billing portal…','info',2000); window.location.href = d.url; }
+          else { window.location.href = '/upgrade'; }
         } catch(_){ Toast.show('Could not open billing portal','err'); }
       };
       document.addEventListener('click', (e)=>{
@@ -532,11 +547,12 @@ window.API = API;
       // Not authenticated — redirect protected pages to login, then reveal public ones
       if(!isPublicPage){
         clearTimeout(window._authRevealTimer);
-        window.location.href = 'login.html' + (page ? '?next=' + encodeURIComponent(page) : '');
+        window.location.href = '/login' + (page ? '?next=' + encodeURIComponent(page) : '');
         return;
       }
       clearTimeout(window._authRevealTimer);
       document.documentElement.style.visibility = '';
+      _removeAuthOverlay();
 
       // Logged-out: ensure public nav is shown
       const {nav,mob} = renderLinks(PUBLIC_LINKS);
@@ -547,9 +563,9 @@ window.API = API;
       // Hide Command CTA on public pages, show Sign In
       const cta = actions.querySelector('.nav-cta');
       if(cta && isPublicPage) cta.style.display = 'none';
-      if(page !== 'login.html'){
+      if(page !== 'login'){
         const a = document.createElement('a');
-        a.href = 'login.html';
+        a.href = '/login';
         a.className = 'btn btn-ghost btn-sm';
         a.textContent = 'Sign In';
         actions.insertBefore(a, cta || actions.querySelector('.nav-ham'));
@@ -1083,7 +1099,7 @@ window.ReferralModal = ReferralModal;
    ══════════════════════════════════════ */
 const TrialGuard = {
   _status: null,
-  _SKIP_PAGES: new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','']),
+  _SKIP_PAGES: new Set(['index.html','login.html','upgrade.html','legal.html','mediakit.html','resources.html','','login','upgrade','legal','mediakit','resources']),
 
   async init() {
     const page = location.pathname.split('/').pop() || '';
@@ -1139,7 +1155,7 @@ const TrialGuard = {
           : `<strong>${daysLeft} days</strong> remaining on your free trial.`
         }
       </span>
-      <a href="upgrade.html" style="background:${urgent ? '#fff' : 'var(--gold)'};color:${urgent ? '#dc3545' : '#0a0a0f'};border-radius:6px;padding:6px 16px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Upgrade Now</a>
+      <a href="/upgrade" style="background:${urgent ? '#fff' : 'var(--gold)'};color:${urgent ? '#dc3545' : '#0a0a0f'};border-radius:6px;padding:6px 16px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Upgrade Now</a>
       <button onclick="document.getElementById('trial-banner').remove()" style="background:none;border:none;color:${urgent ? 'rgba(255,255,255,.6)' : 'var(--text3)'};cursor:pointer;font-size:16px;padding:0 4px;line-height:1">✕</button>`;
     document.body.appendChild(banner);
     // Push nav up if present
@@ -1158,7 +1174,7 @@ const TrialGuard = {
   <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Trial Ended</div>
   <h2 style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:12px">Your 21-day trial has expired</h2>
   <p style="font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:28px">Your deal pipeline, targets, and all data are safe — upgrade to regain full access. No data will be deleted.</p>
-  <a href="upgrade.html" style="display:block;background:var(--gold);color:#0a0a0f;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Choose a Plan — from £149/mo</a>
+  <a href="/upgrade" style="display:block;background:var(--gold);color:#0a0a0f;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Choose a Plan — from £149/mo</a>
   <button onclick="document.getElementById('trial-gate').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;text-decoration:underline">Continue in read-only mode</button>
 </div>`;
     document.body.appendChild(gate);
@@ -1170,19 +1186,43 @@ window.TrialGuard = TrialGuard;
 window.addEventListener('sb:ready', () => TrialGuard.init());
 
 /* ══════════════════════════════════════
+   REDDIT PIXEL
+   ══════════════════════════════════════ */
+(function(w,d){
+  if(!w.rdt){
+    var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};
+    p.callQueue=[];
+    var t=d.createElement('script');t.src='https://www.redditstatic.com/ads/v2.js';t.async=true;
+    var s=d.getElementsByTagName('script')[0];s.parentNode.insertBefore(t,s);
+  }
+})(window,document);
+rdt('init','a2_itp5sg1ycosw');
+rdt('track','PageView');
+
+/* ══════════════════════════════════════
    CHECKOUT SUCCESS HANDLER
    ══════════════════════════════════════ */
 (function(){
   const p = new URLSearchParams(location.search);
-  if(p.get('checkout') === 'success') {
-    // Clean URL
-    history.replaceState({}, '', location.pathname);
-    // Wait for auth then show success
-    window.addEventListener('auth:ready', function handler(e){
-      window.removeEventListener('auth:ready', handler);
-      setTimeout(()=>{
-        Toast.show('Payment confirmed — welcome to Sovereign! Your subscription is now active.','ok',6000);
-      }, 800);
-    }, {once:true});
-  }
+  if(p.get('checkout') !== 'success') return;
+  // Save plan/billing/session before cleaning URL — inline page scripts run after this
+  window._checkoutData = { plan: p.get('plan'), billing: p.get('billing'), sid: p.get('sid') };
+  history.replaceState({}, '', location.pathname);
+  window.addEventListener('auth:ready', function handler(){
+    setTimeout(function(){
+      Toast.show('Payment confirmed — welcome to Sovereign! Your subscription is now active.','ok',6000);
+      var cd = window._checkoutData || {};
+      var vals = { prospector:{monthly:99,annual:79}, dealmaker:{monthly:299,annual:239}, team:{monthly:799,annual:639}, fund:{monthly:2500,annual:2000} };
+      var value = (vals[cd.plan] && vals[cd.plan][cd.billing]) || 0;
+      if(typeof gtag === 'function') {
+        gtag('event', 'purchase', {
+          transaction_id: cd.sid,
+          value: value,
+          currency: 'GBP',
+          items: [{ item_id: cd.plan+'_'+cd.billing, item_name: 'Sovereign '+cd.plan, price: value, quantity: 1 }]
+        });
+      }
+      if(typeof rdt === 'function') rdt('track', 'Purchase', { value: value, currency: 'GBP' });
+    }, 800);
+  }, {once:true});
 })();

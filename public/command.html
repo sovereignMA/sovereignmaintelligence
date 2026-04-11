@@ -770,25 +770,6 @@ window.addEventListener('auth:ready', function(e){
     },1800);
   } else {
     loadConvList();
-    // Handle Stripe checkout return
-    if(new URLSearchParams(location.search).get('checkout') === 'success'){
-      Toast.show('Subscription activated — welcome aboard!','ok',5000);
-      (function(){
-        var p = new URLSearchParams(location.search);
-        var plan = p.get('plan') || '', billing = p.get('billing') || 'monthly', sid = p.get('sid') || '';
-        var vals = { prospector:{monthly:99,annual:79}, dealmaker:{monthly:299,annual:239}, team:{monthly:799,annual:639}, fund:{monthly:2500,annual:2000} };
-        var value = (vals[plan] && vals[plan][billing]) || 0;
-        if(typeof gtag === 'function') {
-          gtag('event', 'purchase', {
-            transaction_id: sid,
-            value: value,
-            currency: 'GBP',
-            items: [{ item_id: plan+'_'+billing, item_name: 'Sovereign '+plan.charAt(0).toUpperCase()+plan.slice(1)+' ('+billing+')', price: value, quantity: 1 }]
-          });
-        }
-      })();
-      history.replaceState(null,'',location.pathname);
-    }
   }
 });
 </script>

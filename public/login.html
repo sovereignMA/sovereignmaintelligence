@@ -22,6 +22,23 @@
 <title>Sign In — Project Sovereign</title>
 <link rel="stylesheet" href="app.css?v=41">
 
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
 <div class="auth-wrap">
@@ -119,7 +136,7 @@ body { display:flex; align-items:center; justify-content:center; min-height:100v
 .plan-radio.selected .plan-radio-inner { border-color:var(--gold); background:rgba(201,168,76,.06); }
 </style>
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 var tab = 'in';
 
@@ -155,12 +172,12 @@ function switchTab(t){
 function showErr(m){ var e=document.getElementById('errBox'); e.textContent=m; e.style.display=m?'block':'none'; }
 function setLoad(id,on){ var b=document.getElementById(id); b.disabled=on; if(on)b.classList.add('btn-spin'); else b.classList.remove('btn-spin'); }
 
-var ALLOWED=['command.html','pipeline.html','intelligence.html','comms.html','analytics.html','vault.html','security.html','admin.html','resources.html','mediakit.html'];
+var ALLOWED=new Set(['command','pipeline','intelligence','comms','analytics','vault','security','admin','resources','mediakit','mail','scout','campaigns','agents','upgrade']);
 
 window.addEventListener('auth:ready', function(e){
   if(!e.detail?.user) return;
   var raw = new URLSearchParams(location.search).get('next')||'';
-  var next = ALLOWED.indexOf(raw)!==-1 ? raw : 'command.html';
+  var next = ALLOWED.has(raw) ? '/'+raw : '/command';
 
   // If there's a pending plan selection (from signup), redirect to upgrade
   var pending = localStorage.getItem('sv_pending_plan');
@@ -171,7 +188,7 @@ window.addEventListener('auth:ready', function(e){
     var isNew = (Date.now() - createdMs) < 600000;
     if(isNew){
       localStorage.removeItem('sv_pending_plan');
-      location.href = 'upgrade.html?plan=' + encodeURIComponent(pending) + '&autostart=1';
+      location.href = '/upgrade?plan=' + encodeURIComponent(pending) + '&autostart=1';
       return;
     }
     localStorage.removeItem('sv_pending_plan');
@@ -191,7 +208,7 @@ async function doSignIn(){
   if(!data){showErr('Invalid email or password.');setLoad('inBtn',false);}
   else {
     var raw=new URLSearchParams(location.search).get('next')||'';
-    location.href=ALLOWED.indexOf(raw)!==-1?raw:'command.html';
+    location.href=ALLOWED.has(raw)?'/'+raw:'/command';
   }
 }
 
@@ -209,6 +226,7 @@ async function doSignUp(){
   var data=await Auth.signUp(em,pw,nm);
   if(!data){showErr('Sign up failed. This email may already be registered.');setLoad('upBtn',false);}
   else {
+    if(typeof rdt === 'function') rdt('track','SignUp');
     // Store plan and referral for post-confirmation redirect
     localStorage.setItem('sv_pending_plan', plan);
     if(ref) localStorage.setItem('sv_ref', ref);
