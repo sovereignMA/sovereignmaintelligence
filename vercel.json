@@ -9,7 +9,7 @@
     },
     {
       "path": "/api/cron/self-improve",
-      "schedule": "0 7 * * *"
+      "schedule": "0 7 * * 0"
     },
     {
       "path": "/api/cron/pipeline-health",
@@ -42,11 +42,25 @@
     {
       "path": "/api/cron/trial-drip",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/agent-runner",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/stripe-reconcile",
+      "schedule": "0 2 * * *"
     }
   ],
   "functions": {
     "api/cron/*.js": {
       "maxDuration": 60
+    },
+    "api/agent/tasks.js": {
+      "maxDuration": 15
+    },
+    "api/video/script.js": {
+      "maxDuration": 30
     },
     "api/stripe/checkout.js": {
       "maxDuration": 30
@@ -56,9 +70,16 @@
     },
     "api/stripe/webhook.js": {
       "maxDuration": 30
+    },
+    "api/video/projects.js": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
+    {
+      "source": "/0wmbkkuqpqzfoh8tkw7zlqcgucsxgc.html",
+      "destination": "/0wmbkkuqpqzfoh8tkw7zlqcgucsxgc.html"
+    },
     {
       "source": "/",
       "destination": "/index.html"
@@ -104,6 +125,38 @@
       "destination": "/admin.html"
     },
     {
+      "source": "/mail",
+      "destination": "/mail.html"
+    },
+    {
+      "source": "/campaigns",
+      "destination": "/campaigns.html"
+    },
+    {
+      "source": "/upgrade",
+      "destination": "/upgrade.html"
+    },
+    {
+      "source": "/legal",
+      "destination": "/legal.html"
+    },
+    {
+      "source": "/resources",
+      "destination": "/resources.html"
+    },
+    {
+      "source": "/mediakit",
+      "destination": "/mediakit.html"
+    },
+    {
+      "source": "/agents",
+      "destination": "/agents.html"
+    },
+    {
+      "source": "/video-generator",
+      "destination": "/video-generator.html"
+    },
+    {
       "source": "/admin/is-policy",
       "destination": "/is-policy.html"
     },
@@ -120,6 +173,14 @@
       "destination": "/bcp.html"
     },
     {
+      "source": "/admin/agents",
+      "destination": "/agents.html"
+    },
+    {
+      "source": "/admin/video",
+      "destination": "/video-generator.html"
+    },
+    {
       "source": "/privacy",
       "destination": "/legal.html"
     },
@@ -132,28 +193,12 @@
       "destination": "/legal.html"
     },
     {
-      "source": "/resources",
-      "destination": "/resources.html"
-    },
-    {
-      "source": "/mediakit",
-      "destination": "/mediakit.html"
-    },
-    {
       "source": "/media-kit",
       "destination": "/mediakit.html"
     },
     {
-      "source": "/upgrade",
-      "destination": "/upgrade.html"
-    },
-    {
       "source": "/pricing",
       "destination": "/upgrade.html"
-    },
-    {
-      "source": "/mail",
-      "destination": "/mail.html"
     }
   ],
   "headers": [

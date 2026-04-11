@@ -18,11 +18,14 @@ export const config = {
     '/vault',
     '/security',
     '/mail',
+    '/campaigns',
     '/admin',
     '/admin/is-policy',
     '/admin/asset-register',
     '/admin/ir-playbook',
     '/admin/bcp',
+    '/admin/agents',
+    '/admin/video',
   ],
 };
 
@@ -32,6 +35,8 @@ const ADMIN_PATHS = new Set([
   '/admin/asset-register',
   '/admin/ir-playbook',
   '/admin/bcp',
+  '/admin/agents',
+  '/admin/video',
 ]);
 
 export default function middleware(request) {
@@ -45,7 +50,7 @@ export default function middleware(request) {
   // No session at all — redirect to login
   if (!authVal) {
     const login = new URL('/login', request.url);
-    login.searchParams.set('next', pathname.replace(/^\//, '') + '.html');
+    login.searchParams.set('next', pathname.replace(/^\//, ''));
     return Response.redirect(login, 302);
   }
 

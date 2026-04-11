@@ -157,6 +157,11 @@ async function scrapeCompany(companyName: string, websiteUrl?: string): Promise<
   let intel: Record<string, unknown> = {};
   try { intel = await extractWithClaude(rawData, companyName); } catch { /* ignore */ }
 
+  // Always ensure company_name is present so the frontend has something to render
+  if (!intel.company_name) intel.company_name = companyName;
+  // If Claude found no score at all, set a baseline so the panel renders
+  if (intel.acquisition_score == null) intel.acquisition_score = rawChunks.length > 0 ? 30 : 0;
+
   return { ...intel, _raw_sources: queries.map(q => q.label), _scraped_at: new Date().toISOString() };
 }
 

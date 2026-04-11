@@ -17,7 +17,10 @@ function decodeJwt(jwt: string): { sub: string; email?: string; user_metadata?: 
   try {
     const parts = jwt.split('.');
     if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    // Normalise base64url → base64, then add padding so atob never throws on odd-length payloads
+    const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+    const payload = JSON.parse(atob(padded));
     if (!payload.sub || payload.role !== 'authenticated') return null;
     return payload;
   } catch { return null; }
@@ -51,6 +54,29 @@ serve(async (req) => {
     if (deal_id && !UUID_RE.test(deal_id)) return json({ error: 'Invalid deal_id' }, 400);
     if (contact_id && !UUID_RE.test(contact_id)) return json({ error: 'Invalid contact_id' }, 400);
 
+    // ── SUBSCRIPTION GATE ────────────────────────────────────────
+    // Mutation actions are blocked for users whose trial has expired or subscription
+    // is not active. Read-only and account-management actions are always permitted.
+    const MUTATION_ACTIONS = new Set([
+      'deals:create','deals:update','deals:delete',
+      'contacts:create','contacts:update',
+      'outreach:log','docs:save','conv:save',
+      'scrape:queue:add','milestones:update','milestones:init',
+      'profile:update','intel:get',
+    ]);
+    if (MUTATION_ACTIONS.has(action)) {
+      const { data: sub } = await sb.from('user_profiles')
+        .select('subscription_status, trial_ends_at')
+        .eq('id', userId).single();
+      const status = sub?.subscription_status;
+      const trialEnd = sub?.trial_ends_at ? new Date(sub.trial_ends_at) : null;
+      const isActive = status === 'active' || status === 'past_due';
+      const isTrialing = (status === 'trialing' || status === null) && trialEnd && trialEnd > new Date();
+      if (!isActive && !isTrialing) {
+        return json({ error: 'subscription_required', message: 'Your trial has expired. Please upgrade to continue.' }, 402);
+      }
+    }
+
     // ── DEALS ──────────────────────────────────────────────────
     if (action === 'deals:list') {
       const { data, error } = await sb.from('deals').select('*').eq('user_id', userId).order('updated_at', { ascending: false }).limit(200);
@@ -65,7 +91,11 @@ serve(async (req) => {
     }
 
     if (action === 'deals:update') {
-      const { data, error } = await sb.from('deals').update(payload).eq('id', deal_id).eq('user_id', userId).select().single();
+      const DEAL_COLS = ['company_name','stage','ebitda_gbp','arr_gbp','arr_pct','revenue_gbp','asking_price_gbp','deal_value_gbp','nmd_structure','ai_score','notes','next_action','next_action_date','website','sector','sic_code','employee_count','founded_year','contact_email','contact_name','companies_house_number','source'];
+      const updates: Record<string, unknown> = {};
+      for (const k of DEAL_COLS) { if (payload?.[k] !== undefined) updates[k] = payload[k]; }
+      if (!Object.keys(updates).length) return json({ error: 'No valid fields to update' }, 400);
+      const { data, error } = await sb.from('deals').update(updates).eq('id', deal_id).eq('user_id', userId).select().single();
       if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
@@ -78,8 +108,8 @@ serve(async (req) => {
 
     // ── CONTACTS ────────────────────────────────────────────────
     if (action === 'contacts:list') {
-      const q = sb.from('contacts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(500);
-      if (deal_id) q.eq('deal_id', deal_id);
+      let q = sb.from('contacts').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(500);
+      if (deal_id) q = q.eq('deal_id', deal_id);
       const { data, error } = await q;
       if (error) { console.error('[sovereign-api] contacts:list', error); return json({ error: 'Database error' }, 500); }
       return json({ data });
@@ -92,7 +122,11 @@ serve(async (req) => {
     }
 
     if (action === 'contacts:update') {
-      const { data, error } = await sb.from('contacts').update(payload).eq('id', contact_id).eq('user_id', userId).select().single();
+      const CONTACT_COLS = ['full_name','email','phone','role','company_name','notes','linkedin_url','last_contacted_at','sentiment','outreach_status','deal_id'];
+      const updates: Record<string, unknown> = {};
+      for (const k of CONTACT_COLS) { if (payload?.[k] !== undefined) updates[k] = payload[k]; }
+      if (!Object.keys(updates).length) return json({ error: 'No valid fields to update' }, 400);
+      const { data, error } = await sb.from('contacts').update(updates).eq('id', contact_id).eq('user_id', userId).select().single();
       if (error) { console.error('[sovereign-api]', action, error); return json({ error: 'Database error' }, 500); }
       return json({ data });
     }
@@ -247,17 +281,31 @@ serve(async (req) => {
     }
 
     if (action === 'referral:track') {
-      // Called when a new user signs up with a referral code
-      // payload: { code: string } — the referral code used at signup
       const code = String(payload?.code || '').toUpperCase().trim();
       if (!code) return json({ error: 'code required' }, 400);
       // Look up referrer
-      const { data: referrerProfile } = await sb.from('user_profiles').select('id').eq('referral_code', code).single();
+      const { data: referrerProfile } = await sb.from('user_profiles')
+        .select('id, email').eq('referral_code', code).single();
       if (!referrerProfile) return json({ error: 'Invalid referral code' }, 404);
       if (referrerProfile.id === userId) return json({ error: 'Cannot refer yourself' }, 400);
-      // Check not already tracked
+      // Check not already tracked for this user
       const { data: existing } = await sb.from('referrals').select('id').eq('referred_user_id', userId).single();
       if (existing) return json({ data: { already_tracked: true } });
+      // Fraud gate: max 10 referrals per referrer per 24 hours
+      const since24h = new Date(Date.now() - 86400000).toISOString();
+      const { count: recentCount } = await sb.from('referrals')
+        .select('id', { count: 'exact', head: true })
+        .eq('referrer_id', referrerProfile.id)
+        .gte('created_at', since24h);
+      if ((recentCount || 0) >= 10) {
+        return json({ error: 'Referral limit reached. Please try again tomorrow.' }, 429);
+      }
+      // Fraud gate: referred email domain must not match referrer domain (catches org self-referral)
+      const referredDomain = (jwtPayload.email || '').split('@')[1]?.toLowerCase();
+      const referrerDomain = (referrerProfile.email || '').split('@')[1]?.toLowerCase();
+      if (referredDomain && referrerDomain && referredDomain === referrerDomain) {
+        return json({ error: 'Referral not valid' }, 400);
+      }
       // Insert referral record
       const { error: insErr } = await sb.from('referrals').insert({
         referrer_id: referrerProfile.id,
@@ -267,7 +315,6 @@ serve(async (req) => {
         status: 'signed_up',
       });
       if (insErr) return json({ error: insErr.message }, 500);
-      // Mark referred_by on the new user's profile
       await sb.from('user_profiles').upsert({ id: userId, referred_by: code });
       return json({ ok: true });
     }
@@ -288,6 +335,11 @@ serve(async (req) => {
     if (action === 'milestones:update') {
       const milestoneId = String(payload?.id || '');
       if (!milestoneId) return json({ error: 'milestone id required' }, 400);
+      // Verify the milestone belongs to a deal owned by this user
+      const { data: mOwn } = await sb.from('deal_milestones').select('deal_id').eq('id', milestoneId).single();
+      if (!mOwn) return json({ error: 'Milestone not found' }, 404);
+      const { data: dealOwn } = await sb.from('deals').select('id').eq('id', mOwn.deal_id).eq('user_id', userId).single();
+      if (!dealOwn) return json({ error: 'Unauthorized' }, 403);
       const allowed = ['status','notes','started_at','completed_at','deliverable_url','due_date','priority'];
       const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
       for (const k of allowed) { if (payload?.[k] !== undefined) updates[k] = payload[k]; }

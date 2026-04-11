@@ -18,16 +18,16 @@ export default async function handler(req) {
 
     if (pending.length === 0) return Response.json({ ok: true, processed: 0, ts: new Date().toISOString() });
 
-    // Call the scraper edge function for each pending item (up to 3 per run to avoid timeout)
-    let processed = 0;
-    for (const job of pending.slice(0, 3)) {
-      const scrapeRes = await fetch(`${base}/functions/v1/scraper`, {
-        method: 'POST',
-        headers: { ...headers, 'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` },
-        body: JSON.stringify({ action: 'scrape:queue' }),
-      });
-      if (scrapeRes.ok) processed++;
-    }
+    // Call scraper once — it processes up to 5 pending queue items per invocation.
+    // Calling it multiple times causes race conditions (items marked 'processing' concurrently).
+    const scrapeRes = await fetch(`${base}/functions/v1/scraper`, {
+      method: 'POST',
+      headers: { ...headers, 'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({ action: 'scrape:queue' }),
+    });
+
+    const processed = scrapeRes.ok ? Math.min(pending.length, 5) : 0;
+    if (!scrapeRes.ok) console.error('[intel-refresh] scraper call failed:', scrapeRes.status);
 
     return Response.json({ ok: true, pending: pending.length, processed, ts: new Date().toISOString() });
   } catch (e) {

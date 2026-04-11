@@ -5,21 +5,13 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { setCORS } from '../lib/cors-auth.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
 export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
-    return res.status(200).end();
-  }
-  Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
+  if (req.method === 'OPTIONS') { setCORS(req, res); return res.status(200).end(); }
+  setCORS(req, res);
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -29,6 +21,18 @@ export default async function handler(req, res) {
   const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
   const { data: { user }, error: authErr } = await sb.auth.getUser(token);
   if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Rate limit: max 5 portal requests per user per minute
+  const windowStart = new Date(Date.now() - 60 * 1000).toISOString();
+  const { count } = await sb.from('analytics_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('event_name', 'portal_attempt')
+    .gt('created_at', windowStart);
+  if ((count || 0) >= 5) {
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
+  }
+  sb.from('analytics_events').insert({ user_id: user.id, event_name: 'portal_attempt', event_cat: 'billing' }).then(() => {});
 
   const { data: profile } = await sb.from('user_profiles')
     .select('stripe_customer_id').eq('id', user.id).single();
@@ -46,6 +50,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: session.url });
   } catch (e) {
     console.error('[stripe/portal]', e.message);
-    return res.status(500).json({ error: 'Portal unavailable. Please try again.' });
+    if (e.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ error: 'No active subscription found. Please subscribe first.' });
+    }
+    return res.status(503).json({ error: 'Billing portal temporarily unavailable. Please try again.' });
   }
 }

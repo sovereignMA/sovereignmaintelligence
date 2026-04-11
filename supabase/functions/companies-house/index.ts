@@ -20,8 +20,10 @@ const TECH_SIC_CODES = new Set([
 
 interface CompaniesHouseCompany {
   company_number: string;
-  title: string;
-  company_type?: string;
+  title?: string;          // search endpoint field name
+  company_name?: string;   // profile endpoint field name
+  type?: string;           // profile endpoint field name
+  company_type?: string;   // search endpoint field name
   company_status?: string;
   date_of_creation?: string;
   sic_codes?: string[];
@@ -42,7 +44,8 @@ interface CompaniesHouseCompany {
 
 interface EnrichedCompany {
   company_number: string;
-  name: string;
+  company_name: string;
+  title: string;           // kept for backwards-compat with any existing callers
   sic_codes: string[];
   incorporation_date: string | null;
   age_years: number | null;
@@ -87,7 +90,9 @@ function computeScore(company: CompaniesHouseCompany, ageYears: number | null): 
   }
 
   // +10 pts for private limited company type
-  if ((company.company_type ?? '').toLowerCase() === 'ltd') {
+  // profile endpoint uses 'type', search endpoint uses 'company_type'
+  const companyType = (company.company_type ?? company.type ?? '').toLowerCase();
+  if (companyType === 'ltd') {
     score += 10;
     sell_signals.push('ltd_company_type');
   }
@@ -174,28 +179,66 @@ serve(async (req) => {
 
     if (!q.trim()) return json({ error: 'Query parameter `q` is required' }, 400);
 
-    // Call Companies House search API
-    // Basic auth: base64("apikey:") — key as username, empty password
     const credentials = btoa(`${CH_API_KEY}:`);
-    const chUrl = `https://api.company-information.service.gov.uk/search/companies?q=${encodeURIComponent(q)}&items_per_page=${size}`;
+    const chHeaders = { Authorization: `Basic ${credentials}`, Accept: 'application/json' };
 
-    const chRes = await fetch(chUrl, {
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        Accept: 'application/json',
-      },
-    });
+    // If query looks like a company number (6–8 alphanumeric chars, e.g. "16823981", "SC123456"),
+    // use the direct profile endpoint which is more reliable than text search.
+    let items: CompaniesHouseCompany[] = [];
+    const isCompanyNumber = /^[A-Z0-9]{6,8}$/i.test(q.trim().replace(/\s/g, ''));
 
-    if (!chRes.ok) {
-      console.error(`[companies-house] CH API ${chRes.status}`);
-      return json(
-        { error: `Companies House API error: ${chRes.status}`, ch_status: chRes.status },
-        chRes.status >= 500 ? 502 : chRes.status,
+    if (isCompanyNumber) {
+      const profileRes = await fetch(
+        `https://api.company-information.service.gov.uk/company/${encodeURIComponent(q.trim().toUpperCase())}`,
+        { headers: chHeaders },
       );
-    }
+      if (profileRes.ok) {
+        const profile: CompaniesHouseCompany = await profileRes.json();
+        // Profile endpoint returns a single object, not an array
+        if (profile.company_number) items = [profile];
+      } else if (profileRes.status !== 404) {
+        console.error(`[companies-house] CH profile API ${profileRes.status}`);
+        return json({ error: `Companies House API error: ${profileRes.status}`, ch_status: profileRes.status }, 502);
+      }
+      // 404 = number doesn't exist, fall through to empty results
+    } else {
+      // Detect full company name queries (contain "limited", "ltd", "plc", "llp")
+      // Use advanced search for name-includes matching which is more precise than the
+      // general search index (which ranks by popularity, not relevance to a specific name).
+      const isFullName = /\b(limited|ltd|plc|llp|lp)\b/i.test(q);
 
-    const chData: { items?: CompaniesHouseCompany[] } = await chRes.json();
-    const items: CompaniesHouseCompany[] = chData.items ?? [];
+      let chUrl: string;
+      if (isFullName) {
+        chUrl = `https://api.company-information.service.gov.uk/advanced-search/companies?company_name_includes=${encodeURIComponent(q)}&size=${size}`;
+      } else {
+        chUrl = `https://api.company-information.service.gov.uk/search/companies?q=${encodeURIComponent(q)}&items_per_page=${size}`;
+      }
+
+      const chRes = await fetch(chUrl, { headers: chHeaders });
+      if (!chRes.ok) {
+        // Advanced search returns 400 for some queries — fall back to regular search
+        if (isFullName && chRes.status === 400) {
+          const fallbackUrl = `https://api.company-information.service.gov.uk/search/companies?q=${encodeURIComponent(q)}&items_per_page=${size}`;
+          const fallbackRes = await fetch(fallbackUrl, { headers: chHeaders });
+          if (!fallbackRes.ok) {
+            console.error(`[companies-house] CH API fallback ${fallbackRes.status}`);
+            return json({ error: `Companies House API error: ${fallbackRes.status}`, ch_status: fallbackRes.status }, 502);
+          }
+          const fallbackData: { items?: CompaniesHouseCompany[] } = await fallbackRes.json();
+          items = fallbackData.items ?? [];
+        } else {
+          console.error(`[companies-house] CH API ${chRes.status}`);
+          return json(
+            { error: `Companies House API error: ${chRes.status}`, ch_status: chRes.status },
+            chRes.status >= 500 ? 502 : chRes.status,
+          );
+        }
+      } else {
+        // Advanced search returns { items: [...] } same shape as regular search
+        const chData: { items?: CompaniesHouseCompany[] } = await chRes.json();
+        items = chData.items ?? [];
+      }
+    }
 
     const now = Date.now();
     const results: EnrichedCompany[] = [];
@@ -214,15 +257,16 @@ serve(async (req) => {
         }
       }
 
-      // Apply age filters
-      if (ageYears !== null) {
-        if (ageYears < minAge || ageYears > maxAge) continue;
+      // Skip age/sector filters for direct lookups (company number or full name with "limited/ltd")
+      // For keyword searches, apply the filters normally.
+      const skipFilters = isCompanyNumber || /\b(limited|ltd|plc|llp|lp)\b/i.test(q);
+      if (!skipFilters) {
+        if (ageYears !== null && (ageYears < minAge || ageYears > maxAge)) continue;
+        const sics = company.sic_codes ?? [];
+        if (!matchesSector(sics, sector)) continue;
       }
 
       const sics = company.sic_codes ?? [];
-
-      // Apply sector filter
-      if (!matchesSector(sics, sector)) continue;
 
       const { score, sell_signals } = computeScore(company, ageYears);
 
@@ -238,9 +282,13 @@ serve(async (req) => {
         ? addressParts.join(', ')
         : (company.address_snippet ?? '');
 
+      // profile endpoint returns company_name; search endpoint returns title
+      const displayName = company.title ?? company.company_name ?? '';
+
       results.push({
         company_number: company.company_number,
-        name: company.title,
+        company_name: displayName,
+        title: displayName,  // backwards-compat
         sic_codes: sics,
         incorporation_date: company.date_of_creation ?? null,
         age_years: ageYears !== null ? Math.round(ageYears * 10) / 10 : null,
