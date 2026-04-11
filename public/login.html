@@ -231,14 +231,16 @@ async function doSignUp(){
   var data=await Auth.signUp(em,pw,nm);
   if(!data){showErr('Sign up failed. This email may already be registered.');setLoad('upBtn',false);}
   else {
-    if(typeof rdt === 'function') rdt('track','SignUp');
+    var signUpConvId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36);
+    if(typeof rdt === 'function') rdt('track','SignUp', { conversionId: signUpConvId });
     fetch('/api/reddit-events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         event_type: 'SignUp',
         click_id: localStorage.getItem('sv_rdt_cid') || undefined,
-        user_data: { email: em }
+        user_data: { email: em },
+        event_metadata: { conversion_id: signUpConvId }
       })
     }).catch(function(){});
     // Store plan and referral for post-confirmation redirect

@@ -1217,7 +1217,7 @@ window.addEventListener('sb:ready', () => TrialGuard.init());
           items: [{ item_id: cd.plan+'_'+cd.billing, item_name: 'Sovereign '+cd.plan, price: value, quantity: 1 }]
         });
       }
-      if(typeof rdt === 'function') rdt('track', 'Purchase', { value: value, currency: 'GBP' });
+      if(typeof rdt === 'function') rdt('track', 'Purchase', { value: value, currency: 'GBP', conversionId: cd.sid });
       // Reddit CAPI server-side dedup
       fetch('/api/reddit-events', {
         method: 'POST',
