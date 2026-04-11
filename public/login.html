@@ -227,6 +227,15 @@ async function doSignUp(){
   if(!data){showErr('Sign up failed. This email may already be registered.');setLoad('upBtn',false);}
   else {
     if(typeof rdt === 'function') rdt('track','SignUp');
+    fetch('/api/reddit-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: 'SignUp',
+        click_id: localStorage.getItem('sv_rdt_cid') || undefined,
+        user_data: { email: em }
+      })
+    }).catch(function(){});
     // Store plan and referral for post-confirmation redirect
     localStorage.setItem('sv_pending_plan', plan);
     if(ref) localStorage.setItem('sv_ref', ref);

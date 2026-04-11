@@ -1198,6 +1198,11 @@ window.addEventListener('sb:ready', () => TrialGuard.init());
 })(window,document);
 rdt('init','a2_itp5sg1ycosw');
 rdt('track','PageVisit');
+// Capture Reddit click ID from ad clicks and persist for CAPI attribution
+(function(){
+  var cid = new URLSearchParams(location.search).get('rdt_cid');
+  if(cid) localStorage.setItem('sv_rdt_cid', cid);
+})();
 
 /* ══════════════════════════════════════
    CHECKOUT SUCCESS HANDLER
@@ -1223,6 +1228,22 @@ rdt('track','PageVisit');
         });
       }
       if(typeof rdt === 'function') rdt('track', 'Purchase', { value: value, currency: 'GBP' });
+      // Reddit CAPI server-side dedup
+      fetch('/api/reddit-events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: 'Purchase',
+          click_id: localStorage.getItem('sv_rdt_cid') || undefined,
+          event_metadata: {
+            currency: 'GBP',
+            value_decimal: String(value),
+            conversion_id: cd.sid,
+            item_count: '1',
+            products: [{ id: cd.plan+'_'+cd.billing, name: 'Sovereign '+cd.plan, category: 'subscription' }]
+          }
+        })
+      }).catch(function(){});
     }, 800);
   }, {once:true});
 })();
