@@ -1186,18 +1186,8 @@ window.TrialGuard = TrialGuard;
 window.addEventListener('sb:ready', () => TrialGuard.init());
 
 /* ══════════════════════════════════════
-   REDDIT PIXEL
+   REDDIT PIXEL — init + PageVisit injected in <head> of each HTML page
    ══════════════════════════════════════ */
-(function(w,d){
-  if(!w.rdt){
-    var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};
-    p.callQueue=[];
-    var t=d.createElement('script');t.src='https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw';t.async=true;
-    var s=d.getElementsByTagName('script')[0];s.parentNode.insertBefore(t,s);
-  }
-})(window,document);
-rdt('init','a2_itp5sg1ycosw');
-rdt('track','PageVisit');
 // Capture Reddit click ID from ad clicks and persist for CAPI attribution
 (function(){
   var cid = new URLSearchParams(location.search).get('rdt_cid');

@@ -81,6 +81,28 @@
 .tmpl-title { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
 .tmpl-meta { font-size: 10px; color: var(--text3); }
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
 <div style="height:var(--nav-h,56px)"></div>
@@ -155,7 +177,7 @@
 
 
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 var THREADS=[
   {id:1,type:'seller',name:'David Chen — CloudData.io',preview:'That timeline works for me. Let\'s schedule the call for next...',time:'2h ago',unread:2,color:'#2dd4bf',bg:'rgba(45,212,191,.15)',initial:'DC',
@@ -328,12 +350,53 @@ if(window.innerWidth<=600){
 </script>
 
 <script>
-window.addEventListener('auth:ready', function(e){
+window.addEventListener('auth:ready', async function(e){
   if(!e.detail?.user){
     Toast.show('Sign in to access this page','warn',2500);
-    setTimeout(function(){
-      location.href='login.html?next='+encodeURIComponent(location.pathname.split('/').pop());
-    },1800);
+    setTimeout(function(){ location.href='/login?next=comms'; },1800);
+    return;
+  }
+  // Load real contacts from DB and replace demo threads
+  try {
+    var res = await API.contacts.list();
+    var contacts = res && res.data ? res.data : [];
+    var PALETTES = [
+      {c:'#2dd4bf',bg:'rgba(45,212,191,.15)'},{c:'#4ade80',bg:'rgba(74,222,128,.15)'},
+      {c:'#c9a84c',bg:'rgba(201,168,76,.15)'},{c:'#60a5fa',bg:'rgba(96,165,250,.15)'},
+      {c:'#a78bfa',bg:'rgba(167,139,250,.15)'},{c:'#f87171',bg:'rgba(248,113,113,.15)'},
+      {c:'#fbbf24',bg:'rgba(251,191,36,.15)'}];
+    if(contacts.length > 0){
+      THREADS = contacts.map(function(c, i){
+        var pal = PALETTES[i % PALETTES.length];
+        var initials = (c.full_name||'?').split(' ').map(function(w){return w[0]||'';}).slice(0,2).join('').toUpperCase();
+        var lastDate = c.last_contact_at ? new Date(c.last_contact_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'No contact yet';
+        var preview = c.notes ? c.notes.slice(0,80) : (c.email ? 'Contact: '+c.email : 'No recent activity');
+        return {
+          id: i + 1,
+          type: 'seller',
+          contact_id: c.id,
+          deal_id: c.deal_id,
+          name: (c.full_name||'Unknown') + (c.company ? ' \u2014 '+c.company : ''),
+          preview: preview,
+          time: lastDate,
+          unread: 0,
+          color: pal.c,
+          bg: pal.bg,
+          initial: initials,
+          messages: c.notes ? [{dir:'inbound',text:c.notes,time:lastDate}] : [],
+          contact_email: c.email,
+          contact_phone: c.phone,
+          contact_linkedin: c.linkedin,
+        };
+      });
+      activeThread = THREADS[0];
+      renderThreadList();
+      renderConversation();
+      Toast.show('Loaded '+contacts.length+' contact'+(contacts.length===1?'':'s'), 'ok', 2000);
+    }
+  } catch(err) {
+    // Keep demo threads if contacts load fails
+    console.warn('[comms] contacts load failed:', err);
   }
 });
 </script>

@@ -80,6 +80,28 @@
 @media(max-width:900px){.an-row1,.an-row4{grid-template-columns:1fr}.an-row2{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.an-row2,.an-row3{grid-template-columns:1fr}}
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
 <div style="height:56px"></div>
@@ -170,7 +192,7 @@
 
 
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 Chart.defaults.color='#9490a8';Chart.defaults.borderColor='rgba(255,255,255,0.055)';Chart.defaults.font.family='Inter,system-ui,sans-serif';Chart.defaults.font.size=11;
 var gold='#c9a84c',teal='#2dd4bf',blue='#60a5fa',green='#4ade80',red='#f87171',purple='#a78bfa',amber='#fbbf24';
@@ -305,7 +327,7 @@ document.getElementById('milestones').innerHTML=miles.map(function(m){
 window.addEventListener('auth:ready', function(e) {
   if(!e.detail?.user){
     Toast.show('Sign in to access this page', 'warn', 3000);
-    setTimeout(function(){ window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname.split('/').pop()); }, 1500);
+    setTimeout(function(){ window.location.href = '/login?next=analytics'; }, 1500);
     return;
   }
   loadLiveData();
@@ -349,6 +371,46 @@ async function loadLiveData(){
         valueChart.data.datasets[1].data = entry.map(function(v){ return +(v*1.5).toFixed(1); });
         valueChart.data.datasets[2].data = entry.map(function(v){ return +(v*2.5).toFixed(1); });
         valueChart.update();
+      }
+
+      // Replace hardcoded milestones with real deal events
+      var stageColors2 = {prospect:'#60a5fa',sourcing:'#60a5fa',approached:'#a78bfa',contacted:'#a78bfa',
+        nda:'#fbbf24',loi:'#fbbf24','due diligence':'#2dd4bf',due_diligence:'#2dd4bf',
+        spa:'#4ade80',exchanged:'#c9a84c',completed:'#c9a84c',dead:'#f87171'};
+      var liveEvents = [];
+      deals.forEach(function(d){
+        var events = Array.isArray(d.deal_events) ? d.deal_events : [];
+        events.forEach(function(ev){
+          if(ev.title && ev.event_date){
+            liveEvents.push({
+              title: ev.title + (d.company_name ? ' \u2014 '+d.company_name : ''),
+              _rawDate: ev.event_date,
+              date: new Date(ev.event_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+              c: ev.color || stageColors2[(d.stage||'').toLowerCase()] || '#c9a84c',
+              note: ev.note || d.stage || ''
+            });
+          }
+        });
+        // If deal has no events, create a stage milestone from the deal itself
+        if(!events.length && d.company_name){
+          var rawDate = d.updated_at || d.created_at;
+          liveEvents.push({
+            title: d.company_name,
+            _rawDate: rawDate,
+            date: new Date(rawDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+            c: stageColors2[(d.stage||'').toLowerCase()] || '#c9a84c',
+            note: d.stage || ''
+          });
+        }
+      });
+      // Sort by raw ISO date desc (not re-parsed display string), cap at 8
+      liveEvents.sort(function(a,b){ return new Date(b._rawDate)-new Date(a._rawDate); });
+      var displayEvents = liveEvents.slice(0,8);
+      if(displayEvents.length){
+        document.getElementById('milestones').innerHTML = displayEvents.map(function(m){
+          return '<div class="tl"><div class="tl-dot-wrap" style="background:'+m.c+'22;border:1px solid '+m.c+'44"><div class="dot" style="background:'+m.c+';box-shadow:0 0 6px '+m.c+'"></div></div>'
+            +'<div class="tl-body"><div class="tl-t">'+m.title+'</div><div class="tl-m">'+m.date+'</div><div class="tl-n">'+m.note+'</div></div></div>';
+        }).join('');
       }
     }
   } catch(err) {

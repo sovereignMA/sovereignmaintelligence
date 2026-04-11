@@ -98,6 +98,11 @@
 .kb-body code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:11px;color:var(--teal);font-family:var(--mono)}
 .kb-empty{text-align:center;padding:40px;color:var(--text3);font-size:13px}
 </style>
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
 <div class="admin-shell">
@@ -124,9 +129,14 @@
   <button class="ani" onclick="S('billing')"   id="n-billing"><span>💳</span><span>Billing</span></button>
   <div class="anlabel">Docs</div>
   <button class="ani" onclick="S('kb')"        id="n-kb"><span>📚</span><span>Knowledge Base</span></button>
+  <a class="ani" href="/admin/is-policy"       style="text-decoration:none"><span>🛡</span><span>IS Policy</span></a>
+  <a class="ani" href="/admin/asset-register"  style="text-decoration:none"><span>📦</span><span>Asset Register</span></a>
+  <a class="ani" href="/admin/ir-playbook"     style="text-decoration:none"><span>📋</span><span>IR Playbook</span></a>
+  <a class="ani" href="/admin/bcp"             style="text-decoration:none"><span>⚠</span><span>BCP</span></a>
   <div class="anlabel">Links</div>
-  <a class="ani" href="security.html" style="text-decoration:none"><span>🔒</span><span>Security</span></a>
-  <a class="ani" href="analytics.html" style="text-decoration:none"><span>◈</span><span>Analytics</span></a>
+  <a class="ani" href="security.html"          style="text-decoration:none"><span>🔒</span><span>Security</span></a>
+  <a class="ani" href="analytics.html"         style="text-decoration:none"><span>◈</span><span>Analytics</span></a>
+  <a class="ani" href="/video-generator"       style="text-decoration:none"><span>🎬</span><span>Video Gen</span></a>
 </nav>
 
 <main class="admin-main">
@@ -317,7 +327,8 @@
     <div class="card">
       <div style="font-size:13px;font-weight:600;margin-bottom:12px">Pixel Status</div>
       <div style="font-size:12px;color:var(--text2);line-height:2.3">
-        <div><span class="badge badge-ghost">Meta Pixel</span> — add <code style="color:var(--gold)">fbq</code> init snippet to index.html</div>
+        <div><span class="badge badge-green">Meta Pixel ✓ ACTIVE</span> — ID 1943804979837382 · all 23 pages</div>
+        <div><span class="badge badge-green">Meta CAPI ✓ ACTIVE</span> — server-side · StartTrial, Purchase, CompleteRegistration, InitiateCheckout</div>
         <div><span class="badge badge-green">Google GA4 ✓ ACTIVE</span> — G-9BQYFMVFTJ · all pages</div>
         <div><span class="badge badge-green">LinkedIn Insight ✓ ACTIVE</span> — PID 8900834 · all pages</div>
         <div><span class="badge badge-green">1st Party ✓ ACTIVE</span> — all events → <code style="color:var(--gold)">ad_tracking</code> table</div>
@@ -751,7 +762,7 @@ function toggleMatrix(id){
   </div>
 </div>
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 'use strict';
 const COLORS=['#c9a84c','#2dd4bf','#60a5fa','#a78bfa','#f87171','#4ade80','#fbbf24','#e879f9','#34d399','#fb923c','#38bdf8','#c084fc','#f472b6','#4ade80','#22d3ee','#a3e635','#facc15','#f87171','#818cf8','#2dd4bf','#c9a84c'];

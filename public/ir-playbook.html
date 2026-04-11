@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Incident Response Playbook — Project Sovereign</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="stylesheet" href="app.css?v=41">
+<link rel="stylesheet" href="/app.css?v=41">
 <style>
 .doc-wrap{max-width:820px;margin:0 auto;padding:40px 24px 100px}
 .doc-header{border-bottom:2px solid var(--gold);padding-bottom:20px;margin-bottom:32px}
@@ -35,9 +35,42 @@
 .doc-actions{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
 @media print{.doc-actions,.nav-bar,.mob-nav{display:none!important}.doc-wrap{padding:20px}.doc-header{border-color:#000}body{background:#fff;color:#000}.doc-section h2{color:#000}.doc-meta{background:#f5f5f5}.step-box{background:#f9f9f9;border:1px solid #ccc}}
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
-<script src="app.js?v=48"></script>
+<script src="/app.js?v=49"></script>
+<script>
+window.addEventListener('auth:admin', function() {
+  document.documentElement.style.visibility = '';
+  clearTimeout(window._authRevealTimer);
+  var _o = document.getElementById('_authOverlay'); if(_o) _o.remove();
+});
+window.addEventListener('auth:ready', function(e) {
+  if (!e.detail?.user) { location.href = '/login'; }
+});
+</script>
+<div id="nav-root"></div>
 <div class="doc-wrap">
   <div class="doc-actions">
     <a href="/admin" class="btn btn-outline btn-sm">← Admin</a>

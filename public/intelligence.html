@@ -129,6 +129,28 @@
 .li-loading { font-size: 11px; color: var(--text3); font-style: italic; }
 .li-score { font-size: 20px; font-weight: 700; font-family: var(--mono); }
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
 <div style="height:56px"></div>
@@ -255,7 +277,7 @@
 
 
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 Chart.defaults.color = '#9896a8';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
@@ -532,8 +554,13 @@ function researchTarget(name) {
 
   API.scraper.full({ company_name: name, website_url: t.website ? 'https://' + t.website : undefined })
     .then(function(res) {
-      var intel = res && (res.data || res);
-      if (intel && (intel.linkedin_url || intel.acquisition_score)) {
+      var intel = res && (res.intel || res.data || res);
+      // Accept any structured response from Claude — at minimum a company_name or description is enough to render the panel
+      var hasData = intel && !intel.error && (
+        intel.linkedin_url || intel.acquisition_score != null ||
+        intel.company_name || intel.description || intel.industry
+      );
+      if (hasData) {
         setCachedIntel(name, intel);
         var newHtml = renderLinkedInPanel(t, intel);
         // Replace entire li-panel
@@ -542,8 +569,8 @@ function researchTarget(name) {
         liPanel.parentNode.replaceChild(tmp.firstElementChild, liPanel);
         Toast.show('Intel loaded for ' + name, 'ok', 2500);
       } else {
-        if (liPanel) liPanel.innerHTML = '<div class="li-loading" style="color:var(--amber)">Scrape returned no structured data. Try again or search manually.</div>';
-        Toast.show('Partial data only — see panel', 'warn', 2500);
+        if (liPanel) liPanel.innerHTML = '<div class="li-loading" style="color:var(--amber)">Scrape returned no structured data — Tavily may not have web presence data for this company. Try again or search manually.</div>';
+        Toast.show('No data found for this company', 'warn', 2500);
       }
     })
     .catch(function(err) {
@@ -768,8 +795,8 @@ async function loadLiveTargets() {
         ch_number: c.company_number,
       };
     });
-    // Merge with demo targets (live at top, then demo)
-    targets = liveTargets.concat(targets.slice(0, 5));
+    // Replace demo targets with live data; only keep demo if live load returns nothing
+    targets = liveTargets;
     renderTargets(currentFilter);
     Toast.show('Loaded ' + liveTargets.length + ' live Companies House targets', 'ok', 2500);
     if (btn) { btn.textContent = '✓ Live CH Loaded'; btn.style.color = 'var(--green)'; btn.disabled = true; }
@@ -783,7 +810,7 @@ async function loadLiveTargets() {
 window.addEventListener('auth:ready', function(e) {
   if(!e.detail?.user){
     Toast.show('Sign in to access this page', 'warn', 3000);
-    setTimeout(function(){ window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname.split('/').pop()); }, 1500);
+    setTimeout(function(){ window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname.replace(/^\//, '')); }, 1500);
     return;
   }
   // Load live intelligence feed

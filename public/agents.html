@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Agent Tasks — Project Sovereign</title>
+<link rel="stylesheet" href="/app.css?v=41">
+<style>
+/* ── Layout ── */
+.page-body{max-width:1400px;margin:0 auto;padding:22px 20px}
+.page-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.page-title{font-size:20px;font-weight:700;color:var(--text);flex:1}
+.doc-meta{font-size:11px;color:var(--text3);font-family:var(--mono)}
+
+/* ── Kanban ── */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+@media(max-width:900px){.kanban{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.kanban{grid-template-columns:1fr}}
+.col{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.col-hd{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.col-title{font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.07em;flex:1}
+.col-count{font-size:11px;font-family:var(--mono);color:var(--text3);background:var(--bg);padding:1px 7px;border-radius:8px}
+.col-body{padding:10px;min-height:80px;display:flex;flex-direction:column;gap:8px}
+.col-empty{text-align:center;color:var(--text3);font-size:11px;padding:18px 8px}
+
+/* ── Task card ── */
+.tcard{background:var(--bg);border:1px solid var(--border2);border-radius:9px;padding:11px 13px;cursor:pointer;transition:all .15s}
+.tcard:hover{border-color:var(--border3);transform:translateY(-1px)}
+.tc-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px}
+.tc-pri{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;flex-shrink:0;margin-top:1px;font-family:var(--mono)}
+.pri-1{background:rgba(248,113,113,.2);color:#f87171}
+.pri-2{background:rgba(251,191,36,.18);color:#fbbf24}
+.pri-3{background:rgba(96,165,250,.15);color:#60a5fa}
+.pri-4{background:rgba(74,222,128,.12);color:#4ade80}
+.pri-5{background:rgba(113,113,122,.15);color:#71717a}
+.tc-title{font-size:12px;font-weight:600;color:var(--text);line-height:1.4;flex:1}
+.tc-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tc-type{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.type-research{background:rgba(167,139,250,.15);color:#a78bfa}
+.type-outreach{background:rgba(45,212,191,.12);color:#2dd4bf}
+.type-analysis{background:rgba(251,146,60,.15);color:#fb923c}
+.type-pipeline{background:rgba(201,168,76,.12);color:#c9a84c}
+.type-general{background:rgba(113,113,122,.12);color:#71717a}
+.tc-age{font-size:10px;color:var(--text3);margin-left:auto}
+
+/* ── Task detail drawer ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-start;justify-content:flex-end}
+.drawer-overlay.open{display:flex}
+.drawer{width:min(520px,100vw);height:100vh;background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+.drawer-hd{display:flex;align-items:flex-start;gap:10px}
+.drawer-title{font-size:16px;font-weight:700;color:var(--text);flex:1;line-height:1.4}
+.drawer-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;flex-shrink:0;line-height:1;padding:2px 6px}
+.drawer-close:hover{color:var(--text)}
+.drawer-field{display:flex;flex-direction:column;gap:5px}
+.drawer-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.drawer-val{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.drawer-output{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:14px;font-size:12px;color:var(--text2);line-height:1.75;white-space:pre-wrap;word-break:break-word;max-height:400px;overflow-y:auto}
+.drawer-error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:8px;padding:12px;font-size:12px;color:#f87171;line-height:1.6;word-break:break-word}
+.drawer-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.btn-sm:hover{border-color:var(--border3);color:var(--text)}
+.btn-sm.danger{border-color:rgba(248,113,113,.3);color:#f87171}
+.btn-sm.danger:hover{background:rgba(248,113,113,.1)}
+.btn-sm.primary{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
+.btn-sm.primary:hover{background:rgba(201,168,76,.2)}
+
+/* ── Create form ── */
+.create-form{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:20px}
+.cf-hd{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.cf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.cf-grid{grid-template-columns:1fr}}
+.cf-full{grid-column:1/-1}
+.cf-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;font-weight:600}
+.cf-input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border-color .15s;box-sizing:border-box}
+.cf-input:focus{border-color:var(--gold)}
+.cf-textarea{resize:vertical;min-height:64px}
+.cf-select{appearance:none;cursor:pointer}
+.cf-row{display:flex;gap:8px;align-items:center;margin-top:4px}
+.status-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.sb-btn{padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:1px solid var(--border2);background:none;color:var(--text3);cursor:pointer;transition:all .15s}
+.sb-btn.active,.sb-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.refresh-info{font-size:10px;color:var(--text3);margin-left:auto;font-family:var(--mono)}
+.run-btn{padding:5px 16px;border-radius:7px;font-size:12px;font-weight:700;border:1px solid var(--gold);background:var(--gold-dim);color:var(--gold);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.run-btn:hover{background:rgba(201,168,76,.25)}
+.run-btn:disabled{opacity:.5;cursor:default}
+</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
+</head>
+<body>
+<script>
+// Admin-only guard
+window.addEventListener('auth:admin', function() {
+  document.documentElement.style.visibility = '';
+  clearTimeout(window._authRevealTimer);
+  var _o = document.getElementById('_authOverlay'); if(_o) _o.remove();
+});
+window.addEventListener('auth:ready', function(e) {
+  if (!e.detail?.user) { location.href = '/login'; }
+});
+</script>
+
+<div id="nav-root"></div>
+
+<div class="page-body">
+  <div class="page-hd">
+    <div>
+      <div class="page-title">⚡ Agent Task Board</div>
+      <div class="doc-meta">Autonomous execution · Runs every 5 min · claude-haiku-4-5</div>
+    </div>
+    <button class="run-btn" id="runBtn" onclick="triggerRunner()">▶ Run Now</button>
+  </div>
+
+  <!-- Create task form -->
+  <div class="create-form">
+    <div class="cf-hd">＋ New Task</div>
+    <div class="cf-grid">
+      <div class="cf-full">
+        <div class="cf-label">Title</div>
+        <input class="cf-input" id="cfTitle" placeholder="e.g. Research CloudSoft Ltd revenue trends" maxlength="200">
+      </div>
+      <div class="cf-full">
+        <div class="cf-label">Description (optional — give Claude context)</div>
+        <textarea class="cf-input cf-textarea" id="cfDesc" placeholder="e.g. Look at their pricing page, G2 reviews, and LinkedIn headcount changes in the last 12 months."></textarea>
+      </div>
+      <div>
+        <div class="cf-label">Agent Type</div>
+        <select class="cf-input cf-select" id="cfType" onchange="onTypeChange(this.value)">
+          <option value="research">Research</option>
+          <option value="analysis">Analysis</option>
+          <option value="pipeline">Pipeline</option>
+          <option value="outreach">Outreach</option>
+          <option value="general" selected>General</option>
+        </select>
+      </div>
+      <div id="cfEmailWrap" style="display:none">
+        <div class="cf-label">Recipient Email <span style="color:var(--gold)">— will auto-send</span></div>
+        <input class="cf-input" id="cfEmail" type="email" placeholder="contact@company.com">
+      </div>
+      <div id="cfSenderWrap" style="display:none">
+        <div class="cf-label">Your Name (signature)</div>
+        <input class="cf-input" id="cfSenderName" placeholder="e.g. Alex Smith">
+      </div>
+      <div id="cfSenderTitleWrap" style="display:none">
+        <div class="cf-label">Your Title (signature)</div>
+        <input class="cf-input" id="cfSenderTitle" placeholder="e.g. Investment Analyst">
+      </div>
+      <div>
+        <div class="cf-label">Priority (1 = urgent)</div>
+        <select class="cf-input cf-select" id="cfPri">
+          <option value="1">P1 — Urgent</option>
+          <option value="2">P2 — High</option>
+          <option value="3" selected>P3 — Normal</option>
+          <option value="4">P4 — Low</option>
+          <option value="5">P5 — Backlog</option>
+        </select>
+      </div>
+      <div class="cf-full">
+        <div class="cf-row">
+          <button class="run-btn" onclick="createTask()" id="createBtn">Add Task</button>
+          <span id="createMsg" style="font-size:11px;color:var(--text3)"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="status-bar">
+    <button class="sb-btn active" onclick="setFilter(this,'all')" data-filter="all">All</button>
+    <button class="sb-btn" onclick="setFilter(this,'todo')" data-filter="todo">To Do</button>
+    <button class="sb-btn" onclick="setFilter(this,'in_progress')" data-filter="in_progress">In Progress</button>
+    <button class="sb-btn" onclick="setFilter(this,'complete')" data-filter="complete">Complete</button>
+    <button class="sb-btn" onclick="setFilter(this,'failed')" data-filter="failed">Failed</button>
+    <span class="refresh-info" id="refreshInfo">—</span>
+  </div>
+
+  <!-- Kanban board -->
+  <div class="kanban" id="kanban">
+    <div class="col" id="col-todo">
+      <div class="col-hd"><div class="col-dot" style="background:#60a5fa"></div><span class="col-title">To Do</span><span class="col-count" id="cnt-todo">0</span></div>
+      <div class="col-body" id="body-todo"><div class="col-empty">No pending tasks</div></div>
+    </div>
+    <div class="col" id="col-in_progress">
+      <div class="col-hd"><div class="col-dot" style="background:#fbbf24;animation:pulse 1.5s infinite"></div><span class="col-title">In Progress</span><span class="col-count" id="cnt-in_progress">0</span></div>
+      <div class="col-body" id="body-in_progress"><div class="col-empty">Nothing running</div></div>
+    </div>
+    <div class="col" id="col-complete">
+      <div class="col-hd"><div class="col-dot" style="background:#4ade80"></div><span class="col-title">Complete</span><span class="col-count" id="cnt-complete">0</span></div>
+      <div class="col-body" id="body-complete"><div class="col-empty">No completed tasks</div></div>
+    </div>
+    <div class="col" id="col-failed">
+      <div class="col-hd"><div class="col-dot" style="background:#f87171"></div><span class="col-title">Failed</span><span class="col-count" id="cnt-failed">0</span></div>
+      <div class="col-body" id="body-failed"><div class="col-empty">No failures</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Task detail drawer -->
+<div class="drawer-overlay" id="drawer" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer" id="drawerPanel">
+    <div class="drawer-hd">
+      <div class="drawer-title" id="dTitle"></div>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="drawer-field">
+      <div class="drawer-label">Status / Type / Priority</div>
+      <div class="drawer-val" id="dMeta"></div>
+    </div>
+    <div class="drawer-field" id="dDescWrap" style="display:none">
+      <div class="drawer-label">Description</div>
+      <div class="drawer-val" id="dDesc"></div>
+    </div>
+    <div class="drawer-field" id="dOutputWrap" style="display:none">
+      <div class="drawer-label">Agent Output</div>
+      <div class="drawer-output" id="dOutput"></div>
+    </div>
+    <div class="drawer-field" id="dErrorWrap" style="display:none">
+      <div class="drawer-label">Error</div>
+      <div class="drawer-error" id="dError"></div>
+    </div>
+    <div class="drawer-field">
+      <div class="drawer-label">Timestamps</div>
+      <div class="drawer-val" id="dDates"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-sm primary" id="dRetryBtn" onclick="retryTask()" style="display:none">↺ Retry</button>
+      <button class="btn-sm" id="dTodoBtn" onclick="moveTask('todo')" style="display:none">← Back to To Do</button>
+      <button class="btn-sm danger" id="dDeleteBtn" onclick="deleteTask()">✕ Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js?v=49"></script>
+<script>
+'use strict';
+
+let _tasks = [];
+let _filter = 'all';
+let _activeTask = null;
+let _refreshTimer = null;
+
+// ── API helpers ──────────────────────────────────────────────
+function tok() { return _Auth?.token() || ''; }
+
+async function apiFetch(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || r.status);
+  return d;
+}
+
+// ── Load & render ────────────────────────────────────────────
+async function loadTasks() {
+  try {
+    _tasks = await apiFetch('GET', '/api/agent/tasks');
+    render();
+    document.getElementById('refreshInfo').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('refreshInfo').textContent = 'Load error: ' + e.message;
+  }
+}
+
+function priLabel(p) { return ['','P1','P2','P3','P4','P5'][p] || 'P'+p; }
+function relTime(ts) {
+  if (!ts) return '—';
+  const d = Math.floor((Date.now() - new Date(ts)) / 1000);
+  if (d < 60) return d + 's ago';
+  if (d < 3600) return Math.floor(d/60) + 'm ago';
+  if (d < 86400) return Math.floor(d/3600) + 'h ago';
+  return Math.floor(d/86400) + 'd ago';
+}
+
+function cardHTML(t) {
+  return `<div class="tcard" onclick="openDrawer('${t.id}')">
+    <div class="tc-top">
+      <span class="tc-pri pri-${t.priority}">${priLabel(t.priority)}</span>
+      <span class="tc-title">${esc(t.title)}</span>
+    </div>
+    <div class="tc-meta">
+      <span class="tc-type type-${t.agent_type}">${t.agent_type}</span>
+      <span class="tc-age">${relTime(t.created_at)}</span>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const cols = { todo: [], in_progress: [], complete: [], failed: [] };
+  const visible = _filter === 'all' ? _tasks : _tasks.filter(t => t.status === _filter);
+  for (const t of visible) { if (cols[t.status]) cols[t.status].push(t); }
+
+  for (const [status, list] of Object.entries(cols)) {
+    const body = document.getElementById('body-' + status);
+    const cnt = document.getElementById('cnt-' + status);
+    // Count from ALL tasks (not filtered) for the badges
+    const total = _tasks.filter(t => t.status === status).length;
+    cnt.textContent = total;
+    body.innerHTML = list.length
+      ? list.map(cardHTML).join('')
+      : `<div class="col-empty">${status === 'todo' ? 'No pending tasks' : status === 'in_progress' ? 'Nothing running' : status === 'complete' ? 'No completed tasks' : 'No failures'}</div>`;
+  }
+
+  // Hide/show columns based on filter
+  ['todo','in_progress','complete','failed'].forEach(s => {
+    document.getElementById('col-' + s).style.display =
+      (_filter === 'all' || _filter === s) ? '' : 'none';
+  });
+  if (_filter !== 'all') {
+    document.getElementById('kanban').style.gridTemplateColumns = '1fr';
+  } else {
+    document.getElementById('kanban').style.gridTemplateColumns = '';
+  }
+}
+
+function setFilter(btn, f) {
+  _filter = f;
+  document.querySelectorAll('.sb-btn').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+}
+
+// ── Create task ──────────────────────────────────────────────
+function onTypeChange(val) {
+  const show = val === 'outreach' ? '' : 'none';
+  document.getElementById('cfEmailWrap').style.display = show;
+  document.getElementById('cfSenderWrap').style.display = show;
+  document.getElementById('cfSenderTitleWrap').style.display = show;
+}
+
+async function createTask() {
+  const title = document.getElementById('cfTitle').value.trim();
+  if (!title) { showMsg('Title required', true); return; }
+  const agentType = document.getElementById('cfType').value;
+  const email = document.getElementById('cfEmail').value.trim();
+  const btn = document.getElementById('createBtn');
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const body = {
+      title,
+      description: document.getElementById('cfDesc').value.trim() || undefined,
+      agent_type: agentType,
+      priority: parseInt(document.getElementById('cfPri').value, 10),
+    };
+    if (agentType === 'outreach' && email) {
+      body.input = {
+        email,
+        sender_name:  document.getElementById('cfSenderName').value.trim() || undefined,
+        sender_title: document.getElementById('cfSenderTitle').value.trim() || undefined,
+      };
+    }
+    const t = await apiFetch('POST', '/api/agent/tasks', body);
+    _tasks.unshift(t);
+    render();
+    document.getElementById('cfTitle').value = '';
+    document.getElementById('cfDesc').value = '';
+    document.getElementById('cfEmail').value = '';
+    document.getElementById('cfSenderName').value = '';
+    document.getElementById('cfSenderTitle').value = '';
+    showMsg(agentType === 'outreach' && email ? 'Task added — email will send on run' : 'Task added', false);
+  } catch(e) { showMsg(e.message, true); }
+  btn.disabled = false; btn.textContent = 'Add Task';
+}
+
+function showMsg(msg, err) {
+  const el = document.getElementById('createMsg');
+  el.textContent = msg;
+  el.style.color = err ? '#f87171' : '#4ade80';
+  setTimeout(() => { el.textContent = ''; }, 3000);
+}
+
+// ── Drawer ───────────────────────────────────────────────────
+function openDrawer(id) {
+  _activeTask = _tasks.find(t => t.id === id);
+  if (!_activeTask) return;
+  const t = _activeTask;
+
+  document.getElementById('dTitle').textContent = t.title;
+  document.getElementById('dMeta').textContent =
+    `${t.status.replace('_',' ')} · ${t.agent_type} · ${priLabel(t.priority)}`;
+
+  const descWrap = document.getElementById('dDescWrap');
+  if (t.description) {
+    descWrap.style.display = '';
+    document.getElementById('dDesc').textContent = t.description;
+  } else { descWrap.style.display = 'none'; }
+
+  const outWrap = document.getElementById('dOutputWrap');
+  if (t.output) {
+    outWrap.style.display = '';
+    document.getElementById('dOutput').textContent = t.output;
+  } else { outWrap.style.display = 'none'; }
+
+  const errWrap = document.getElementById('dErrorWrap');
+  if (t.error) {
+    errWrap.style.display = '';
+    document.getElementById('dError').textContent = t.error;
+  } else { errWrap.style.display = 'none'; }
+
+  document.getElementById('dDates').textContent =
+    `Created: ${new Date(t.created_at).toLocaleString()}\n` +
+    (t.started_at ? `Started: ${new Date(t.started_at).toLocaleString()}\n` : '') +
+    (t.completed_at ? `Completed: ${new Date(t.completed_at).toLocaleString()}` : '');
+
+  document.getElementById('dRetryBtn').style.display = t.status === 'failed' ? '' : 'none';
+  document.getElementById('dTodoBtn').style.display =
+    (t.status === 'complete' || t.status === 'failed') ? '' : 'none';
+
+  document.getElementById('drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  _activeTask = null;
+}
+
+async function retryTask() {
+  if (!_activeTask) return;
+  try {
+    const updated = await apiFetch('PATCH', '/api/agent/tasks', { id: _activeTask.id, status: 'todo' });
+    const idx = _tasks.findIndex(t => t.id === _activeTask.id);
+    if (idx >= 0) _tasks[idx] = updated;
+    closeDrawer();
+    render();
+  } catch(e) { Toast.show(e.message, 'err'); }
+}
+
+async function moveTask(status) {
+  if (!_activeTask) return;
+  try {
+    const updated = await apiFetch('PATCH', '/api/agent/tasks', { id: _activeTask.id, status });
+    const idx = _tasks.findIndex(t => t.id === _activeTask.id);
+    if (idx >= 0) _tasks[idx] = updated;
+    closeDrawer();
+    render();
+  } catch(e) { Toast.show(e.message, 'err'); }
+}
+
+async function deleteTask() {
+  if (!_activeTask || !confirm('Delete this task?')) return;
+  try {
+    await apiFetch('DELETE', '/api/agent/tasks?id=' + _activeTask.id);
+    _tasks = _tasks.filter(t => t.id !== _activeTask.id);
+    closeDrawer();
+    render();
+  } catch(e) { Toast.show(e.message, 'err'); }
+}
+
+// ── Manual runner trigger ────────────────────────────────────
+async function triggerRunner() {
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.textContent = '⏳ Running…';
+  try {
+    const r = await fetch('/api/cron/agent-runner', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + tok() },
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || r.status);
+    const msg = d.processed > 0
+      ? `✓ Ran ${d.processed} task${d.processed > 1 ? 's' : ''}`
+      : '✓ No pending tasks';
+    btn.textContent = msg;
+    await loadTasks();
+  } catch(e) {
+    btn.textContent = 'Error: ' + e.message;
+  }
+  setTimeout(() => { btn.disabled = false; btn.textContent = '▶ Run Now'; }, 3000);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ─────────────────────────────────────────────────────
+window.addEventListener('auth:admin', function() {
+  loadTasks();
+  // Auto-refresh every 20s
+  _refreshTimer = setInterval(loadTasks, 20000);
+});
+
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeDrawer();
+});
+</script>
+</body>
+</html>

@@ -34,6 +34,14 @@
 
 .scout-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .scout-search-row { display: flex; gap: 8px; flex: 1; min-width: 260px; }
+.scout-age-row { display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--text3); white-space: nowrap; }
+.scout-age-row input[type=number] {
+  width: 58px; padding: 8px 8px; border-radius: 8px;
+  border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--text); font-size: 12px; font-family: var(--mono);
+  text-align: center;
+}
+.scout-age-row input[type=number]:focus { outline: none; border-color: var(--gold); }
 .scout-input {
   flex: 1;
   background: var(--surface);
@@ -252,6 +260,28 @@
   .page-content { padding: 16px; }
 }
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
 
@@ -286,6 +316,13 @@
             spellcheck="false"
           />
           <button class="btn-search" id="btnSearch" onclick="runSearch()">Search</button>
+        </div>
+        <div class="scout-age-row">
+          Age:
+          <input type="number" id="ageMin" value="0" min="0" max="99" title="Min age (years)">
+          –
+          <input type="number" id="ageMax" value="99" min="0" max="99" title="Max age (years)">
+          yrs
         </div>
       </div>
     </div>
@@ -353,7 +390,7 @@
   </main>
 </div><!-- /app-shell -->
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 'use strict';
 
@@ -447,9 +484,9 @@ function renderResults(rows, query, sector) {
   var html = '';
   rows.forEach(function(co) {
     var num    = co.company_number || '';
-    var name   = co.company_name  || co.title || 'Unknown';
-    var sector = co.sector        || co.sic_text || 'SaaS';
-    var incDate= co.date_of_creation || co.incorporated || '';
+    var name   = co.company_name  || co.name || co.title || 'Unknown';
+    var sector = co.sector || co.sic_text || (co.sic_codes && co.sic_codes[0]) || 'Tech';
+    var incDate= co.incorporation_date || co.date_of_creation || co.incorporated || '';
     var status = co.company_status || co.status || 'active';
     var score  = typeof co.score === 'number' ? co.score : Math.floor(40 + Math.random() * 50);
     var alreadyAdded = !!_addedSet[num || name];
@@ -485,7 +522,7 @@ function addToPipeline(btn) {
   btn.disabled = true;
   btn.textContent = '…';
 
-  API.deals.create({ company_name: name, source: 'scout' })
+  API.deals.create({ company_name: name, source: 'scout', companies_house_number: num || null })
     .then(function(res) {
       btn.textContent = 'Added';
       btn.classList.add('added');
@@ -515,8 +552,11 @@ function runSearch() {
   document.getElementById('btnSearch').disabled = true;
   showState('stateLoading');
 
+  var minAge = parseFloat(document.getElementById('ageMin').value) || 0;
+  var maxAge = parseFloat(document.getElementById('ageMax').value) || 99;
+
   window._sb.functions.invoke('companies-house', {
-    body: { q: q, sector: sector }
+    body: { q: q, sector: sector, min_age: minAge, max_age: maxAge }
   })
   .then(function(resp) {
     document.getElementById('btnSearch').disabled = false;

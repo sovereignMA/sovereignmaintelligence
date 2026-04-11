@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Video Generator — Project Sovereign</title>
+<link rel="stylesheet" href="/app.css?v=41">
+<style>
+/* ── Layout ── */
+.vg-shell{display:grid;grid-template-columns:320px 1fr;gap:0;height:calc(100vh - var(--nav-h));overflow:hidden}
+@media(max-width:900px){.vg-shell{grid-template-columns:1fr;height:auto;overflow:auto}}
+
+/* ── Left panel ── */
+.vg-left{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;gap:0}
+.vg-section{padding:16px;border-bottom:1px solid var(--border)}
+.vg-section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+
+/* ── Templates ── */
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.tpl-card{padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;transition:all .15s;text-align:center}
+.tpl-card:hover{border-color:var(--border3)}
+.tpl-card.active{border-color:var(--gold);background:var(--gold-dim)}
+.tpl-icon{font-size:20px;margin-bottom:5px}
+.tpl-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.3}
+.tpl-slides{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── Inputs ── */
+.vg-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;margin-top:10px}
+.vg-label:first-child{margin-top:0}
+.vg-input,.vg-textarea,.vg-select{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;transition:border-color .15s;box-sizing:border-box}
+.vg-input:focus,.vg-textarea:focus,.vg-select:focus{border-color:var(--gold)}
+.vg-textarea{resize:vertical;min-height:56px;line-height:1.6}
+.vg-select{appearance:none;cursor:pointer}
+.vg-btn{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all .15s;font-family:var(--font);margin-top:10px}
+.vg-btn-primary{background:var(--gold);color:#0a0a0f}
+.vg-btn-primary:hover{background:var(--gold2)}
+.vg-btn-primary:disabled{opacity:.5;cursor:default}
+.vg-btn-outline{background:var(--surface);border:1px solid var(--border2);color:var(--text2)}
+.vg-btn-outline:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.vg-btn-outline:disabled{opacity:.4;cursor:default}
+.vg-btn-record{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:#f87171}
+.vg-btn-record:hover:not(:disabled){background:rgba(248,113,113,.25)}
+.vg-btn-record.recording{background:#f87171;color:#fff;animation:pulse 1s infinite}
+
+/* ── Slide list ── */
+.slide-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.slide-item:hover{background:var(--surface)}
+.slide-item.active{background:var(--surface2);border-color:var(--gold)}
+.si-num{width:20px;height:20px;border-radius:4px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--mono);color:var(--text3);flex-shrink:0}
+.si-type{font-size:9px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;width:55px;flex-shrink:0}
+.si-headline{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.si-dur{font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0}
+
+/* ── Right panel ── */
+.vg-right{display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.vg-canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;background:radial-gradient(ellipse at center, rgba(201,168,76,.03) 0%, transparent 70%)}
+#videoCanvas{max-width:100%;max-height:100%;border-radius:10px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5);display:block}
+.vg-idle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;pointer-events:none}
+.vg-idle-icon{font-size:40px;opacity:.3}
+.vg-idle-text{font-size:13px;color:var(--text3);text-align:center}
+
+/* ── Loading overlay ── */
+.vg-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;pointer-events:none}
+.vg-spinner{width:36px;height:36px;border:2px solid rgba(201,168,76,.2);border-top-color:#c9a84c;border-radius:50%;animation:vg-spin .75s linear infinite}
+@keyframes vg-spin{to{transform:rotate(360deg)}}
+.vg-loading-label{font-size:13px;color:var(--text2);font-weight:600}
+.vg-loading-step{font-size:11px;color:var(--text3);font-family:var(--mono);min-height:16px}
+@keyframes vg-pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* ── Slide editor ── */
+.vg-edit-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.vg-edit-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0;line-height:1}
+.vg-edit-close:hover{color:var(--text)}
+.vg-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* ── Export section ── */
+.export-btn{width:100%;padding:8px 10px;border-radius:7px;font-size:11px;font-weight:600;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .15s;text-align:left;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.export-btn:hover{border-color:var(--gold);color:var(--gold)}
+.export-btn:disabled{opacity:.4;cursor:default;pointer-events:none}
+.export-btn:last-child{margin-bottom:0}
+.export-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+/* ── Video render block ── */
+.vid-render-block{background:var(--bg);border:1px solid var(--border2);border-radius:9px;padding:12px;margin-bottom:8px}
+.vid-render-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.vid-render-meta{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:10px;line-height:1.6}
+.vid-render-btn{width:100%;padding:9px;border-radius:7px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:var(--font);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.vid-render-btn.idle{background:var(--gold);color:#0a0a0f}
+.vid-render-btn.idle:hover{background:var(--gold2)}
+.vid-render-btn.rendering{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.35);color:#f87171;animation:none;cursor:pointer}
+.vid-render-btn.done{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:#4ade80;cursor:default}
+.vid-render-btn:disabled{opacity:.4;cursor:default}
+.vid-progress-wrap{margin:8px 0 0;display:none}
+.vid-progress-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.vid-progress-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width .3s}
+.vid-progress-label{font-size:10px;font-family:var(--mono);color:var(--text3)}
+.vid-dl-btn{width:100%;margin-top:7px;padding:8px;border-radius:7px;font-size:12px;font-weight:700;border:1px solid rgba(74,222,128,.35);background:rgba(74,222,128,.1);color:#4ade80;cursor:pointer;font-family:var(--font);transition:all .15s;display:none;align-items:center;justify-content:center;gap:6px}
+.vid-dl-btn:hover{background:rgba(74,222,128,.18)}
+.vid-dl-btn.visible{display:flex}
+
+/* ── Projects panel ── */
+.proj-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.proj-item:hover{background:var(--surface)}
+.proj-item.active{background:var(--surface2);border-color:var(--gold)}
+.proj-meta{flex:1;min-width:0}
+.proj-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-date{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.proj-del{width:20px;height:20px;border-radius:4px;border:none;background:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;flex-shrink:0}
+.proj-del:hover{background:rgba(248,113,113,.15);color:#f87171}
+.proj-empty{font-size:11px;color:var(--text3);text-align:center;padding:12px 0;line-height:1.6}
+.proj-save-row{display:flex;gap:6px;margin-top:8px}
+.proj-name-input{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:6px 9px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;transition:border-color .15s}
+.proj-name-input:focus{border-color:var(--gold)}
+.proj-save-btn{padding:0 12px;height:32px;border-radius:7px;font-size:11px;font-weight:700;border:1px solid var(--gold);background:var(--gold-dim);color:var(--gold);cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.proj-save-btn:hover{background:rgba(201,168,76,.2)}
+.proj-save-btn:disabled{opacity:.4;cursor:default}
+
+/* ── Edit icon on slide items ── */
+.si-edit{width:20px;height:20px;border-radius:4px;border:none;background:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;flex-shrink:0}
+.si-edit:hover{background:var(--surface2);color:var(--gold)}
+
+/* ── Render button ── */
+.render-btn{padding:0 14px;height:32px;border-radius:6px;border:1px solid rgba(201,168,76,.4);background:rgba(201,168,76,.1);color:#c9a84c;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--font);transition:all .15s;flex-shrink:0}
+.render-btn:hover:not(:disabled){background:rgba(201,168,76,.2)}
+.render-btn.active{background:#c9a84c;color:#0a0a0f;animation:blink 1s step-end infinite}
+.render-btn:disabled{opacity:.4;cursor:default}
+.png-btn{width:32px;height:32px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .15s;flex-shrink:0}
+.png-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.png-btn:disabled{opacity:.4;cursor:default}
+
+/* ── Playback bar ── */
+.vg-bar{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg2);flex-shrink:0}
+.vg-progress{flex:1;height:4px;background:var(--surface2);border-radius:2px;cursor:pointer;position:relative}
+.vg-progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .1s linear}
+.vg-time{font-size:11px;font-family:var(--mono);color:var(--text3);white-space:nowrap}
+.ctrl-btn{width:32px;height:32px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;flex-shrink:0}
+.ctrl-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.ctrl-btn:disabled{opacity:.4;cursor:default}
+.dl-btn{padding:0 14px;height:32px;border-radius:6px;border:1px solid var(--gold);background:var(--gold-dim);color:var(--gold);cursor:pointer;font-size:11px;font-weight:700;font-family:var(--font);transition:all .15s;flex-shrink:0}
+.dl-btn:hover:not(:disabled){background:rgba(201,168,76,.2)}
+.dl-btn:disabled{opacity:.4;cursor:default}
+.rec-btn{padding:0 14px;height:32px;border-radius:6px;border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.1);color:#f87171;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--font);transition:all .15s;flex-shrink:0}
+.rec-btn:hover:not(:disabled){background:rgba(248,113,113,.2)}
+.rec-btn.active{background:#f87171;color:#fff;animation:blink 1s step-end infinite}
+.rec-btn:disabled{opacity:.4;cursor:default}
+@keyframes blink{50%{opacity:.5}}
+.status-badge{font-size:10px;font-family:var(--mono);color:var(--text3);padding:3px 8px;border-radius:8px;background:var(--surface);white-space:nowrap}
+.status-badge.ok{background:rgba(74,222,128,.1);color:#4ade80}
+.status-badge.err{background:rgba(248,113,113,.1);color:#f87171}
+.status-badge.loading{background:rgba(201,168,76,.1);color:#c9a84c}
+/* ── Confirm modal ── */
+#vg-confirm{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:9998;backdrop-filter:blur(4px)}
+#vg-confirm.open{display:flex}
+.vg-confirm-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;max-width:320px;width:calc(100% - 40px);display:flex;flex-direction:column;gap:16px}
+.vg-confirm-msg{font-size:14px;color:var(--text);line-height:1.5}
+.vg-confirm-btns{display:flex;gap:8px;justify-content:flex-end}
+.vg-confirm-cancel{padding:7px 16px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font)}
+.vg-confirm-ok{padding:7px 16px;border-radius:7px;border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.15);color:#f87171;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}
+.vg-confirm-cancel:hover{background:var(--bg2)}
+.vg-confirm-ok:hover{background:rgba(248,113,113,.25)}
+</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
+</head>
+<body>
+<script>
+window.addEventListener('auth:admin', function() {
+  document.documentElement.style.visibility = '';
+  clearTimeout(window._authRevealTimer);
+  var _o = document.getElementById('_authOverlay'); if(_o) _o.remove();
+});
+window.addEventListener('auth:ready', function(e) {
+  if (!e.detail?.user) location.href = '/login';
+});
+</script>
+
+<div id="nav-root"></div>
+
+<div class="vg-shell">
+
+  <!-- ── Left Panel ── -->
+  <div class="vg-left">
+
+    <!-- Header -->
+    <div class="vg-section" style="background:var(--bg3)">
+      <div style="font-size:15px;font-weight:700;color:var(--text)">⏺ Video Generator</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">AI-scripted · Canvas rendered · WebM export</div>
+    </div>
+
+    <!-- Saved projects -->
+    <div class="vg-section" id="projectsSection">
+      <div class="vg-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Projects</span>
+        <span id="projCount" style="font-size:10px;color:var(--text3);font-family:var(--mono)"></span>
+      </div>
+      <div id="projList"><div class="proj-empty">No saved projects yet</div></div>
+      <div class="proj-save-row" id="saveRow" style="display:none">
+        <input class="proj-name-input" id="projNameInput" placeholder="Project name…" maxlength="60">
+        <button class="proj-save-btn" id="saveBtn" onclick="saveProject()">Save</button>
+      </div>
+    </div>
+
+    <!-- Template selector -->
+    <div class="vg-section">
+      <div class="vg-section-title">Template</div>
+      <div class="tpl-grid" id="tplGrid">
+        <div class="tpl-card active" data-tpl="product_demo" onclick="setTemplate(this)">
+          <div class="tpl-icon">⌘</div>
+          <div class="tpl-name">Product Demo</div>
+          <div class="tpl-slides">8 slides</div>
+        </div>
+        <div class="tpl-card" data-tpl="feature_spotlight" onclick="setTemplate(this)">
+          <div class="tpl-icon">◈</div>
+          <div class="tpl-name">Feature Spotlight</div>
+          <div class="tpl-slides">6 slides</div>
+        </div>
+        <div class="tpl-card" data-tpl="social_ad" onclick="setTemplate(this)">
+          <div class="tpl-icon">▸</div>
+          <div class="tpl-name">Social Ad</div>
+          <div class="tpl-slides">5 slides · 9:16</div>
+        </div>
+        <div class="tpl-card" data-tpl="investor_pitch" onclick="setTemplate(this)">
+          <div class="tpl-icon">◆</div>
+          <div class="tpl-name">Investor Pitch</div>
+          <div class="tpl-slides">7 slides</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="vg-section">
+      <div class="vg-section-title">Content</div>
+      <div class="vg-label">Topic / Focus</div>
+      <input class="vg-input" id="topicInput" placeholder="e.g. AI pipeline intelligence feature">
+      <div class="vg-label">Additional Context</div>
+      <textarea class="vg-textarea" id="contextInput" placeholder="Key facts, target audience, specific metrics to include…"></textarea>
+      <div class="vg-label">Format</div>
+      <select class="vg-select" id="formatSelect">
+        <option value="16:9">16:9 — Widescreen (1280×720)</option>
+        <option value="9:16">9:16 — Vertical / Social (720×1280)</option>
+        <option value="1:1">1:1 — Square (720×720)</option>
+      </select>
+      <button class="vg-btn vg-btn-primary" id="genBtn" onclick="generateScript()">✦ Generate Script with AI</button>
+    </div>
+
+    <!-- Slide list -->
+    <div class="vg-section" id="slideListSection" style="display:none">
+      <div class="vg-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span id="slideListTitle">Slides</span>
+        <span id="totalDur" style="font-size:10px;color:var(--text3);font-family:var(--mono)"></span>
+      </div>
+      <div id="slideItems"></div>
+    </div>
+
+    <!-- Slide editor (shown when editing a slide) -->
+    <div class="vg-section" id="editSection" style="display:none;background:var(--bg3)">
+      <div class="vg-edit-header">
+        <div class="vg-section-title" style="margin-bottom:0" id="editTitle">Edit Slide</div>
+        <button class="vg-edit-close" onclick="closeEdit()">✕</button>
+      </div>
+      <div class="vg-label">Headline</div>
+      <input class="vg-input" id="editHeadline" oninput="livePreviewEdit()">
+      <div class="vg-label">Subtitle</div>
+      <input class="vg-input" id="editSubtitle" placeholder="optional" oninput="livePreviewEdit()">
+      <div class="vg-label">Body</div>
+      <textarea class="vg-textarea" id="editBody" placeholder="optional" oninput="livePreviewEdit()"></textarea>
+      <div class="vg-edit-row" style="margin-top:8px">
+        <div>
+          <div class="vg-label" style="margin-top:0">Duration (s)</div>
+          <input class="vg-input" id="editDuration" type="number" min="2" max="30" oninput="livePreviewEdit()">
+        </div>
+        <div>
+          <div class="vg-label" style="margin-top:0">Icon</div>
+          <input class="vg-input" id="editIcon" placeholder="◈ optional" oninput="livePreviewEdit()">
+        </div>
+      </div>
+      <button class="vg-btn vg-btn-primary" onclick="saveSlideEdit()" style="margin-top:10px">✓ Apply Changes</button>
+    </div>
+
+    <!-- Export & deliverables -->
+    <div class="vg-section" id="exportSection" style="display:none">
+      <div class="vg-section-title">Deliverables</div>
+
+      <!-- Video export — primary deliverable -->
+      <div class="vid-render-block">
+        <div class="vid-render-title">⏺ Video File</div>
+        <div class="vid-render-meta" id="vidMeta">—</div>
+        <button class="vid-render-btn idle" id="vidRenderBtn" onclick="renderAndDownload()">◉ Render Video</button>
+        <div class="vid-progress-wrap" id="vidProgressWrap">
+          <div class="vid-progress-bar"><div class="vid-progress-fill" id="vidProgressFill"></div></div>
+          <div class="vid-progress-label" id="vidProgressLabel">Preparing…</div>
+        </div>
+        <button class="vid-dl-btn" id="vidDlBtn" onclick="downloadVideo()">↓ Download Video</button>
+      </div>
+
+      <!-- Still / script exports -->
+      <button class="export-btn" id="expPngBtn" onclick="exportPNG()"><span class="export-icon">⬡</span>Save Current Frame (PNG)</button>
+      <button class="export-btn" id="expAllPngBtn" onclick="exportAllPNG()"><span class="export-icon">⬢</span>Export All Slides (PNG)</button>
+      <button class="export-btn" onclick="copyScript()"><span class="export-icon">⎘</span>Copy Script JSON</button>
+      <button class="export-btn" onclick="downloadScript()"><span class="export-icon">↓</span>Download Script (JSON)</button>
+    </div>
+
+  </div>
+
+  <!-- ── Right Panel ── -->
+  <div class="vg-right">
+
+    <!-- Canvas -->
+    <div class="vg-canvas-wrap" id="canvasWrap">
+      <div class="vg-idle" id="idleOverlay">
+        <div class="vg-idle-icon">⏺</div>
+        <div class="vg-idle-text">Generate a script to preview your video<br><span style="font-size:11px;opacity:.6">Uses Sovereign branding & design system</span></div>
+      </div>
+      <div class="vg-loading" id="loadingOverlay" style="display:none">
+        <div class="vg-spinner"></div>
+        <div class="vg-loading-label">Generating with Claude…</div>
+        <div class="vg-loading-step" id="loadingStep">Scripting slides</div>
+      </div>
+      <canvas id="videoCanvas" width="1280" height="720" style="display:none"></canvas>
+    </div>
+
+    <!-- Controls bar -->
+    <div class="vg-bar">
+      <button class="ctrl-btn" id="playBtn" onclick="togglePlay()" disabled title="Play">▶</button>
+      <button class="ctrl-btn" id="prevBtn" onclick="prevSlide()" disabled title="Previous slide">⟨</button>
+      <button class="ctrl-btn" id="nextBtn" onclick="nextSlide()" disabled title="Next slide">⟩</button>
+      <div class="vg-progress" id="progressTrack" onclick="seekProgress(event)">
+        <div class="vg-progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <span class="vg-time" id="timeDisp">0:00 / 0:00</span>
+      <button class="png-btn" id="pngBtn" onclick="exportPNG()" disabled title="Save current frame as PNG">PNG</button>
+      <button class="render-btn" id="renderBtn" onclick="autoRender()" disabled>◉ Render</button>
+      <button class="dl-btn" id="dlBtn" onclick="downloadVideo()" disabled>↓ Download</button>
+      <span class="status-badge" id="statusBadge">Idle</span>
+    </div>
+
+  </div>
+</div>
+
+<script src="/app.js?v=49"></script>
+<script>
+'use strict';
+
+// ── State ────────────────────────────────────────────────────────
+let _script = null;         // { title, slides }
+let _slides = [];           // processed slides
+let _currentSlide = 0;
+let _slideStart = 0;        // timestamp when current slide started
+let _playing = false;
+let _rafId = null;
+let _recorder = null;
+let _recChunks = [];
+let _recBlob = null;
+let _template = 'product_demo';
+let _format = '16:9';
+let _fonts = false;
+
+// Canvas dimensions per format
+const DIMS = {
+  '16:9': [1280, 720],
+  '9:16': [720, 1280],
+  '1:1':  [720, 720],
+};
+
+const canvas = document.getElementById('videoCanvas');
+const ctx = canvas.getContext('2d');
+
+// ── Font loading ──────────────────────────────────────────────────
+async function loadFonts() {
+  if (_fonts) return;
+  try {
+    await document.fonts.ready;
+    _fonts = true;
+  } catch(e) { _fonts = true; }
+}
+
+// ── Template selection ────────────────────────────────────────────
+function setTemplate(el) {
+  document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  _template = el.dataset.tpl;
+  if (_template === 'social_ad') {
+    document.getElementById('formatSelect').value = '9:16';
+  }
+}
+
+// ── Script generation ─────────────────────────────────────────────
+const LOADING_STEPS = ['Scripting slides', 'Crafting headlines', 'Structuring narrative', 'Adding data points', 'Finalising script'];
+let _loadingTimer = null;
+
+function showLoading() {
+  document.getElementById('idleOverlay').style.display = 'none';
+  canvas.style.display = 'none';
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.style.display = '';
+  let step = 0;
+  const stepEl = document.getElementById('loadingStep');
+  stepEl.textContent = LOADING_STEPS[0];
+  _loadingTimer = setInterval(() => {
+    step = (step + 1) % LOADING_STEPS.length;
+    stepEl.style.animation = 'none';
+    stepEl.offsetHeight; // reflow to restart animation
+    stepEl.style.animation = 'vg-pulse .4s ease';
+    stepEl.textContent = LOADING_STEPS[step];
+  }, 1800);
+}
+
+function hideLoading(success) {
+  clearInterval(_loadingTimer);
+  document.getElementById('loadingOverlay').style.display = 'none';
+  if (!success) document.getElementById('idleOverlay').style.display = '';
+}
+
+async function generateScript() {
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  setStatus('Calling Claude…', 'loading');
+  showLoading();
+
+  try {
+    const res = await fetch('/api/video/script', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + (_Auth?.token() || ''),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        template: _template,
+        topic: document.getElementById('topicInput').value.trim(),
+        context: document.getElementById('contextInput').value.trim(),
+        format: document.getElementById('formatSelect').value,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.status);
+
+    _script = data;
+    _slides = data.slides || [];
+    _format = document.getElementById('formatSelect').value;
+    _activeProjectId = null; // new generation = new project
+
+    // Setup canvas size
+    const [W, H] = DIMS[_format] || [1280, 720];
+    canvas.width = W;
+    canvas.height = H;
+
+    // Render first slide
+    await loadFonts();
+    hideLoading(true);
+    canvas.style.display = 'block';
+    _currentSlide = 0;
+    _slideStart = performance.now();
+
+    renderSlide(0, 99999);
+    buildSlideList();
+
+    document.getElementById('slideListSection').style.display = '';
+    document.getElementById('exportSection').style.display = '';
+    document.getElementById('playBtn').disabled = false;
+    document.getElementById('prevBtn').disabled = false;
+    document.getElementById('nextBtn').disabled = false;
+    document.getElementById('renderBtn').disabled = false;
+    document.getElementById('pngBtn').disabled = false;
+
+    const total = _slides.reduce((s, sl) => s + (sl.duration || 5), 0);
+    document.getElementById('totalDur').textContent = fmtTime(total);
+
+    // Show save row with default name
+    const topic = document.getElementById('topicInput').value.trim();
+    document.getElementById('projNameInput').value = topic || data.title || 'Untitled Video';
+    document.getElementById('saveRow').style.display = '';
+
+    // Reset video render panel
+    const vrBtn = document.getElementById('vidRenderBtn');
+    vrBtn.className = 'vid-render-btn idle';
+    vrBtn.textContent = '◉ Render Video';
+    document.getElementById('vidProgressWrap').style.display = 'none';
+    document.getElementById('vidDlBtn').classList.remove('visible');
+    updateVidMeta();
+
+    // Auto-save
+    await autoSaveProject();
+    setStatus('Ready — click Render Video to export', 'ok');
+
+  } catch(e) {
+    hideLoading(false);
+    setStatus('Error: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✦ Generate Script with AI';
+}
+
+function buildSlideList() {
+  const el = document.getElementById('slideItems');
+  el.innerHTML = _slides.map((s, i) => `
+    <div class="slide-item${i === 0 ? ' active' : ''}" id="si-${i}" onclick="jumpSlide(${i})">
+      <div class="si-num">${i+1}</div>
+      <div class="si-type">${s.type || 'slide'}</div>
+      <div class="si-headline">${esc(s.headline || '')}</div>
+      <div class="si-dur">${s.duration || 5}s</div>
+      <button class="si-edit" onclick="event.stopPropagation();editSlide(${i})" title="Edit slide">✎</button>
+    </div>`).join('');
+
+  document.getElementById('slideListTitle').textContent = `Slides · ${_slides.length}`;
+}
+
+function updateActiveSlide(i) {
+  document.querySelectorAll('.slide-item').forEach((el, idx) => {
+    el.classList.toggle('active', idx === i);
+  });
+  const el = document.getElementById('si-' + i);
+  if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// ── Playback ──────────────────────────────────────────────────────
+function togglePlay() {
+  if (!_slides.length) return;
+  _playing ? pause() : play();
+}
+
+function play() {
+  _playing = true;
+  document.getElementById('playBtn').textContent = '⏸';
+  _slideStart = performance.now() - 0;
+  loop(performance.now());
+}
+
+function pause() {
+  _playing = false;
+  document.getElementById('playBtn').textContent = '▶';
+  if (_rafId) cancelAnimationFrame(_rafId);
+}
+
+function loop(now) {
+  if (!_playing) return;
+  const elapsed = now - _slideStart;
+  const slide = _slides[_currentSlide];
+  const dur = (slide?.duration || 5) * 1000;
+
+  renderSlide(_currentSlide, elapsed);
+  updateProgress(elapsed, dur);
+
+  if (elapsed >= dur) {
+    if (_currentSlide < _slides.length - 1) {
+      _currentSlide++;
+      _slideStart = now;
+      updateActiveSlide(_currentSlide);
+    } else {
+      // End of video
+      pause();
+      if (_recorder && _recorder.state === 'recording') {
+        _recorder.stop();
+      }
+      return;
+    }
+  }
+
+  _rafId = requestAnimationFrame(loop);
+}
+
+function jumpSlide(i) {
+  _currentSlide = i;
+  _slideStart = performance.now();
+  updateActiveSlide(i);
+  // Show fully-animated end state when paused; loop re-renders immediately when playing
+  renderSlide(i, _playing ? 0 : 99999);
+  updateProgress(0, (_slides[i]?.duration || 5) * 1000);
+  if (!_playing) document.getElementById('playBtn').textContent = '▶';
+}
+
+function prevSlide() {
+  if (_currentSlide > 0) jumpSlide(_currentSlide - 1);
+}
+
+function nextSlide() {
+  if (_currentSlide < _slides.length - 1) jumpSlide(_currentSlide + 1);
+}
+
+// Keyboard shortcuts: Space = play/pause, ← = prev slide, → = next slide
+document.addEventListener('keydown', function(e) {
+  if (!_slides.length) return;
+  var tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  else if (e.code === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+  else if (e.code === 'ArrowRight') { e.preventDefault(); nextSlide(); }
+});
+
+function seekProgress(e) {
+  if (!_slides.length) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  const total = _slides.reduce((s, sl) => s + (sl.duration || 5), 0);
+  let target = pct * total;
+  let acc = 0;
+  for (let i = 0; i < _slides.length; i++) {
+    const d = _slides[i].duration || 5;
+    if (acc + d >= target) {
+      _currentSlide = i;
+      const t = (target - acc) * 1000;
+      _slideStart = performance.now() - t;
+      renderSlide(i, t);
+      updateProgress(t, d * 1000);
+      updateActiveSlide(i);
+      return;
+    }
+    acc += d;
+  }
+}
+
+function updateProgress(elapsed, dur) {
+  if (!_slides.length) return;
+  const total = _slides.reduce((s, sl) => s + (sl.duration || 5), 0) * 1000;
+  let acc = 0;
+  for (let i = 0; i < _currentSlide; i++) acc += (_slides[i].duration || 5) * 1000;
+  acc += elapsed;
+  const pct = Math.min(100, (acc / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('timeDisp').textContent = fmtTime(acc / 1000) + ' / ' + fmtTime(total / 1000);
+}
+
+// ── Recording ─────────────────────────────────────────────────────
+function toggleRecord() {
+  if (_recorder && _recorder.state === 'recording') {
+    stopRecord();
+  } else {
+    startRecord();
+  }
+}
+
+// ── Render & Download (primary deliverable flow) ──────────────────
+function updateVidMeta() {
+  if (!_slides.length) return;
+  const total = _slides.reduce((s, sl) => s + (sl.duration || 5), 0);
+  const [W, H] = DIMS[_format] || [1280, 720];
+  const mimeType = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
+    .find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  const fmt = mimeType.includes('mp4') ? 'MP4' : 'WebM';
+  document.getElementById('vidMeta').textContent =
+    `${_slides.length} slides · ${fmtTime(total)} · ${W}×${H} · ${fmt} · 5 Mbps`;
+}
+
+function renderAndDownload() {
+  if (!_slides.length) return;
+
+  // If already rendering, stop
+  if (_recorder && _recorder.state === 'recording') {
+    _recorder.stop();
+    pause();
+    return;
+  }
+
+  _recChunks = [];
+  _recBlob = null;
+
+  const stream = canvas.captureStream(30);
+  const mimeType = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
+    .find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+
+  _recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 5_000_000 });
+  _recorder.ondataavailable = e => { if (e.data.size > 0) _recChunks.push(e.data); };
+
+  const total = _slides.reduce((s, sl) => s + (sl.duration || 5), 0);
+
+  _recorder.onstop = () => {
+    _recBlob = new Blob(_recChunks, { type: mimeType });
+    // Update deliverables panel
+    const btn = document.getElementById('vidRenderBtn');
+    btn.className = 'vid-render-btn done';
+    btn.textContent = '✓ Render Complete';
+    document.getElementById('vidProgressLabel').textContent = 'Done — ' + fmtTime(total) + ' video ready';
+    document.getElementById('vidProgressFill').style.width = '100%';
+    document.getElementById('vidDlBtn').classList.add('visible');
+    // Bottom bar
+    document.getElementById('dlBtn').disabled = false;
+    document.getElementById('renderBtn').classList.remove('active');
+    document.getElementById('renderBtn').textContent = '◉ Render';
+    setStatus('Ready — click Download', 'ok');
+    // Auto-trigger download
+    downloadVideo();
+  };
+
+  _recorder.start(100);
+  jumpSlide(0);
+  play();
+
+  // Update deliverables panel to "rendering" state
+  const btn = document.getElementById('vidRenderBtn');
+  btn.className = 'vid-render-btn rendering';
+  btn.textContent = '⏹ Stop Render';
+  document.getElementById('vidProgressWrap').style.display = '';
+  document.getElementById('vidDlBtn').classList.remove('visible');
+  document.getElementById('vidProgressFill').style.width = '0%';
+  document.getElementById('vidProgressLabel').textContent = 'Rendering slide 1 of ' + _slides.length + '…';
+
+  // Progress ticker — updates label + fill as slides advance
+  let _lastSlide = -1;
+  const _renderTicker = setInterval(() => {
+    if (!_recorder || _recorder.state !== 'recording') { clearInterval(_renderTicker); return; }
+    const si = _currentSlide;
+    if (si !== _lastSlide) {
+      _lastSlide = si;
+      const pct = Math.round(((si) / _slides.length) * 100);
+      document.getElementById('vidProgressFill').style.width = pct + '%';
+      document.getElementById('vidProgressLabel').textContent =
+        'Rendering slide ' + (si + 1) + ' of ' + _slides.length + '…';
+    }
+  }, 200);
+
+  // Bottom bar sync
+  document.getElementById('dlBtn').disabled = true;
+  document.getElementById('renderBtn').classList.add('active');
+  document.getElementById('renderBtn').textContent = '⏹ Stop';
+  setStatus('Rendering…', 'loading');
+}
+
+// Legacy alias — bottom bar render button still works
+function autoRender() { renderAndDownload(); }
+
+function downloadVideo() {
+  if (!_recBlob) return;
+  const ext = _recBlob.type.includes('mp4') ? 'mp4' : 'webm';
+  const title = (document.getElementById('projNameInput')?.value.trim() || 'sovereign-video')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const url = URL.createObjectURL(_recBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${title}.${ext}`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
+}
+
+// ── Slide Editor ──────────────────────────────────────────────────
+let _editIndex = -1;
+
+function editSlide(i) {
+  _editIndex = i;
+  const s = _slides[i];
+  document.getElementById('editTitle').textContent = `Edit Slide ${i + 1} — ${s.type || 'slide'}`;
+  document.getElementById('editHeadline').value = s.headline || '';
+  document.getElementById('editSubtitle').value = s.subtitle || '';
+  document.getElementById('editBody').value = s.body || '';
+  document.getElementById('editDuration').value = s.duration || 5;
+  document.getElementById('editIcon').value = s.icon || '';
+  document.getElementById('editSection').style.display = '';
+  jumpSlide(i);
+}
+
+function closeEdit() {
+  _editIndex = -1;
+  document.getElementById('editSection').style.display = 'none';
+}
+
+function livePreviewEdit() {
+  if (_editIndex < 0) return;
+  // Build a temporary slide from current inputs and render it without saving
+  const s = Object.assign({}, _slides[_editIndex], {
+    headline: document.getElementById('editHeadline').value || _slides[_editIndex].headline,
+    subtitle: document.getElementById('editSubtitle').value || undefined,
+    body:     document.getElementById('editBody').value || undefined,
+    icon:     document.getElementById('editIcon').value.trim() || undefined,
+    duration: Math.max(2, parseInt(document.getElementById('editDuration').value) || 5),
+  });
+  const orig = _slides[_editIndex];
+  _slides[_editIndex] = s;
+  renderSlide(_editIndex, (s.duration || 5) * 300);
+  _slides[_editIndex] = orig;
+}
+
+function saveSlideEdit() {
+  if (_editIndex < 0) return;
+  const s = _slides[_editIndex];
+  const headline = document.getElementById('editHeadline').value.trim();
+  if (headline) s.headline = headline;
+  const subtitle = document.getElementById('editSubtitle').value.trim();
+  s.subtitle = subtitle || undefined;
+  const body = document.getElementById('editBody').value.trim();
+  s.body = body || undefined;
+  s.duration = Math.max(2, Math.min(30, parseInt(document.getElementById('editDuration').value) || 5));
+  const icon = document.getElementById('editIcon').value.trim();
+  s.icon = icon || undefined;
+
+  const total = _slides.reduce((acc, sl) => acc + (sl.duration || 5), 0);
+  document.getElementById('totalDur').textContent = fmtTime(total);
+  buildSlideList();
+  renderSlide(_editIndex, (_slides[_editIndex].duration || 5) * 300);
+  closeEdit();
+  setStatus('Slide updated', 'ok');
+
+  // Persist slide edits to the active project
+  if (_activeProjectId && _script) {
+    _script.slides = _slides;
+    fetch('/api/video/projects', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': 'Bearer ' + (_Auth?.token() || ''),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: _activeProjectId, script: _script }),
+    }).catch(() => {});
+  }
+}
+
+// ── PNG Export ────────────────────────────────────────────────────
+function exportPNG() {
+  if (!_slides.length) return;
+  const name = `sovereign-slide-${_currentSlide + 1}-${Date.now()}.png`;
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = name;
+  a.click();
+}
+
+async function exportAllPNG() {
+  if (!_slides.length) return;
+  setStatus('Exporting PNGs…', 'loading');
+  const origSlide = _currentSlide;
+  // Collect all frames first, then download sequentially with enough delay
+  // for browsers to accept each without blocking (300ms minimum between downloads)
+  const frames = [];
+  for (let i = 0; i < _slides.length; i++) {
+    renderSlide(i, (_slides[i].duration || 5) * 500);
+    await new Promise(r => setTimeout(r, 80));
+    frames.push(canvas.toDataURL('image/png'));
+  }
+  jumpSlide(origSlide);
+  for (let i = 0; i < frames.length; i++) {
+    const a = document.createElement('a');
+    a.href = frames[i];
+    a.download = `sovereign-slide-${String(i + 1).padStart(2, '0')}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    if (i < frames.length - 1) await new Promise(r => setTimeout(r, 350));
+  }
+  setStatus(`Exported ${frames.length} PNG${frames.length !== 1 ? 's' : ''}`, 'ok');
+}
+
+// ── Script Export ─────────────────────────────────────────────────
+async function copyScript() {
+  if (!_script) return;
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(_script, null, 2));
+    setStatus('Script copied to clipboard', 'ok');
+  } catch {
+    setStatus('Copy failed — try Download Script', 'err');
+  }
+}
+
+function downloadScript() {
+  if (!_script) return;
+  const blob = new Blob([JSON.stringify(_script, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sovereign-script-${Date.now()}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ── Project persistence ───────────────────────────────────────────
+let _projects = [];
+let _activeProjectId = null;
+
+async function loadProjects() {
+  try {
+    const res = await fetch('/api/video/projects', {
+      headers: { 'Authorization': 'Bearer ' + (_Auth?.token() || '') },
+    });
+    if (!res.ok) return;
+    _projects = await res.json();
+    renderProjectList();
+  } catch { /* silent */ }
+}
+
+function renderProjectList() {
+  const el = document.getElementById('projList');
+  const countEl = document.getElementById('projCount');
+  countEl.textContent = _projects.length ? `${_projects.length}` : '';
+  if (!_projects.length) {
+    el.innerHTML = '<div class="proj-empty">No saved projects yet<br>Generate a script to save</div>';
+    return;
+  }
+  el.innerHTML = _projects.map(p => `
+    <div class="proj-item${p.id === _activeProjectId ? ' active' : ''}" id="proj-${p.id}" onclick="loadProject('${p.id}')">
+      <div class="proj-meta">
+        <div class="proj-name">${esc(p.title)}</div>
+        <div class="proj-date">${fmtDate(p.updated_at)} · ${esc(p.template?.replace('_',' ') || '')}</div>
+      </div>
+      <button class="proj-del" onclick="event.stopPropagation();deleteProject('${p.id}')" title="Delete">✕</button>
+    </div>`).join('');
+}
+
+async function saveProject() {
+  if (!_script) return;
+  const btn = document.getElementById('saveBtn');
+  const nameInput = document.getElementById('projNameInput');
+  const title = nameInput.value.trim() || _script.title || 'Untitled Video';
+  btn.disabled = true;
+
+  try {
+    if (_activeProjectId) {
+      // Update existing project
+      const res = await fetch('/api/video/projects', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': 'Bearer ' + (_Auth?.token() || ''),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: _activeProjectId, title, script: _script }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error);
+      const updated = await res.json();
+      const idx = _projects.findIndex(p => p.id === _activeProjectId);
+      if (idx >= 0) _projects[idx] = { ..._projects[idx], ...updated };
+    } else {
+      // Create new project
+      const res = await fetch('/api/video/projects', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + (_Auth?.token() || ''),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          template: _template,
+          topic: document.getElementById('topicInput').value.trim(),
+          context: document.getElementById('contextInput').value.trim(),
+          format: _format,
+          script: _script,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error);
+      const created = await res.json();
+      _activeProjectId = created.id;
+      _projects.unshift(created);
+    }
+    nameInput.value = title;
+    renderProjectList();
+    setStatus('Project saved', 'ok');
+  } catch (e) {
+    setStatus('Save failed: ' + e.message, 'err');
+  }
+  btn.disabled = false;
+}
+
+async function loadProject(id) {
+  const proj = _projects.find(p => p.id === id);
+  if (!proj || !proj.script) return;
+
+  _activeProjectId = id;
+  _script = proj.script;
+  _slides = _script.slides || [];
+  _template = proj.template || 'product_demo';
+  _format = proj.format || '16:9';
+
+  // Restore form inputs
+  document.getElementById('topicInput').value = proj.topic || '';
+  document.getElementById('contextInput').value = proj.context || '';
+  document.getElementById('formatSelect').value = _format;
+  document.querySelectorAll('.tpl-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.tpl === _template);
+  });
+
+  // Update name input
+  document.getElementById('projNameInput').value = proj.title;
+
+  // Setup canvas
+  const [W, H] = DIMS[_format] || [1280, 720];
+  canvas.width = W;
+  canvas.height = H;
+
+  await loadFonts();
+  document.getElementById('idleOverlay').style.display = 'none';
+  canvas.style.display = 'block';
+  _currentSlide = 0;
+  renderSlide(0, 99999);
+  buildSlideList();
+
+  document.getElementById('slideListSection').style.display = '';
+  document.getElementById('exportSection').style.display = '';
+  document.getElementById('saveRow').style.display = '';
+  document.getElementById('playBtn').disabled = false;
+  document.getElementById('prevBtn').disabled = false;
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('renderBtn').disabled = false;
+  document.getElementById('pngBtn').disabled = false;
+
+  const total = _slides.reduce((s, sl) => s + (sl.duration || 5), 0);
+  document.getElementById('totalDur').textContent = fmtTime(total);
+
+  // Reset video render panel
+  const vrBtn = document.getElementById('vidRenderBtn');
+  vrBtn.className = 'vid-render-btn idle';
+  vrBtn.textContent = '◉ Render Video';
+  document.getElementById('vidProgressWrap').style.display = 'none';
+  document.getElementById('vidDlBtn').classList.remove('visible');
+  _recBlob = null;
+  updateVidMeta();
+
+  renderProjectList();
+  setStatus('Project loaded', 'ok');
+}
+
+function vgConfirm(msg) {
+  return new Promise(resolve => {
+    const modal = document.getElementById('vg-confirm');
+    document.getElementById('vg-confirm-msg').textContent = msg;
+    modal.classList.add('open');
+    function cleanup(result) {
+      modal.classList.remove('open');
+      ok.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      modal.removeEventListener('click', onBackdrop);
+      resolve(result);
+    }
+    const ok = document.getElementById('vg-confirm-ok');
+    const cancel = document.getElementById('vg-confirm-cancel');
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    function onBackdrop(e) { if (e.target === modal) cleanup(false); }
+    ok.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+    modal.addEventListener('click', onBackdrop);
+  });
+}
+
+async function deleteProject(id) {
+  if (!await vgConfirm('Delete this project?')) return;
+  try {
+    const res = await fetch(`/api/video/projects?id=${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + (_Auth?.token() || '') },
+    });
+    if (!res.ok) throw new Error((await res.json()).error);
+    _projects = _projects.filter(p => p.id !== id);
+    if (_activeProjectId === id) _activeProjectId = null;
+    renderProjectList();
+    setStatus('Project deleted', 'ok');
+  } catch (e) {
+    setStatus('Delete failed: ' + e.message, 'err');
+  }
+}
+
+async function autoSaveProject() {
+  if (!_script) return;
+  const nameInput = document.getElementById('projNameInput');
+  const title = nameInput.value.trim() || _script.title || 'Untitled Video';
+  try {
+    const res = await fetch('/api/video/projects', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + (_Auth?.token() || ''),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        template: _template,
+        topic: document.getElementById('topicInput').value.trim(),
+        context: document.getElementById('contextInput').value.trim(),
+        format: _format,
+        script: _script,
+      }),
+    });
+    if (!res.ok) return;
+    const created = await res.json();
+    _activeProjectId = created.id;
+    created.script = _script; // keep script in local cache
+    _projects.unshift(created);
+    renderProjectList();
+  } catch { /* silent */ }
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// ── Canvas rendering ──────────────────────────────────────────────
+const ease = t => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3);
+const fade = (t, delay, dur) => ease((t - delay) / dur);
+
+function wrapText(text, x, y, maxW, lineH, align = 'center') {
+  const words = (text || '').split(' ');
+  let line = '';
+  const lines = [];
+  for (const w of words) {
+    const test = line + (line ? ' ' : '') + w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  const totalH = lines.length * lineH;
+  const startY = y - totalH / 2 + lineH / 2;
+  lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineH));
+  return lines.length * lineH;
+}
+
+function drawLogo(x, y, size, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const s = size / 16;
+  ctx.translate(x - 8 * s, y - 10 * s);
+
+  const g = ctx.createLinearGradient(0, 0, 16 * s, 16 * s);
+  g.addColorStop(0, '#e8c96a');
+  g.addColorStop(1, '#c9a84c');
+
+  ctx.strokeStyle = g;
+  ctx.lineWidth = s * 1.2;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(8*s, 1.5*s);
+  ctx.lineTo(13.5*s, 4.5*s);
+  ctx.lineTo(13.5*s, 10.5*s);
+  ctx.lineTo(8*s, 13.5*s);
+  ctx.lineTo(2.5*s, 10.5*s);
+  ctx.lineTo(2.5*s, 4.5*s);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.fillStyle = g;
+  ctx.globalAlpha = alpha * 0.92;
+  ctx.beginPath();
+  ctx.arc(8*s, 7.5*s, 2.5*s, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawBg(type, W, H) {
+  // Base fill
+  ctx.fillStyle = '#07080f';
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle dot grid
+  ctx.fillStyle = 'rgba(255,255,255,0.018)';
+  const gap = 48;
+  for (let gx = gap; gx < W; gx += gap) {
+    for (let gy = gap; gy < H; gy += gap) {
+      ctx.beginPath();
+      ctx.arc(gx, gy, 1, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Radial vignette
+  const vig = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.7);
+  if (type === 'title' || type === 'cta') {
+    vig.addColorStop(0, 'rgba(201,168,76,0.055)');
+    vig.addColorStop(0.5, 'rgba(201,168,76,0.012)');
+  } else if (type === 'problem') {
+    vig.addColorStop(0, 'rgba(248,113,113,0.04)');
+    vig.addColorStop(0.5, 'transparent');
+  } else if (type === 'solution') {
+    vig.addColorStop(0, 'rgba(74,222,128,0.04)');
+    vig.addColorStop(0.5, 'transparent');
+  } else {
+    vig.addColorStop(0, 'rgba(96,165,250,0.025)');
+    vig.addColorStop(0.5, 'transparent');
+  }
+  vig.addColorStop(1, 'rgba(0,0,0,0.3)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
+
+  // Top/bottom gradient bars
+  const topG = ctx.createLinearGradient(0, 0, 0, H * 0.12);
+  topG.addColorStop(0, 'rgba(0,0,0,0.4)');
+  topG.addColorStop(1, 'transparent');
+  ctx.fillStyle = topG;
+  ctx.fillRect(0, 0, W, H);
+
+  const botG = ctx.createLinearGradient(0, H * 0.88, 0, H);
+  botG.addColorStop(0, 'transparent');
+  botG.addColorStop(1, 'rgba(0,0,0,0.4)');
+  ctx.fillStyle = botG;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function drawSlideNum(n, total, W, H, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.4;
+  ctx.font = `500 11px 'JetBrains Mono'`;
+  ctx.fillStyle = '#c9a84c';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${n + 1} / ${total}`, W - 28, H - 20);
+  // Progress dots — clamp spacing so dots never exceed 80% canvas width
+  const maxDotW = W * 0.8;
+  const spacing = Math.min(14, maxDotW / Math.max(total, 1));
+  const dotW = (total - 1) * spacing;
+  const startX = W/2 - dotW/2;
+  for (let i = 0; i < total; i++) {
+    ctx.beginPath();
+    ctx.arc(startX + i * spacing, H - 22, i === n ? 3 : 2, 0, Math.PI*2);
+    ctx.fillStyle = i === n ? '#c9a84c' : 'rgba(201,168,76,0.3)';
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Shared feature content renderer (no bg — caller draws bg first)
+function renderFeatureContent(slide, t, W, H) {
+  const p1 = fade(t, 0, 500);
+  const p2 = fade(t, 150, 500);
+  const p3 = fade(t, 300, 500);
+  const p4 = fade(t, 450, 500);
+  const cx = W * 0.1;
+
+  // Left accent bar
+  ctx.save();
+  ctx.globalAlpha = p1;
+  const barH = H * 0.44 * p1;
+  const barGrad = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.28 + H * 0.44);
+  barGrad.addColorStop(0, '#c9a84c');
+  barGrad.addColorStop(1, 'rgba(201,168,76,0.2)');
+  ctx.fillStyle = barGrad;
+  ctx.fillRect(cx, H * 0.28, 2.5, barH);
+  ctx.restore();
+
+  // Label — styled as platform .badge-gold pill
+  if (slide.label) {
+    ctx.save();
+    ctx.globalAlpha = p1;
+    const lSize = Math.max(9, W / 100);
+    ctx.font = `700 ${lSize}px 'JetBrains Mono'`;
+    ctx.letterSpacing = '0.14em';
+    const lText = slide.label.toUpperCase();
+    const lMetrics = ctx.measureText(lText);
+    const lPadX = lSize * 0.7, lPadY = lSize * 0.45;
+    const lX = cx + 16, lY = H * 0.29;
+    const lW = lMetrics.width + lPadX * 2, lH = lSize + lPadY * 2;
+    const lR = lH / 2;
+    // Pill background (--gold-dim)
+    ctx.fillStyle = 'rgba(201,168,76,0.10)';
+    ctx.beginPath();
+    ctx.moveTo(lX + lR, lY); ctx.lineTo(lX + lW - lR, lY);
+    ctx.quadraticCurveTo(lX + lW, lY, lX + lW, lY + lR);
+    ctx.lineTo(lX + lW, lY + lH - lR);
+    ctx.quadraticCurveTo(lX + lW, lY + lH, lX + lW - lR, lY + lH);
+    ctx.lineTo(lX + lR, lY + lH);
+    ctx.quadraticCurveTo(lX, lY + lH, lX, lY + lH - lR);
+    ctx.lineTo(lX, lY + lR);
+    ctx.quadraticCurveTo(lX, lY, lX + lR, lY);
+    ctx.closePath();
+    ctx.fill();
+    // Pill border (rgba(201,168,76,.22))
+    ctx.strokeStyle = 'rgba(201,168,76,0.22)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Label text
+    ctx.fillStyle = '#c9a84c';
+    ctx.textAlign = 'left';
+    ctx.fillText(lText, lX + lPadX, lY + lH - lPadY - 1);
+    ctx.letterSpacing = '0';
+    ctx.restore();
+  }
+
+  // Icon
+  if (slide.icon) {
+    ctx.save();
+    ctx.globalAlpha = p2;
+    ctx.font = `${Math.min(W < 800 ? 36 : 48, W/18)}px sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#c9a84c';
+    ctx.fillText(slide.icon, cx + 16, H * 0.44);
+    ctx.restore();
+  }
+
+  // Headline
+  ctx.save();
+  ctx.globalAlpha = p3;
+  const hSize = Math.min(W < 800 ? 28 : 44, W/18);
+  ctx.font = `800 ${hSize}px 'Inter'`;
+  ctx.fillStyle = '#eae8f4';
+  ctx.textAlign = 'left';
+  wrapText(slide.headline, cx + 16, H * (slide.icon ? 0.56 : 0.50), W * 0.82 - cx, hSize * 1.2);
+  ctx.restore();
+
+  // Body
+  if (slide.body) {
+    ctx.save();
+    ctx.globalAlpha = p4;
+    const bSize = Math.min(W < 800 ? 14 : 18, W/55);
+    ctx.font = `400 ${bSize}px 'Inter'`;
+    ctx.fillStyle = '#9490aa';
+    ctx.textAlign = 'left';
+    wrapText(slide.body, cx + 16, H * 0.70, W * 0.82 - cx, bSize * 1.75);
+    ctx.restore();
+  }
+
+  const slideIdx = _slides.indexOf(slide);
+  drawSlideNum(slideIdx, _slides.length, W, H, p4);
+}
+
+const RENDERS = {
+  title(slide, t, W, H) {
+    drawBg('title', W, H);
+    const p1 = fade(t, 0, 700);
+    const p2 = fade(t, 200, 600);
+    const p3 = fade(t, 450, 600);
+    const p4 = fade(t, 700, 500);
+
+    // Logo
+    drawLogo(W/2, H * 0.3, W < 800 ? 36 : 44, p1);
+
+    // Brand name
+    ctx.save();
+    ctx.globalAlpha = p1;
+    ctx.font = `600 ${Math.max(9, W/110)}px 'JetBrains Mono'`;
+    ctx.fillStyle = '#c9a84c';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '0.35em';
+    ctx.fillText('PROJECT  SOVEREIGN', W/2, H * 0.3 + (W < 800 ? 30 : 38));
+    ctx.restore();
+
+    // Headline
+    ctx.save();
+    ctx.globalAlpha = p2;
+    ctx.textAlign = 'center';
+    const hSize = Math.min(W < 800 ? 40 : 62, W / 13);
+    const hGrad = ctx.createLinearGradient(W/2 - W*0.3, 0, W/2 + W*0.3, 0);
+    hGrad.addColorStop(0, '#ffffff');
+    hGrad.addColorStop(0.55, '#e8c96a');
+    hGrad.addColorStop(1, '#c9a84c');
+    ctx.fillStyle = hGrad;
+    ctx.font = `800 ${hSize}px 'Inter'`;
+    ctx.translate(0, p2 * 0 - (1 - p2) * 20);
+    wrapText(slide.headline, W/2, H * 0.52, W * 0.78, hSize * 1.2);
+    ctx.restore();
+
+    // Subtitle
+    if (slide.subtitle) {
+      ctx.save();
+      ctx.globalAlpha = p3;
+      ctx.font = `400 ${Math.min(W < 800 ? 15 : 19, W/52)}px 'Inter'`;
+      ctx.fillStyle = '#9490aa';
+      ctx.textAlign = 'center';
+      wrapText(slide.subtitle, W/2, H * 0.67, W * 0.65, Math.min(19, W/52) * 1.6);
+      ctx.restore();
+    }
+
+    // Rule — gold gradient matching platform gold tokens
+    ctx.save();
+    ctx.globalAlpha = p4;
+    const rg = ctx.createLinearGradient(W/2 - 50, 0, W/2 + 50, 0);
+    rg.addColorStop(0, 'rgba(201,168,76,0.3)');
+    rg.addColorStop(0.5, '#e8c96a');
+    rg.addColorStop(1, 'rgba(201,168,76,0.3)');
+    ctx.strokeStyle = rg;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 50 * p4, H * 0.77);
+    ctx.lineTo(W/2 + 50 * p4, H * 0.77);
+    ctx.stroke();
+    ctx.restore();
+
+    drawSlideNum(0, _slides.length, W, H, p4);
+  },
+
+  feature(slide, t, W, H) {
+    drawBg('feature', W, H);
+    renderFeatureContent(slide, t, W, H);
+  },
+
+  problem(slide, t, W, H) {
+    drawBg('problem', W, H);
+    renderFeatureContent({ ...slide, label: slide.label || 'THE PROBLEM' }, t, W, H);
+  },
+
+  solution(slide, t, W, H) {
+    drawBg('solution', W, H);
+    renderFeatureContent({ ...slide, label: slide.label || 'SOLUTION' }, t, W, H);
+  },
+
+  stats(slide, t, W, H) {
+    drawBg('stats', W, H);
+    const p1 = fade(t, 0, 600);
+
+    // Headline
+    ctx.save();
+    ctx.globalAlpha = p1;
+    ctx.font = `700 ${Math.min(W < 800 ? 22 : 30, W/30)}px 'Inter'`;
+    ctx.fillStyle = '#eae8f4';
+    ctx.textAlign = 'center';
+    wrapText(slide.headline || '', W/2, H * 0.22, W * 0.8, Math.min(30, W/30) * 1.3);
+    ctx.restore();
+
+    const stats = slide.stats || [];
+    const n = Math.min(stats.length, 4);
+    if (!n) return;
+
+    const colW = W / (n + 0.6);
+    const startX = W/2 - colW * (n - 1) / 2;
+
+    stats.slice(0, n).forEach((stat, i) => {
+      const delay = 300 + i * 180;
+      const p = fade(t, delay, 600);
+
+      const x = startX + i * colW;
+      const cardW = Math.min(colW * 0.82, 260);
+      const cardH = H * 0.42;
+      const cardY = H * 0.32;
+
+      ctx.save();
+      ctx.globalAlpha = p;
+
+      // Card — matches platform .card: bg=#141828, border=rgba(255,255,255,0.11) + gold accent
+      const r = 12, cx2 = x - cardW/2, cy2 = cardY;
+      ctx.fillStyle = '#141828';
+      ctx.lineWidth = 1;
+      const cardPath = () => {
+        ctx.beginPath();
+        ctx.moveTo(cx2+r, cy2); ctx.lineTo(cx2+cardW-r, cy2);
+        ctx.quadraticCurveTo(cx2+cardW, cy2, cx2+cardW, cy2+r);
+        ctx.lineTo(cx2+cardW, cy2+cardH-r);
+        ctx.quadraticCurveTo(cx2+cardW, cy2+cardH, cx2+cardW-r, cy2+cardH);
+        ctx.lineTo(cx2+r, cy2+cardH);
+        ctx.quadraticCurveTo(cx2, cy2+cardH, cx2, cy2+cardH-r);
+        ctx.lineTo(cx2, cy2+r);
+        ctx.quadraticCurveTo(cx2, cy2, cx2+r, cy2);
+        ctx.closePath();
+      };
+      cardPath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.11)'; cardPath(); ctx.stroke();
+      ctx.strokeStyle = `rgba(201,168,76,${0.18 * p})`; cardPath(); ctx.stroke();
+
+      // Animated value
+      const raw = stat.value || '';
+      const numeric = parseFloat(raw.replace(/[^0-9.]/g, ''));
+      const suffix = raw.replace(/[0-9.]/g, '');
+      const prefix = raw.match(/^[^0-9]*/)?.[0] || '';
+      let display;
+      if (isNaN(numeric)) {
+        display = raw;
+      } else {
+        const animated = numeric * p;
+        const decimals = raw.includes('.') ? 1 : 0;
+        display = prefix + animated.toFixed(decimals) + suffix;
+      }
+
+      // Stat value — matches platform .stat-v: JetBrains Mono 700
+      const vSize = Math.min(W < 800 ? 38 : 52, cardW * 0.55);
+      ctx.font = `700 ${vSize}px 'JetBrains Mono'`;
+      const vg = ctx.createLinearGradient(x-50, 0, x+50, 0);
+      vg.addColorStop(0, '#e8c96a');
+      vg.addColorStop(1, '#c9a84c');
+      ctx.fillStyle = vg;
+      ctx.textAlign = 'center';
+      ctx.fillText(display, x, cardY + cardH * 0.52);
+
+      // Stat label — matches platform .label: gold, 700, uppercase, letter-spacing
+      const lbSize = Math.min(W < 800 ? 9 : 11, W / 90);
+      ctx.font = `700 ${lbSize}px 'JetBrains Mono'`;
+      ctx.letterSpacing = '0.14em';
+      ctx.fillStyle = '#c9a84c';
+      ctx.fillText((stat.label || '').toUpperCase(), x, cardY + cardH * 0.78);
+      ctx.letterSpacing = '0';
+
+      ctx.restore();
+    });
+
+    const slideIdx = _slides.indexOf(slide);
+    drawSlideNum(slideIdx, _slides.length, W, H, p1);
+  },
+
+  quote(slide, t, W, H) {
+    drawBg('feature', W, H);
+    const p1 = fade(t, 0, 700);
+    const p2 = fade(t, 300, 600);
+    const p3 = fade(t, 600, 500);
+
+    // Large quote mark
+    ctx.save();
+    ctx.globalAlpha = p1 * 0.18;
+    ctx.font = `800 ${W * 0.16}px 'Inter'`;
+    ctx.fillStyle = '#c9a84c';
+    ctx.textAlign = 'left';
+    ctx.fillText('\u201C', W * 0.08, H * 0.45);
+    ctx.restore();
+
+    // Quote text
+    ctx.save();
+    ctx.globalAlpha = p2;
+    const qSize = Math.min(W < 800 ? 20 : 28, W/32);
+    ctx.font = `400 ${qSize}px 'Inter'`;
+    ctx.fillStyle = '#eae8f4';
+    ctx.textAlign = 'center';
+    wrapText(slide.headline, W/2, H * 0.46, W * 0.72, qSize * 1.65);
+    ctx.restore();
+
+    if (slide.subtitle) {
+      ctx.save();
+      ctx.globalAlpha = p3;
+      ctx.font = `600 ${Math.min(14, W/70)}px 'Inter'`;
+      ctx.fillStyle = '#c9a84c';
+      ctx.textAlign = 'center';
+      ctx.fillText('— ' + slide.subtitle, W/2, H * 0.70);
+      ctx.restore();
+    }
+
+    const slideIdx = _slides.indexOf(slide);
+    drawSlideNum(slideIdx, _slides.length, W, H, p3);
+  },
+
+  cta(slide, t, W, H) {
+    drawBg('cta', W, H);
+
+    // Pulsing glow
+    const pulse = 0.5 + 0.5 * Math.sin(t / 900);
+    const glow = ctx.createRadialGradient(W/2, H * 0.45, 0, W/2, H * 0.45, W * 0.55);
+    glow.addColorStop(0, `rgba(201,168,76,${0.07 + 0.04 * pulse})`);
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    const p1 = fade(t, 0, 700);
+    const p2 = fade(t, 200, 600);
+    const p3 = fade(t, 450, 600);
+    const p4 = fade(t, 700, 500);
+
+    // Logo
+    drawLogo(W/2, H * 0.28, W < 800 ? 36 : 44, p1);
+
+    // Brand
+    ctx.save();
+    ctx.globalAlpha = p1;
+    ctx.font = `600 ${Math.max(9, W/110)}px 'JetBrains Mono'`;
+    ctx.fillStyle = '#c9a84c';
+    ctx.textAlign = 'center';
+    ctx.fillText('PROJECT  SOVEREIGN', W/2, H * 0.28 + (W < 800 ? 30 : 38));
+    ctx.restore();
+
+    // Headline
+    ctx.save();
+    ctx.globalAlpha = p2;
+    const hSize = Math.min(W < 800 ? 36 : 52, W/14);
+    const hg = ctx.createLinearGradient(W/2-W*0.3, 0, W/2+W*0.3, 0);
+    hg.addColorStop(0, '#fff');
+    hg.addColorStop(1, '#c9a84c');
+    ctx.fillStyle = hg;
+    ctx.font = `800 ${hSize}px 'Inter'`;
+    ctx.textAlign = 'center';
+    wrapText(slide.headline, W/2, H * 0.52, W * 0.68, hSize * 1.25);
+    ctx.restore();
+
+    if (slide.subtitle) {
+      ctx.save();
+      ctx.globalAlpha = p3;
+      ctx.font = `400 ${Math.min(W < 800 ? 14 : 18, W/55)}px 'Inter'`;
+      ctx.fillStyle = '#9490aa';
+      ctx.textAlign = 'center';
+      wrapText(slide.subtitle, W/2, H * 0.67, W * 0.6, Math.min(18, W/55) * 1.6);
+      ctx.restore();
+    }
+
+    if (slide.url) {
+      ctx.save();
+      ctx.globalAlpha = p4;
+      ctx.font = `600 ${Math.min(W < 800 ? 14 : 18, W/55)}px 'JetBrains Mono'`;
+      ctx.fillStyle = '#c9a84c';
+      ctx.textAlign = 'center';
+      ctx.fillText(slide.url, W/2, H * 0.79);
+      ctx.restore();
+    }
+
+    drawSlideNum(_slides.length - 1, _slides.length, W, H, p4);
+  },
+};
+
+function renderSlide(i, t) {
+  if (!_slides.length) return;
+  const slide = _slides[i];
+  const W = canvas.width;
+  const H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Clip all drawing to canvas bounds — prevents any content overflowing the frame
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, W, H);
+  ctx.clip();
+
+  const type = slide.type || 'feature';
+  const renderer = RENDERS[type] || RENDERS.feature;
+  renderer(slide, t, W, H);
+
+  ctx.restore();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('statusBadge');
+  el.textContent = msg;
+  el.className = 'status-badge' + (type ? ' ' + type : '');
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+window.addEventListener('auth:admin', async function() {
+  await loadFonts();
+  await loadProjects();
+});
+</script>
+
+<!-- Confirm modal -->
+<div id="vg-confirm">
+  <div class="vg-confirm-box">
+    <div class="vg-confirm-msg" id="vg-confirm-msg">Are you sure?</div>
+    <div class="vg-confirm-btns">
+      <button class="vg-confirm-cancel" id="vg-confirm-cancel">Cancel</button>
+      <button class="vg-confirm-ok" id="vg-confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

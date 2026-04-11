@@ -58,9 +58,31 @@
 /* Trial status bar */
 #trial-status-bar { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 32px; font-size: 13px; }
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 
 <div class="upgrade-wrap">
   <div style="text-align:center;margin-bottom:8px">
@@ -275,6 +297,21 @@ async function selectPlan(plan, btn) {
     return;
   }
   if(btn) { btn.textContent = 'Redirecting…'; btn.disabled = true; }
+  // Fire InitiateCheckout via CAPI relay for better audience matching
+  try {
+    fetch('/api/meta-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: 'InitiateCheckout',
+        event_id: 'ic_' + Date.now(),
+        user_data: window.Auth?.user?.email ? { email: window.Auth.user.email } : {},
+        custom_data: { content_name: plan, currency: 'GBP' },
+        event_source_url: location.href,
+      }),
+    }).catch(() => {});
+    if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', { content_name: plan, currency: 'GBP' });
+  } catch(_) {}
   try {
     var r = await fetch('/api/stripe/checkout', {
       method: 'POST',
@@ -327,16 +364,45 @@ window.addEventListener('auth:ready', async function(e) {
       txt.style.color = 'var(--teal)';
       bar.style.display = 'flex';
       ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Change Plan'; } });
+      // Highlight the current plan card
+      var planCards = document.querySelectorAll('.plan-card');
+      var planNames = ['prospector','dealmaker','team','fund'];
+      planCards.forEach(function(card, i){
+        card.classList.remove('featured');
+        var badge = card.querySelector('.plan-popular');
+        if(badge && badge.textContent !== 'Current Plan') badge.remove();
+        if(planNames[i] === d.plan){
+          card.classList.add('featured');
+          if(!card.querySelector('.plan-popular')){
+            var b = document.createElement('div');
+            b.className = 'plan-popular';
+            b.textContent = 'Current Plan';
+            card.insertBefore(b, card.firstChild);
+          } else {
+            card.querySelector('.plan-popular').textContent = 'Current Plan';
+          }
+        }
+      });
     } else if(d.subscription_status === 'trialing' || d.subscription_status === 'trial') {
       if(d.trial_expired) {
         txt.textContent = 'Your trial has expired. Subscribe now to restore full access.';
-        txt.style.color = 'var(--red, #dc3545)';
+        txt.style.color = 'var(--red)';
         ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Subscribe Now'; } });
       } else {
         txt.textContent = (d.trial_days_left || 0) + ' day' + (d.trial_days_left === 1 ? '' : 's') + ' left on your free trial — subscribe to keep access.';
         ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Subscribe — ' + (d.trial_days_left || 0) + ' days free'; } });
       }
       bar.style.display = 'flex';
+    } else if(d.subscription_status === 'cancelled') {
+      txt.textContent = 'Your subscription was cancelled. Reactivate to restore full access.';
+      txt.style.color = 'var(--red)';
+      bar.style.display = 'flex';
+      ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Reactivate Plan'; } });
+    } else if(d.subscription_status === 'past_due') {
+      txt.textContent = 'Payment overdue — update your payment method to keep access.';
+      txt.style.color = 'var(--red)';
+      bar.style.display = 'flex';
+      ctaBtns.forEach(function(b){ if(b.getAttribute('onclick') !== "selectPlan('fund', this)") { b.textContent = 'Update Payment'; } });
     }
   } catch(_) {}
 });

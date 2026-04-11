@@ -74,6 +74,28 @@
 .doc-preview h3{color:var(--text);font-size:14px;margin:16px 0 6px}
 .doc-preview strong{color:var(--teal)}
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
 <div style="height:56px"></div>
@@ -86,6 +108,7 @@
     <div class="page-hdr-r">
       <span class="badge badge-gold">🔒 Encrypted</span>
       <button class="btn btn-primary btn-sm" onclick="showUpload()">+ Upload</button>
+      <input type="file" id="vaultFileInput" accept=".txt,.md,.json,.csv,.html,.js,.ts,.sql" style="display:none">
     </div>
   </div>
 
@@ -180,7 +203,7 @@
 
 
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 var CATS=['All','Templates','NDAs','SPAs / HOTs','IP Register','Financial Models','Playbooks','Correspondence'];
 var DOCS=[
@@ -384,7 +407,7 @@ function openDoc(id){
   document.getElementById('docModal').style.display='flex';
 }
 function closeDoc(e){if(e.target===document.getElementById('docModal'))document.getElementById('docModal').style.display='none';}
-function copyDoc(){if(currentDoc){navigator.clipboard.writeText(currentDoc.content);alert('Copied to clipboard');}}
+function copyDoc(){if(currentDoc){navigator.clipboard.writeText(currentDoc.content);Toast.show('Copied to clipboard','ok',2000);}}
 async function genTemplate(name){
   if(!window.Auth || !Auth.user){
     Toast.show('Sign in to generate AI templates','warn');
@@ -413,7 +436,36 @@ async function genTemplate(name){
     document.getElementById('docContent').textContent = 'Generation failed. Check your connection and try again.';
   }
 }
-function showUpload(){alert('In production, connect to your preferred storage: Google Drive, Notion, or self-hosted S3.\n\nFor now, documents are managed via the templates system.');}
+function showUpload(){document.getElementById('vaultFileInput').click();}
+document.getElementById('vaultFileInput').addEventListener('change',async function(e){
+  var file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  var maxMB=5;
+  if(file.size>maxMB*1024*1024){Toast.show('File too large — max '+maxMB+'MB','err');return;}
+  var allowed=['text/plain','text/markdown','application/json','text/html','text/css','application/javascript','text/csv'];
+  var name=file.name;
+  var ext=name.split('.').pop().toLowerCase();
+  var isText=allowed.includes(file.type)||['txt','md','json','csv','html','js','ts','sql'].includes(ext);
+  if(!isText){Toast.show('Unsupported file type — upload .txt, .md, .json, .csv or similar text files','err',4000);return;}
+  Toast.show('Uploading '+name+'…','ok',2000);
+  try{
+    var content=await file.text();
+    var cat=document.getElementById('uploadCatSel')?.value||'Uploads';
+    var res=await API.docs.save({name:name,category:cat,content:content,status:'uploaded',file_size:file.size});
+    if(res&&res.data){
+      var d=res.data;
+      var newDoc={
+        id:d.id,cat:d.category||'Uploads',icon:'📄',name:d.name,
+        meta:'uploaded · '+new Date(d.created_at||Date.now()).toLocaleDateString('en-GB'),
+        size:Math.round(file.size/1024)+'KB',tag:'uploaded',tagC:'badge-ghost',
+        color:'#60a5fa',content:content
+      };
+      DOCS.unshift(newDoc);
+      renderDocs();
+      Toast.show(name+' uploaded and saved','ok');
+    }
+  }catch(err){Toast.show('Upload failed — '+err.message,'err');}
+});
 
 // ── Load docs from Supabase on auth ──
 window.addEventListener('auth:ready', async function(e) {

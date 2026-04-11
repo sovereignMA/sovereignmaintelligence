@@ -71,7 +71,36 @@
 .flow-arrow{color:var(--text3);font-size:18px;padding:0 4px;flex-shrink:0}
 @media(max-width:900px){.res-layout{grid-template-columns:1fr}.res-toc{display:none}}
 @media(max-width:480px){.res-wrap{padding:16px}.res-hero{padding:36px 16px 32px}}
+/* Feature screenshots */
+.res-ss{margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border2);background:var(--surface)}
+.res-ss-bar{background:rgba(255,255,255,.04);padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.res-ss-dot{width:10px;height:10px;border-radius:50%}
+.res-ss-addr{flex:1;background:rgba(255,255,255,.06);border-radius:5px;padding:3px 10px;font-family:var(--mono);font-size:11px;color:var(--text3)}
+.res-ss img{width:100%;display:block;max-height:380px;object-fit:cover;object-position:top}
+.res-ss-label{padding:8px 14px;font-size:12px;color:var(--text3);font-family:var(--mono)}
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Reddit Pixel -->
+<script>
+!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=a2_itp5sg1ycosw",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt("init","a2_itp5sg1ycosw");rdt("track","PageVisit");
+</script>
+<!-- End Reddit Pixel -->
 </head>
 <body>
 <div class="res-wrap">
@@ -118,6 +147,11 @@
       <section class="res-section" id="quickstart">
         <div class="res-h2"><span class="ico">🚀</span>Quick Start</div>
         <p class="res-p">Get from zero to your first AI-assisted deal brief in under 5 minutes.</p>
+        <div class="res-ss">
+          <div class="res-ss-bar"><div class="res-ss-dot" style="background:#ff5f57"></div><div class="res-ss-dot" style="background:#febc2e"></div><div class="res-ss-dot" style="background:#28c840"></div><div class="res-ss-addr">sovereigncmd.xyz/command</div></div>
+          <img src="/img/screenshots/command.png" alt="AI Command Centre — 21-agent deal team" loading="lazy">
+          <div class="res-ss-label">AI Command Centre — chat with your 21 specialist agents</div>
+        </div>
         <div class="steps">
           <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Sign in at <code style="color:var(--gold);font-size:12px">/login</code></div><div class="step-desc">Use Google (recommended — enables Gmail integration) or email/password. Your account is automatically provisioned with a secure profile and access to all 21 agents.</div></div></div>
           <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Go to Command <code style="color:var(--gold);font-size:12px">/command</code></div><div class="step-desc">Select your first agent from the sidebar. Start with <strong style="color:var(--text)">S1 Silas Vane</strong> (CIO / Sourcing) for deal sourcing, or <strong style="color:var(--text)">S3 Bastian Cole</strong> (Auditor) for due diligence analysis.</div></div></div>
@@ -235,6 +269,11 @@
           <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">Brief your agents</div><div class="step-desc">In /command, select relevant agents and brief them with the deal context. Agents can access deal data and provide stage-specific analysis.</div></div></div>
         </div>
 
+        <div class="res-ss">
+          <div class="res-ss-bar"><div class="res-ss-dot" style="background:#ff5f57"></div><div class="res-ss-dot" style="background:#febc2e"></div><div class="res-ss-dot" style="background:#28c840"></div><div class="res-ss-addr">sovereigncmd.xyz/pipeline</div></div>
+          <img src="/img/screenshots/pipeline.png" alt="Deal Pipeline — Kanban board" loading="lazy">
+          <div class="res-ss-label">Deal Pipeline — 8-stage kanban with AI scoring</div>
+        </div>
         <div id="stages"></div>
         <div style="font-size:15px;font-weight:600;margin:20px 0 10px">Deal Stages</div>
         <div style="display:flex;flex-direction:column;gap:6px">
@@ -260,6 +299,11 @@
       <section class="res-section" id="intelligence">
         <div class="res-h2"><span class="ico">◎</span>Company Intelligence</div>
         <p class="res-p">The scraper runs automatically for deals in active stages (LOI, DD, SPA) every Monday via the <code style="color:var(--gold)">intel_refresh</code> cron job. You can also run manual scrapes from Admin → Scraper at any time.</p>
+        <div class="res-ss">
+          <div class="res-ss-bar"><div class="res-ss-dot" style="background:#ff5f57"></div><div class="res-ss-dot" style="background:#febc2e"></div><div class="res-ss-dot" style="background:#28c840"></div><div class="res-ss-addr">sovereigncmd.xyz/intelligence</div></div>
+          <img src="/img/screenshots/intelligence.png" alt="Company Intelligence — deep-dive reports" loading="lazy">
+          <div class="res-ss-label">Company Intelligence — market charts, sector multiples, AI acquisition scoring</div>
+        </div>
         <div class="tip warn-tip"><span class="tip-icon">⚠</span><div>Add your <code style="color:var(--amber)">COMPANIES_HOUSE_API_KEY</code> to Supabase Edge Function Secrets to unlock full Companies House director, filing, and address data. Free REST key from developer.company-information.service.gov.uk.</div></div>
         <div style="font-size:13px;color:var(--text2);line-height:1.9">
           S2 Kira Nyx collects: <strong style="color:var(--text)">Companies House</strong> (registration, directors, SIC, filings, addresses) · <strong style="color:var(--text)">Web scrape</strong> (emails, tech stack, description) · <strong style="color:var(--text)">Google News</strong> (last 8 mentions) · <strong style="color:var(--text)">AI summary</strong> (acquisition score 0–100, risk/opportunity synopsis via Claude Haiku).
@@ -270,6 +314,11 @@
       <section class="res-section" id="comms">
         <div class="res-h2"><span class="ico">✉</span>Communications</div>
         <p class="res-p">The Comms page connects your Gmail account (via Google OAuth) and lets Mila Quinn (S12) draft outreach emails in your voice.</p>
+        <div class="res-ss">
+          <div class="res-ss-bar"><div class="res-ss-dot" style="background:#ff5f57"></div><div class="res-ss-dot" style="background:#febc2e"></div><div class="res-ss-dot" style="background:#28c840"></div><div class="res-ss-addr">sovereigncmd.xyz/comms</div></div>
+          <img src="/img/screenshots/comms.png" alt="Comms Hub — deal team messaging" loading="lazy">
+          <div class="res-ss-label">Comms Hub — Gmail threads, AI-drafted outreach, deal team messaging</div>
+        </div>
         <div class="steps">
           <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Sign in with Google OAuth</div><div class="step-desc">Use "Continue with Google" on the login page. This grants Gmail read/write scope which enables live email threads in /comms.</div></div></div>
           <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Select a contact and brief Mila Quinn</div><div class="step-desc">In /command, select S12 Mila Quinn and describe the outreach context. She drafts a warm, non-pressured email in your voice. Review, edit, and send directly from /comms.</div></div></div>
@@ -282,6 +331,11 @@
       <section class="res-section" id="workflows">
         <div class="res-h2"><span class="ico">⟳</span>Workflows & Automation</div>
         <p class="res-p">Workflows are multi-step automation sequences that agents execute automatically. View and manage them in <a href="admin.html#s-workflows" style="color:var(--gold)">Admin → Workflows</a>.</p>
+        <div class="res-ss">
+          <div class="res-ss-bar"><div class="res-ss-dot" style="background:#ff5f57"></div><div class="res-ss-dot" style="background:#febc2e"></div><div class="res-ss-dot" style="background:#28c840"></div><div class="res-ss-addr">sovereigncmd.xyz/agents</div></div>
+          <img src="/img/screenshots/agents.png" alt="Agents — autonomous task board" loading="lazy">
+          <div class="res-ss-label">Agents board — autonomous task execution, status tracking, deal-linked actions</div>
+        </div>
 
         <div style="font-size:13px;font-weight:600;margin-bottom:10px">How workflows execute:</div>
         <div class="flow">
@@ -318,6 +372,11 @@
       <section class="res-section" id="admin">
         <div class="res-h2"><span class="ico">⚙</span>Admin Dashboard</div>
         <p class="res-p">The admin dashboard at <a href="admin.html" style="color:var(--gold)">/admin</a> gives you full visibility of the system. Access requires your user to be in the <code style="color:var(--gold)">admin_users</code> table (set by Howard directly in Supabase).</p>
+        <div class="res-ss">
+          <div class="res-ss-bar"><div class="res-ss-dot" style="background:#ff5f57"></div><div class="res-ss-dot" style="background:#febc2e"></div><div class="res-ss-dot" style="background:#28c840"></div><div class="res-ss-addr">sovereigncmd.xyz/analytics</div></div>
+          <img src="/img/screenshots/analytics.png" alt="Deal Analytics — conversion, velocity, trends" loading="lazy">
+          <div class="res-ss-label">Analytics — deal conversion, pipeline velocity, AI-enhanced event tracking</div>
+        </div>
         <div class="g2" style="gap:12px">
           ${[
             {sec:'Overview',desc:'Live metrics: deals, contacts, AI conversations, page views, comms counts. Pipeline stage breakdown and recent audit events.'},
@@ -402,7 +461,7 @@
   </div><!-- /res-layout -->
 </div><!-- /res-wrap -->
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 // Highlight active TOC link on scroll
 const sections = document.querySelectorAll('.res-section');
