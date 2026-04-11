@@ -181,6 +181,23 @@
 .handoff-btn { background:var(--surface2);border:1px solid;border-radius:var(--radius);padding:5px 10px;font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s;font-weight:500; }
 .handoff-btn:hover { background:var(--gold-dim);border-color:rgba(201,168,76,.4)!important;color:var(--gold)!important; }
 </style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1943804979837382');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
 <div id="nav-placeholder"></div>
@@ -275,7 +292,7 @@
 
 
 
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 <script>
 var AGENTS=[
   {seat:"S1", name:"Silas Vane",       role:"CIO — Forensic Sourcing",           c:"#2dd4bf",bg:"rgba(45,212,191,.15)"},
@@ -701,7 +718,7 @@ async function doSend(override){
   if(!text||streaming)return;
   if(!Auth.user){
     Toast.show('Please sign in to use the command engine','warn',5000);
-    setTimeout(function(){window.location.href='login.html';},2000);
+    setTimeout(function(){window.location.href='/login';},2000);
     return;
   }
   inp.value=''; inp.style.height='auto';
@@ -756,6 +773,20 @@ window.addEventListener('auth:ready', function(e){
     // Handle Stripe checkout return
     if(new URLSearchParams(location.search).get('checkout') === 'success'){
       Toast.show('Subscription activated — welcome aboard!','ok',5000);
+      (function(){
+        var p = new URLSearchParams(location.search);
+        var plan = p.get('plan') || '', billing = p.get('billing') || 'monthly', sid = p.get('sid') || '';
+        var vals = { prospector:{monthly:99,annual:79}, dealmaker:{monthly:299,annual:239}, team:{monthly:799,annual:639}, fund:{monthly:2500,annual:2000} };
+        var value = (vals[plan] && vals[plan][billing]) || 0;
+        if(typeof gtag === 'function') {
+          gtag('event', 'purchase', {
+            transaction_id: sid,
+            value: value,
+            currency: 'GBP',
+            items: [{ item_id: plan+'_'+billing, item_name: 'Sovereign '+plan.charAt(0).toUpperCase()+plan.slice(1)+' ('+billing+')', price: value, quantity: 1 }]
+          });
+        }
+      })();
       history.replaceState(null,'',location.pathname);
     }
   }

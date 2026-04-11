@@ -5,6 +5,7 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { setCORS } from '../lib/cors-auth.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
@@ -15,19 +16,9 @@ const PRICE_IDS = {
   fund:       { monthly: process.env.STRIPE_PRICE_FUND_MONTHLY,       annual: process.env.STRIPE_PRICE_FUND_ANNUAL       },
 };
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
 export default async function handler(req, res) {
-  // CORS preflight
-  if (req.method === 'OPTIONS') {
-    Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
-    return res.status(200).end();
-  }
-  Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
+  if (req.method === 'OPTIONS') { setCORS(req, res); return res.status(200).end(); }
+  setCORS(req, res);
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -39,7 +30,20 @@ export default async function handler(req, res) {
   const { data: { user }, error: authErr } = await sb.auth.getUser(token);
   if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { plan = 'solo', billing = 'monthly' } = req.body || {};
+  // Rate limit: max 10 checkout attempts per user per 5 minutes
+  const windowStart = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { count } = await sb.from('analytics_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('event_name', 'checkout_attempt')
+    .gt('created_at', windowStart);
+  if ((count || 0) >= 10) {
+    return res.status(429).json({ error: 'Too many requests. Please wait a few minutes.' });
+  }
+  // Log attempt (fire-and-forget)
+  sb.from('analytics_events').insert({ user_id: user.id, event_name: 'checkout_attempt', event_cat: 'billing' }).then(() => {});
+
+  const { plan = 'prospector', billing = 'monthly' } = req.body || {};
 
   // Validate inputs
   if (!PRICE_IDS[plan]) return res.status(400).json({ error: `Unknown plan: ${plan}` });
@@ -61,7 +65,6 @@ export default async function handler(req, res) {
         metadata: { supabase_user_id: user.id },
       });
       customerId = customer.id;
-      // Store customer ID immediately
       const { error: upsertErr } = await sb.from('user_profiles').upsert({ id: user.id, stripe_customer_id: customerId });
       if (upsertErr) console.error('[stripe/checkout] Failed to store customer ID:', upsertErr.message);
     }
@@ -71,7 +74,7 @@ export default async function handler(req, res) {
     // Compute trial days: sync with existing DB trial + any referral credits
     let trialDays = 0;
     if (profile?.trial_ends_at) {
-      const daysLeft = Math.ceil((new Date(profile.trial_ends_at) - new Date()) / 86400000);
+      const daysLeft = Math.floor((new Date(profile.trial_ends_at) - new Date()) / 86400000);
       if (daysLeft > 0) trialDays = daysLeft;
     }
     // Add referral credits on top, cap at 90
@@ -85,7 +88,7 @@ export default async function handler(req, res) {
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/command?checkout=success`,
+      success_url: `${appUrl}/command?checkout=success&plan=${plan}&billing=${billing}&sid={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/upgrade`,
       allow_promotion_codes: true,
       payment_method_collection: trialDays > 0 ? 'if_required' : 'always',
