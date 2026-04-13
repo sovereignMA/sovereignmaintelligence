@@ -5,27 +5,10 @@
 // Safe to run repeatedly: only updates rows where DB and Stripe disagree.
 
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+import { sbAdmin } from '../lib/cors-auth.js';
+import { PLAN_MAP, STATUS_MAP } from '../lib/stripe-constants.js';
 
 export const config = { maxDuration: 60 };
-
-const STATUS_MAP = {
-  active: 'active',
-  trialing: 'trialing',
-  past_due: 'past_due',
-  canceled: 'cancelled',
-  cancelled: 'cancelled',
-  unpaid: 'past_due',
-  incomplete: 'past_due',
-  incomplete_expired: 'cancelled',
-  paused: 'paused',
-};
-
-const PLAN_MAP = {
-  prospector: 'prospector', dealmaker: 'dealmaker',
-  team: 'team', fund: 'fund',
-  solo: 'prospector', enterprise: 'fund',
-};
 
 export default async function handler(req, res) {
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -33,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
-  const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const sb = sbAdmin();
 
   let synced = 0;
   let checked = 0;

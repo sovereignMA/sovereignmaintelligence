@@ -53,7 +53,7 @@ export default async function handler(req, res) {
   try {
     // Get or create Stripe customer
     const { data: profile } = await sb.from('user_profiles')
-      .select('stripe_customer_id, full_name, referral_credits')
+      .select('stripe_customer_id, full_name, referral_credits, trial_ends_at')
       .eq('id', user.id).single();
 
     let customerId = profile?.stripe_customer_id;
@@ -97,8 +97,6 @@ export default async function handler(req, res) {
         metadata: { supabase_user_id: user.id, plan, billing },
         ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
       },
-      customer_update: { address: 'auto' },
-      automatic_tax: { enabled: true },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);

@@ -5,14 +5,13 @@
 // PATCH { id, title?, script? }                              → update
 // DELETE ?id=<uuid>                                          → delete
 
-import { createClient } from '@supabase/supabase-js';
-import { setCORS, requireAdmin } from '../lib/cors-auth.js';
+import { setCORS, requireAdmin, sbAdmin } from '../lib/cors-auth.js';
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') { setCORS(req, res, 'GET, POST, PATCH, DELETE, OPTIONS'); return res.status(200).end(); }
   setCORS(req, res, 'GET, POST, PATCH, DELETE, OPTIONS');
 
-  const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const sb = sbAdmin();
   const user = await requireAdmin(req, sb);
   if (!user) return res.status(401).json({ error: 'Admin only' });
 

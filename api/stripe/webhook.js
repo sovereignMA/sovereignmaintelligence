@@ -9,35 +9,13 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '../lib/send-email.js';
 import { sendMetaEvent } from '../lib/meta-capi.js';
+import { PLAN_MAP, STATUS_MAP } from '../lib/stripe-constants.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
 // Stripe requires raw body for signature verification
 export const config = { api: { bodyParser: false } };
 
-// Map Stripe plan metadata to our plan names
-const PLAN_MAP = {
-  prospector: 'prospector',
-  dealmaker:  'dealmaker',
-  team:       'team',
-  fund:       'fund',
-  // legacy
-  solo:       'prospector',
-  enterprise: 'fund',
-};
-
-// Map Stripe subscription status to our status
-const STATUS_MAP = {
-  active: 'active',
-  trialing: 'trialing',
-  past_due: 'past_due',
-  canceled: 'cancelled',
-  cancelled: 'cancelled',
-  unpaid: 'past_due',
-  incomplete: 'past_due',
-  incomplete_expired: 'cancelled',
-  paused: 'paused',
-};
 
 async function getRawBody(req) {
   return new Promise((resolve, reject) => {
