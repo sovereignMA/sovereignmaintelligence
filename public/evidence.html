@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Evidence Hub — Project Sovereign</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/app.css?v=41">
+<style>
+.page-content{max-width:1200px;margin:0 auto;padding:24px}
+.ev-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+.ev-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:700px){.ev-summary{grid-template-columns:1fr 1fr}}
+.ev-stat{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:center}
+.ev-stat-val{font-size:28px;font-weight:800;font-family:var(--mono)}
+.ev-stat-label{font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+.ev-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:20px;background:var(--surface);padding:4px;border-radius:8px;border:1px solid var(--border)}
+.ev-tab{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);background:none;border:none;transition:background .15s}
+.ev-tab.active{background:var(--gold);color:#0a0a0f;font-weight:700}
+.ev-tab:hover:not(.active){background:var(--surface2)}
+.ev-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:800px){.ev-grid{grid-template-columns:1fr}}
+.ev-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px;transition:border-color .2s}
+.ev-card.pass{border-left:3px solid var(--green)}
+.ev-card.review{border-left:3px solid var(--amber)}
+.ev-card.fail{border-left:3px solid var(--red)}
+.ev-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.ev-annex{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono)}
+.ev-control{font-size:13px;font-weight:600;color:var(--text);margin-top:2px}
+.ev-badge{padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.ev-badge.pass{background:var(--green-dim);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+.ev-badge.review{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(251,191,36,.3)}
+.ev-badge.fail{background:var(--red-dim);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.ev-evidence{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:8px}
+.ev-type{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.ev-detail{margin-top:8px;padding:8px 10px;background:var(--bg2);border-radius:6px;font-size:11px;font-family:var(--mono);color:var(--text3);line-height:1.7}
+.ev-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.ev-empty-icon{font-size:36px;margin-bottom:12px}
+.ev-ts{font-size:11px;color:var(--text3);margin-top:4px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<script src="/app.js?v=49"></script>
+<script>
+window.addEventListener('auth:ready', function(e) {
+  if (!e.detail?.user) { location.href = '/login'; }
+});
+</script>
+<div id="nav-root"></div>
+<div class="page-content">
+  <div class="ev-header">
+    <div>
+      <div style="font-size:22px;font-weight:700">Evidence Hub</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:2px">Automated compliance evidence — ISO 27001 · SOC 2 Type II · Cyber Essentials</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span id="collectedTs" class="ev-ts"></span>
+      <button class="btn btn-outline" id="refreshBtn" onclick="collectEvidence()">Refresh Evidence</button>
+      <button class="btn btn-outline" id="exportBtn" onclick="exportCSV()" disabled>Export CSV</button>
+      <a href="/admin" class="btn btn-ghost">← Admin</a>
+    </div>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="ev-summary">
+    <div class="ev-stat">
+      <div class="ev-stat-val" id="statTotal" style="color:var(--text)">—</div>
+      <div class="ev-stat-label">Controls Checked</div>
+    </div>
+    <div class="ev-stat">
+      <div class="ev-stat-val" id="statPass" style="color:var(--green)">—</div>
+      <div class="ev-stat-label">Passing</div>
+    </div>
+    <div class="ev-stat">
+      <div class="ev-stat-val" id="statReview" style="color:var(--amber)">—</div>
+      <div class="ev-stat-label">Needs Review</div>
+    </div>
+    <div class="ev-stat">
+      <div class="ev-stat-val" id="statFail" style="color:var(--red)">—</div>
+      <div class="ev-stat-label">Failing</div>
+    </div>
+  </div>
+
+  <!-- Framework filter tabs -->
+  <div class="ev-tabs">
+    <button class="ev-tab active" onclick="filterFramework('all', this)">All Frameworks</button>
+    <button class="ev-tab" onclick="filterFramework('Cyber Essentials', this)">Cyber Essentials</button>
+    <button class="ev-tab" onclick="filterFramework('SOC 2 Type II', this)">SOC 2 Type II</button>
+    <button class="ev-tab" onclick="filterFramework('ISO 27001:2022', this)">ISO 27001:2022</button>
+  </div>
+
+  <!-- Evidence grid -->
+  <div class="ev-grid" id="evGrid">
+    <div class="ev-empty" style="grid-column:1/-1">
+      <div class="ev-empty-icon">🔍</div>
+      <div style="font-weight:600;margin-bottom:6px">No evidence collected yet</div>
+      <div style="font-size:13px">Click "Refresh Evidence" to run automated checks across all controls.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _allControls = [];
+var _activeFramework = 'all';
+
+window.addEventListener('auth:ready', async function(e) {
+  if (!e.detail?.user) return;
+  collectEvidence();
+});
+
+async function collectEvidence() {
+  var btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Collecting…';
+  document.getElementById('exportBtn').disabled = true;
+
+  try {
+    var token = window.Auth?.token();
+    if (!token) {
+      await new Promise(r => setTimeout(r, 800));
+      token = window.Auth?.token();
+    }
+    if (!token) throw new Error('Not authenticated');
+
+    var res = await fetch('/api/evidence/collect', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    var data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Collection failed');
+
+    _allControls = data.controls;
+
+    // Update stats
+    document.getElementById('statTotal').textContent = data.summary.total;
+    document.getElementById('statPass').textContent = data.summary.pass;
+    document.getElementById('statReview').textContent = data.summary.review;
+    document.getElementById('statFail').textContent = data.summary.fail;
+
+    // Update timestamp
+    var ts = new Date(data.collected_at);
+    document.getElementById('collectedTs').textContent =
+      'Collected ' + ts.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) +
+      ' · ' + ts.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+
+    renderControls();
+    document.getElementById('exportBtn').disabled = false;
+  } catch(err) {
+    document.getElementById('evGrid').innerHTML =
+      '<div class="ev-empty" style="grid-column:1/-1"><div class="ev-empty-icon">⚠</div>' +
+      '<div style="font-weight:600;color:var(--amber)">Collection failed</div>' +
+      '<div style="font-size:13px;margin-top:6px">' + err.message + '</div></div>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Refresh Evidence';
+}
+
+function filterFramework(fw, el) {
+  _activeFramework = fw;
+  document.querySelectorAll('.ev-tab').forEach(function(t){t.classList.remove('active')});
+  el.classList.add('active');
+  renderControls();
+}
+
+function renderControls() {
+  var filtered = _activeFramework === 'all'
+    ? _allControls
+    : _allControls.filter(function(c){ return c.framework === _activeFramework; });
+
+  if (!filtered.length) {
+    document.getElementById('evGrid').innerHTML =
+      '<div class="ev-empty" style="grid-column:1/-1"><div>No controls for this framework</div></div>';
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(c) {
+    var detailHtml = '';
+    if (c.detail && Object.keys(c.detail).length) {
+      detailHtml = '<div class="ev-detail">' +
+        Object.entries(c.detail).map(function(kv){
+          return '<span style="color:var(--text2)">' + kv[0] + ':</span> ' + JSON.stringify(kv[1]);
+        }).join('<br>') + '</div>';
+    }
+    var typeIcon = c.evidence_type === 'automated' ? '⚡ Automated' : '📄 Documented';
+    var fw = c.framework !== 'all' ? '<span style="font-size:10px;color:var(--text3);margin-top:1px;display:block">' + c.framework + '</span>' : '';
+    html += '<div class="ev-card ' + c.status + '">' +
+      '<div class="ev-card-header">' +
+      '<div><div class="ev-annex">' + c.annex + '</div>' + fw + '<div class="ev-control">' + c.control + '</div></div>' +
+      '<span class="ev-badge ' + c.status + '">' + (c.status === 'pass' ? '✓ Pass' : c.status === 'review' ? '⚠ Review' : '✕ Fail') + '</span>' +
+      '</div>' +
+      '<div class="ev-evidence">' + c.evidence + '</div>' +
+      '<div class="ev-type">' + typeIcon + '</div>' +
+      detailHtml +
+      '</div>';
+  });
+  document.getElementById('evGrid').innerHTML = html;
+}
+
+function exportCSV() {
+  if (!_allControls.length) return;
+  var rows = [['Framework','Annex','Control','Status','Evidence','Evidence Type','Detail']];
+  _allControls.forEach(function(c) {
+    rows.push([
+      c.framework, c.annex, c.control, c.status,
+      '"' + c.evidence.replace(/"/g,'""') + '"',
+      c.evidence_type,
+      '"' + JSON.stringify(c.detail).replace(/"/g,'""') + '"',
+    ]);
+  });
+  var csv = rows.map(function(r){return r.join(',')}).join('\n');
+  var blob = new Blob([csv], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'sovereign-evidence-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

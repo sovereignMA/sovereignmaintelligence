@@ -177,7 +177,10 @@ src="https://www.facebook.com/tr?id=1943804979837382&ev=PageView&noscript=1"
   </div>
 
   <!-- COMPLIANCE FRAMEWORKS -->
-  <div style="font-size:13px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;margin-top:4px">Compliance Frameworks</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;margin-top:4px">
+    <div style="font-size:13px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Compliance Frameworks</div>
+    <a href="/evidence" class="btn btn-outline btn-sm" id="evidenceHubBtn" style="display:none">⚡ Evidence Hub →</a>
+  </div>
 
   <div class="sec-grid" style="margin-bottom:20px">
     <!-- CYBER ESSENTIALS -->
@@ -400,8 +403,12 @@ window.addEventListener('auth:ready', async function(e) {
       event: 'security_page_viewed', agent: 'Security', details: 'Dashboard accessed', status: 'ok'
     }});
   } catch(e) {}
-  // Update key status display
   updateKeyStatusFromAuth(e.detail.user);
+});
+
+window.addEventListener('auth:admin', function() {
+  var btn = document.getElementById('evidenceHubBtn');
+  if (btn) btn.style.display = '';
 });
 
 function updateKeyStatusFromAuth(user) {

@@ -28,6 +28,7 @@ export const config = {
     '/admin/video',
     '/agents',
     '/video-generator',
+    '/evidence',
   ],
 };
 
@@ -41,6 +42,7 @@ const ADMIN_PATHS = new Set([
   '/admin/video',
   '/agents',
   '/video-generator',
+  '/evidence',
 ]);
 
 export default function middleware(request) {
