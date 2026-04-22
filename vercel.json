@@ -73,6 +73,9 @@
     },
     "api/video/projects.js": {
       "maxDuration": 15
+    },
+    "api/evidence/collect.js": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
@@ -199,6 +202,10 @@
     {
       "source": "/pricing",
       "destination": "/upgrade.html"
+    },
+    {
+      "source": "/evidence",
+      "destination": "/evidence.html"
     }
   ],
   "headers": [
