@@ -1120,6 +1120,11 @@ const TrialGuard = {
     try {
       const res = await API.billing.status();
       if(!res?.data) return;
+
+      // Admins bypass trial enforcement — check after the await so the nav's
+      // async role fetch (window._userRole) has had time to resolve
+      if(window._userRole === 'admin' || window._userRole === 'superadmin') return;
+
       this._status = res.data;
       const { subscription_status, trial_days_left, trial_expired, plan } = res.data;
 
@@ -1174,7 +1179,7 @@ const TrialGuard = {
   <div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Trial Ended</div>
   <h2 style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:12px">Your 21-day trial has expired</h2>
   <p style="font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:28px">Your deal pipeline, targets, and all data are safe — upgrade to regain full access. No data will be deleted.</p>
-  <a href="/upgrade" style="display:block;background:var(--gold);color:#0a0a0f;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Choose a Plan — from £149/mo</a>
+  <a href="/upgrade" style="display:block;background:var(--gold);color:#0a0a0f;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Choose a Plan — from £99/mo</a>
   <button onclick="document.getElementById('trial-gate').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;text-decoration:underline">Continue in read-only mode</button>
 </div>`;
     document.body.appendChild(gate);

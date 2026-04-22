@@ -22,3 +22,27 @@ These defaults are optimized for AI coding agents (and humans) working on apps t
   needed. Always curl https://ai-gateway.vercel.sh/v1/models first; never trust model IDs from memory
 - For durable agent loops or untrusted code: use Workflow (pause/resume/state) + Sandbox; use Vercel MCP for secure infra access
 <!-- VERCEL BEST PRACTICES END -->
+
+## Claude Code workflow for this project
+
+### Agent patterns
+- Spawn Explore agents for broad codebase research (keeps main context clean)
+- Spawn parallel agents for independent tasks (e.g., write tests while fixing bug)
+- Orchestrator reviews all subagent output before acting on it
+
+### Skills to load by domain
+- Stripe work: `/stripe-best-practices`
+- Email: `/resend` or `/email-best-practices`
+- New features: `/new-page`, `/new-function`, `/add-action`
+- Broken things: `/diagnose`
+- Deploying: `/deploy`
+
+### When stuck
+- Don't guess — ask one focused question
+- Don't add workarounds — fix the root cause
+- If a hook blocks you — investigate, don't bypass
+
+### Model lineup
+- Sonnet 4.6 = default (manager/implementer)
+- Haiku 4.5 = fast subtasks and intern work
+- Opus 4.7 = senior specialist for complex architectural decisions

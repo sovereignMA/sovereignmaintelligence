@@ -10,6 +10,7 @@ import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '../lib/send-email.js';
 import { sendMetaEvent } from '../lib/meta-capi.js';
 import { PLAN_MAP, STATUS_MAP } from '../lib/stripe-constants.js';
+import { unsubscribeUrl as buildUnsubUrl } from '../lib/unsub-token.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
@@ -128,9 +129,11 @@ export default async function handler(req, res) {
         if (newProfile?.email) {
           const trialDays = sub.status === 'trialing' && sub.trial_end
             ? Math.ceil((sub.trial_end * 1000 - Date.now()) / 86400000) : 21;
+          const welcomeUnsubUrl = await buildUnsubUrl(newProfile.email, appUrl);
           await sendEmail({
             to: newProfile.email,
             subject: `Welcome to Sovereign — your ${trialDays}-day trial has started`,
+            unsubscribeUrl: welcomeUnsubUrl,
             html: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;color:#e4e4e7;background:#07080f;padding:32px 24px;border-radius:12px">
 <div style="border-left:3px solid #c9a84c;padding-left:16px;margin-bottom:24px">
   <p style="font-size:11px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin:0">SOVEREIGN</p>
@@ -146,7 +149,7 @@ export default async function handler(req, res) {
 </ul>
 <a href="${appUrl}/command" style="display:inline-block;margin-top:20px;background:#c9a84c;color:#0a0a0f;border-radius:8px;padding:12px 28px;font-weight:700;text-decoration:none">Open Sovereign →</a>
 <p style="margin-top:32px;font-size:12px;color:#52525b">71-75 Shelton Street, London, WC2H 9JQ, United Kingdom<br>
-<a href="${appUrl}/legal" style="color:#71717a">Privacy Policy</a></p>
+<a href="${appUrl}/legal" style="color:#71717a">Privacy Policy</a> · <a href="${welcomeUnsubUrl}" style="color:#71717a">Unsubscribe</a></p>
 </div>`,
           });
         }
@@ -231,14 +234,17 @@ export default async function handler(req, res) {
         const firstName = (profile?.full_name || '').split(' ')[0] || 'there';
         const userEmail = profile?.email;
         if (userEmail) {
+          const trialUnsubUrl = await buildUnsubUrl(userEmail, process.env.APP_URL || 'https://sovereigncmd.xyz');
           await sendEmail({
             to: userEmail,
             subject: 'Your Sovereign trial ends in 3 days',
+            unsubscribeUrl: trialUnsubUrl,
             html: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;color:#e4e4e7;background:#07080f;padding:32px 24px;border-radius:12px">
-<h2 style="color:#c9a84c;margin-bottom:8px">⏱ 3 days left, ${firstName}</h2>
+<h2 style="color:#c9a84c;margin-bottom:8px">3 days left, ${firstName}</h2>
 <p style="color:#a1a1aa;line-height:1.7">Your free trial ends in 3 days. Subscribe now to keep your full pipeline, all 21 agents, and your deals active.</p>
 <a href="https://sovereigncmd.xyz/upgrade" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0f;border-radius:8px;padding:12px 24px;font-weight:700;text-decoration:none">Upgrade Now</a>
-<p style="margin-top:24px;font-size:12px;color:#71717a">If you don't upgrade, your data is retained for 30 days — you can reactivate at any time.</p>
+<p style="margin-top:24px;font-size:12px;color:#71717a">If you don't upgrade, your data is retained for 30 days — you can reactivate at any time.<br>
+<a href="${trialUnsubUrl}" style="color:#71717a">Unsubscribe</a></p>
 </div>`,
           });
         }
@@ -277,14 +283,17 @@ export default async function handler(req, res) {
         const firstName = (profile?.full_name || '').split(' ')[0] || 'there';
         const userEmail = profile?.email;
         if (userEmail) {
+          const payFailUnsubUrl = await buildUnsubUrl(userEmail, process.env.APP_URL || 'https://sovereigncmd.xyz');
           await sendEmail({
             to: userEmail,
             subject: 'Action required: payment failed on your Sovereign subscription',
+            unsubscribeUrl: payFailUnsubUrl,
             html: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;color:#e4e4e7;background:#07080f;padding:32px 24px;border-radius:12px">
-<h2 style="color:#f87171;margin-bottom:8px">⚠ Payment failed, ${firstName}</h2>
+<h2 style="color:#f87171;margin-bottom:8px">Payment failed, ${firstName}</h2>
 <p style="color:#a1a1aa;line-height:1.7">We couldn't process your subscription payment. Please update your payment method to keep uninterrupted access to Sovereign.</p>
 <a href="https://sovereigncmd.xyz/upgrade" style="display:inline-block;margin-top:16px;background:#f87171;color:#fff;border-radius:8px;padding:12px 24px;font-weight:700;text-decoration:none">Update Payment Method</a>
-<p style="margin-top:24px;font-size:12px;color:#71717a">Stripe will retry automatically. If payment continues to fail, your subscription will be cancelled.</p>
+<p style="margin-top:24px;font-size:12px;color:#71717a">Stripe will retry automatically. If payment continues to fail, your subscription will be cancelled.<br>
+<a href="${payFailUnsubUrl}" style="color:#71717a">Unsubscribe</a></p>
 </div>`,
           });
         }

@@ -3,6 +3,7 @@
 // Sends the right email based on where each trial user is in their journey
 
 import { sendEmail } from '../lib/send-email.js';
+import { unsubscribeUrl as buildUnsubUrl } from '../lib/unsub-token.js';
 
 export const config = { runtime: 'edge' };
 
@@ -20,10 +21,12 @@ export default async function handler(req) {
 
   try {
     const now = new Date();
-    // Fetch trial users created in the last 21 days (covers all active drip stages)
-    const cutoff = new Date(now.getTime() - 21 * 86400000).toISOString();
+    // Fetch all trial users: pre-Stripe (plan='trial') AND Stripe trialing (subscription_status='trialing').
+    // Without the OR, Stripe trial users (plan='prospector' etc) were silently skipped — they'd get
+    // zero drip emails after webhook welcome. The cutoff covers both 21-day DB trials and Stripe trials.
+    const cutoff = new Date(now.getTime() - 25 * 86400000).toISOString();
     const res = await fetch(
-      `${base}/rest/v1/user_profiles?select=id,email,full_name,created_at,trial_ends_at,plan,subscription_status&plan=eq.trial&email=not.is.null&created_at=gte.${cutoff}`,
+      `${base}/rest/v1/user_profiles?select=id,email,full_name,created_at,trial_ends_at,plan,subscription_status&or=(plan.eq.trial,subscription_status.eq.trialing)&email=not.is.null&created_at=gte.${cutoff}`,
       { headers: sbHeaders }
     );
     if (!res.ok) return Response.json({ ok: false, error: `DB fetch failed: ${res.status}` }, { status: 500 });
@@ -37,6 +40,7 @@ export default async function handler(req) {
       const firstName = (user.full_name || '').split(' ')[0] || 'there';
       const createdAt = new Date(user.created_at);
       const trialEnds = user.trial_ends_at ? new Date(user.trial_ends_at) : null;
+      const isStripeTrialing = user.subscription_status === 'trialing' && user.plan !== 'trial';
 
       const daysSinceSignup = Math.floor((now - createdAt) / 86400000);
       const daysUntilEnd = trialEnds ? Math.ceil((trialEnds - now) / 86400000) : null;
@@ -44,25 +48,28 @@ export default async function handler(req) {
 
       let template = null;
       let emailPayload = null;
+      // unsubUrl is generated per-user when sending; pass a placeholder here and resolve async at send time
+      const _unsub = null; // resolved in the send loop via buildUnsubUrl
 
-      if (daysSinceSignup === 0) {
+      if (daysSinceSignup === 0 && !isStripeTrialing) {
+        // Skip day-0 welcome for Stripe trial users — webhook already sent theirs
         template = 'welcome';
-        emailPayload = buildWelcome(firstName, appUrl);
+        emailPayload = (u) => buildWelcome(firstName, appUrl, u);
       } else if (daysSinceSignup === 3) {
         template = 'feature_highlight';
-        emailPayload = buildFeatureHighlight(firstName, appUrl);
+        emailPayload = (u) => buildFeatureHighlight(firstName, appUrl, u);
       } else if (daysSinceSignup === 7) {
         template = 'midpoint';
-        emailPayload = buildMidpoint(firstName, appUrl, daysUntilEnd);
+        emailPayload = (u) => buildMidpoint(firstName, appUrl, daysUntilEnd, u);
       } else if (daysUntilEnd === 2) {
         template = 'urgency_2d';
-        emailPayload = buildUrgency(firstName, appUrl);
+        emailPayload = (u) => buildUrgency(firstName, appUrl, u);
       } else if (daysSinceEnd === 0) {
         template = 'trial_ended';
-        emailPayload = buildTrialEnded(firstName, appUrl);
+        emailPayload = (u) => buildTrialEnded(firstName, appUrl, u);
       } else if (daysSinceEnd === 2) {
         template = 'discount_expiry';
-        emailPayload = buildDiscountExpiry(firstName, appUrl);
+        emailPayload = (u) => buildDiscountExpiry(firstName, appUrl, u);
       }
 
       if (!emailPayload) { skipped++; continue; }
@@ -70,9 +77,13 @@ export default async function handler(req) {
       tasks.push({ user, template, emailPayload });
     }
 
-    // Send all emails in parallel
+    // Build unsubscribe URLs (per-user) and send all emails in parallel
     const results = await Promise.allSettled(
-      tasks.map(({ emailPayload, user }) => sendEmail({ ...emailPayload, to: user.email }))
+      tasks.map(async ({ emailPayload, user }) => {
+        const unsubUrl = await buildUnsubUrl(user.email, appUrl);
+        const payload = emailPayload(unsubUrl);
+        return sendEmail({ ...payload, to: user.email, unsubscribeUrl: unsubUrl });
+      })
     );
 
     const sent = [];
@@ -106,7 +117,8 @@ export default async function handler(req) {
 
 // ── Email templates ────────────────────────────────────────────────────────────
 
-function emailWrap(body) {
+function emailWrap(body, unsubUrl) {
+  const unsubHref = unsubUrl || 'https://sovereigncmd.xyz/api/unsubscribe';
   return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:620px;margin:0 auto;color:#e4e4e7;background:#07080f;padding:32px 24px;border-radius:12px;">
   <div style="border-bottom:2px solid #c9a84c;padding-bottom:14px;margin-bottom:24px;">
     <span style="font-size:18px;font-weight:800;color:#c9a84c;letter-spacing:1px;">⬡ SOVEREIGN</span>
@@ -114,7 +126,7 @@ function emailWrap(body) {
   <div style="font-size:14px;line-height:1.7;color:#d4d4d8;">${body}</div>
   <div style="margin-top:32px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#52525b;">
     Project Sovereign · <a href="https://sovereigncmd.xyz" style="color:#c9a84c;">sovereigncmd.xyz</a>
-    · <a href="https://sovereigncmd.xyz/upgrade" style="color:#71717a;">Unsubscribe</a>
+    · <a href="${unsubHref}" style="color:#71717a;">Unsubscribe</a>
   </div>
 </div>`;
 }
@@ -123,7 +135,7 @@ function cta(text, url) {
   return `<a href="${url}" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#c9a84c;color:#0a0a0f;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;">${text}</a>`;
 }
 
-function buildWelcome(name, appUrl) {
+function buildWelcome(name, appUrl, unsubUrl) {
   return {
     subject: `Welcome to Sovereign, ${name} — your 21-agent deal team is ready`,
     html: emailWrap(`
@@ -137,11 +149,11 @@ function buildWelcome(name, appUrl) {
 <p style="color:#a1a1aa;">Your trial includes all features. No restrictions, no watermarks.</p>
 ${cta('Open Command Centre →', `${appUrl}/command`)}
 <p style="margin-top:20px;font-size:13px;color:#71717a;">Questions? Reply to this email — we read every one.</p>
-`),
+`, unsubUrl),
   };
 }
 
-function buildFeatureHighlight(name, appUrl) {
+function buildFeatureHighlight(name, appUrl, unsubUrl) {
   return {
     subject: `${name}, have you tried the Intelligence feed yet?`,
     html: emailWrap(`
@@ -156,11 +168,11 @@ function buildFeatureHighlight(name, appUrl) {
 </ul>
 <p>If a target files accounts or gets acquired — you'll know before the broker does.</p>
 ${cta('Open Intelligence →', `${appUrl}/intelligence`)}
-`),
+`, unsubUrl),
   };
 }
 
-function buildMidpoint(name, appUrl, daysLeft) {
+function buildMidpoint(name, appUrl, daysLeft, unsubUrl) {
   const daysStr = daysLeft != null ? `${daysLeft} days` : 'a week';
   return {
     subject: `Halfway through your trial, ${name} — here's what's working`,
@@ -175,11 +187,11 @@ function buildMidpoint(name, appUrl, daysLeft) {
 </ul>
 ${cta('Upgrade Now — Keep Your Pipeline →', `${appUrl}/upgrade`)}
 <p style="margin-top:16px;font-size:13px;color:#71717a;">Plans from £99/month. Cancel anytime.</p>
-`),
+`, unsubUrl),
   };
 }
 
-function buildUrgency(name, appUrl) {
+function buildUrgency(name, appUrl, unsubUrl) {
   return {
     subject: `2 days left on your Sovereign trial, ${name}`,
     html: emailWrap(`
@@ -189,27 +201,27 @@ function buildUrgency(name, appUrl) {
 <p style="margin-top:16px;font-size:15px;font-weight:700;color:#c9a84c;">Upgrade now to keep the momentum going.</p>
 ${cta('Choose Your Plan →', `${appUrl}/upgrade`)}
 <p style="margin-top:16px;font-size:13px;color:#71717a;">Prospector from £99/mo · Dealmaker from £299/mo · Cancel anytime.</p>
-`),
+`, unsubUrl),
   };
 }
 
-function buildTrialEnded(name, appUrl) {
+function buildTrialEnded(name, appUrl, unsubUrl) {
   return {
     subject: `Your Sovereign trial has ended, ${name} — upgrade with 20% off`,
     html: emailWrap(`
 <h2 style="color:#fff;margin:0 0 16px;font-size:20px;">Your trial has ended.</h2>
 <p>Your data is safe and your pipeline is intact. To get back in, choose a plan.</p>
 <p style="margin-top:16px;padding:16px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:8px;">
-  <strong style="color:#c9a84c;font-size:15px;">🎁 Trial-end offer: 20% off your first 3 months.</strong><br>
+  <strong style="color:#c9a84c;font-size:15px;">Trial-end offer: 20% off your first 3 months.</strong><br>
   <span style="color:#a1a1aa;font-size:13px;">Use code <strong style="color:#fff;font-family:monospace;">SOVEREIGN20</strong> at checkout. Expires in 48 hours.</span>
 </p>
 ${cta('Claim 20% Off →', `${appUrl}/upgrade`)}
 <p style="margin-top:16px;font-size:13px;color:#71717a;">Enter code SOVEREIGN20 at checkout. Monthly or annual billing.</p>
-`),
+`, unsubUrl),
   };
 }
 
-function buildDiscountExpiry(name, appUrl) {
+function buildDiscountExpiry(name, appUrl, unsubUrl) {
   return {
     subject: `Last chance: 20% off expires tonight, ${name}`,
     html: emailWrap(`
